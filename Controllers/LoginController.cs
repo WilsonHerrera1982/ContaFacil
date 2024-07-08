@@ -1,8 +1,11 @@
 ﻿using ContaFacil.Logica;
 using ContaFacil.Models;
 using ContaFacil.Models.ViewModel;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace ContaFacil.Controllers
 {
     public class LoginController : NotificacionClass
@@ -33,12 +36,21 @@ namespace ContaFacil.Controllers
             Usuario usuario = _context.Usuarios.FirstOrDefault((Usuario u) => u.Nombre == viewModel2.Username && u.Clave == viewModel2.Password);
             if (usuario != null)
             {
+                var options = new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.Preserve,
+                    MaxDepth = 256 // Aumenta la profundidad máxima si es necesario
+                };
+
                 int perfilId = 5;
                 List<Menu> menus = ObtenerMenusPorPerfil(perfilId);
-               // base.HttpContext.Session.SetString("menu", JsonSerializer.Serialize(menus));
+                string jsonString = JsonSerializer.Serialize(menus, options);
+                HttpContext.Session.SetString("menu", jsonString);
+                //base.HttpContext.Session.SetString("menu", JsonSerializer.Serialize(menus));
                 Notificacion("Bienvenid@, " + usuario.Nombre, NotificacionTipo.Success);
                 string id = usuario.IdUsuario.ToString();
-                //base.HttpContext.Session.SetString("_idUsuario", id);
+                base.HttpContext.Session.SetString("_idUsuario", id);
+                base.HttpContext.Session.SetString("_usuario", usuario.Nombre);
                 return RedirectToAction("Index", "Home");
             }
             base.ViewBag.ErrorMessage = "Usuario o contraseña incorrectos.";
@@ -61,5 +73,21 @@ namespace ContaFacil.Controllers
             }
             return menusPrincipales;
         }
+        public IActionResult Logout()
+        {
+            // Limpiar la sesión
+            HttpContext.Session.Clear();
+
+            // Si estás usando autenticación de cookies, también debes borrar la cookie de autenticación
+            // Esto es necesario si estás usando ASP.NET Core Identity o autenticación basada en cookies
+            if (User.Identity.IsAuthenticated)
+            {
+                HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+
+            // Redirigir al usuario a la página de login
+            return RedirectToAction("Login", "Login");
+        }
     }
+
 }

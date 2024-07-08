@@ -1,5 +1,6 @@
 ﻿using ContaFacil.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace ContaFacil.Controllers
@@ -7,14 +8,20 @@ namespace ContaFacil.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ContableContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ContableContext context, ILogger<HomeController> logger)
         {
+            _context = context;
             _logger = logger;
         }
+       
 
         public IActionResult Index()
         {
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = _context.Usuarios.FirstOrDefault((Usuario u) => u.IdUsuario == int.Parse(idUsuario));
+            ViewBag.Usuario = usuario.Nombre;
             return View();
         }
 

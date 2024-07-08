@@ -63,3 +63,10 @@ body {
     color: #1a3263;
     margin-bottom: 2rem;
 }
+.navbar-nav .dropdown-toggle::after {
+    display: none;
+}
+
+.navbar-nav .nav-link {
+    padding: 0.5rem 1rem;
+}
