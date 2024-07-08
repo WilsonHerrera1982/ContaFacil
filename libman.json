@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "limonte-sweetalert2@11.12.2",
+      "destination": "wwwroot/lib/limonte-sweetalert2/"
+    },
+    {
+      "library": "sweetalert2@11.12.2",
+      "destination": "wwwroot/lib/sweetalert2/"
+    }
+  ]
+}
