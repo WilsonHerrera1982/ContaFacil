@@ -1,0 +1,64 @@
+﻿@model ContaFacil.Models.Impuesto
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Editar</h1>
+
+<h4>Impuesto</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdImpuesto" />
+            <div class="form-group">
+                <label asp-for="Nombre" class="control-label"></label>
+                <input asp-for="Nombre" class="form-control" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Porcentaje" class="control-label"></label>
+                <input asp-for="Porcentaje" class="form-control" />
+                <span asp-validation-for="Porcentaje" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EstadoBoolean" class="control-label"></label>
+                <input asp-for="EstadoBoolean" class="form-control" />
+                <span asp-validation-for="EstadoBoolean" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaCreacion" class="control-label"></label>
+                <input asp-for="FechaCreacion" class="form-control" />
+                <span asp-validation-for="FechaCreacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaModificacion" class="control-label"></label>
+                <input asp-for="FechaModificacion" class="form-control" />
+                <span asp-validation-for="FechaModificacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UsuarioCreacion" class="control-label"></label>
+                <input asp-for="UsuarioCreacion" class="form-control" />
+                <span asp-validation-for="UsuarioCreacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UsuarioModificacion" class="control-label"></label>
+                <input asp-for="UsuarioModificacion" class="form-control" />
+                <span asp-validation-for="UsuarioModificacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <center><button class="button" type="submit">Guardar</button></center>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Volver a la Lista</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

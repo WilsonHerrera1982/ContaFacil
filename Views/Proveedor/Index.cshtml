@@ -1,8 +1,10 @@
-﻿@model IEnumerable<ContaFacil.Models.Transaccion>
+﻿@model IEnumerable<ContaFacil.Models.Proveedor>
 
 @{
     ViewData["Title"] = "Index";
 }
+
+
 
 <p>
     <a asp-action="Create">Crear Nuevo</a>
@@ -11,13 +13,16 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Fecha)
+                @Html.DisplayNameFor(model => model.Nombre)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Monto)
+                @Html.DisplayNameFor(model => model.Direccion)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Descripcion)
+                @Html.DisplayNameFor(model => model.Telefono)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Estado)
@@ -35,13 +40,7 @@
                 @Html.DisplayNameFor(model => model.UsuarioModificacion)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IdCuentaNavigation)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.IdEmpresaNavigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdTipoTransaccionNavigation)
             </th>
             <th></th>
         </tr>
@@ -50,13 +49,16 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Fecha)
+                @Html.DisplayFor(modelItem => item.Nombre)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Monto)
+                @Html.DisplayFor(modelItem => item.Direccion)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Descripcion)
+                @Html.DisplayFor(modelItem => item.Telefono)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Estado)
@@ -74,18 +76,12 @@
                 @Html.DisplayFor(modelItem => item.UsuarioModificacion)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdCuentaNavigation.IdCuenta)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.IdEmpresaNavigation.IdEmpresa)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdTipoTransaccionNavigation.IdTipoTransaccion)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.IdTransaccion">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.IdTransaccion">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdTransaccion">Eliminar</a>
+                <a asp-action="Edit" asp-route-id="@item.IdProveedor">Editar</a> |
+                <a asp-action="Details" asp-route-id="@item.IdProveedor">Detalles</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdProveedor">Eliminar</a>
             </td>
         </tr>
 }
