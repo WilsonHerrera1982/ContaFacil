@@ -1,11 +1,16 @@
 using ContaFacil.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Session;
-
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
+builder.Services.AddMvc()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -24,8 +29,17 @@ builder.Services.AddDbContext<ContableContext>(options =>
 });
 
 var app = builder.Build();
+var supportedCultures = new[]
+{
+    new CultureInfo("es-US")
+};
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(supportedCultures[0]),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});// Configure the HTTP request pipeline.
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
