@@ -82,7 +82,7 @@ namespace ContaFacil.Controllers
             }
             catch (Exception e)
             {
-                Notificacion("Erro al guardar el Registro "+e.Message, NotificacionTipo.Error);
+                Notificacion("Error al guardar el Registro "+e.Message, NotificacionTipo.Error);
                 return View(menu);
             }
            

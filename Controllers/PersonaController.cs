@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
 
 namespace ContaFacil.Controllers
 {
-    public class PersonaController : Controller
+    public class PersonaController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -58,9 +59,11 @@ namespace ContaFacil.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Persona persona)
         {
-            if (ModelState.IsValid)
+            try
             {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
                 persona.FechaCreacion = new DateTime();
+                persona.UsuarioCreacion = int.Parse(idUsuario);
                 _context.Add(persona);
                 Cliente cliente = new Cliente();
                 cliente.IdPersonaNavigation = persona;
@@ -70,10 +73,15 @@ namespace ContaFacil.Controllers
                 _context.Add(cliente);
 
                 await _context.SaveChangesAsync();
+                Notificacion("Registro guardardo con exito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", persona.IdEmpresa);
-            return View(persona);
+            catch (Exception ex)
+            {
+                ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", persona.IdEmpresa);
+                Notificacion("Error al guardar el Registro " + ex.Message, NotificacionTipo.Error);
+                return View(persona);
+            }
         }
 
         // GET: Persona/Edit/5
