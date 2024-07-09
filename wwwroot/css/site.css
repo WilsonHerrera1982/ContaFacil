@@ -118,4 +118,11 @@ body {
 .col-md-4 {
     width: 75%;
 }
-       
+.active-menu {
+    background-color: #1d386a !important;
+    color: white !important;
+}
+
+    .active-menu:hover {
+        color: #f8f9fa !important;
+    }
