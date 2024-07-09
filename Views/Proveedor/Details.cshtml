@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.Transaccion
+﻿@model ContaFacil.Models.Proveedor
 
 @{
     ViewData["Title"] = "Details";
@@ -7,26 +7,32 @@
 <h1>Detalles</h1>
 
 <div>
-    <h4>Transaccion</h4>
+    <h4>Proveedor</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Fecha)
+            @Html.DisplayNameFor(model => model.Nombre)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Fecha)
+            @Html.DisplayFor(model => model.Nombre)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Monto)
+            @Html.DisplayNameFor(model => model.Direccion)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Monto)
+            @Html.DisplayFor(model => model.Direccion)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Descripcion)
+            @Html.DisplayNameFor(model => model.Telefono)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Descripcion)
+            @Html.DisplayFor(model => model.Telefono)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Email)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Estado)
@@ -59,26 +65,14 @@
             @Html.DisplayFor(model => model.UsuarioModificacion)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdCuentaNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdCuentaNavigation.IdCuenta)
-        </dd>
-        <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.IdEmpresaNavigation)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.IdEmpresaNavigation.IdEmpresa)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdTipoTransaccionNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdTipoTransaccionNavigation.IdTipoTransaccion)
-        </dd>
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.IdTransaccion">Editar</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.IdProveedor">Editar</a> |
     <a asp-action="Index">Volver a la Lista</a>
 </div>

@@ -1,8 +1,10 @@
-﻿@model IEnumerable<ContaFacil.Models.Transaccion>
+﻿@model IEnumerable<ContaFacil.Models.Inventario>
 
 @{
     ViewData["Title"] = "Index";
 }
+
+
 
 <p>
     <a asp-action="Create">Crear Nuevo</a>
@@ -11,16 +13,22 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Fecha)
+                @Html.DisplayNameFor(model => model.TipoMovimiento)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Monto)
+                @Html.DisplayNameFor(model => model.Cantidad)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaMovimiento)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NumeroDespacho)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Descripcion)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Estado)
+                @Html.DisplayNameFor(model => model.EstadoBoolean)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.FechaCreacion)
@@ -35,13 +43,7 @@
                 @Html.DisplayNameFor(model => model.UsuarioModificacion)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IdCuentaNavigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdEmpresaNavigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdTipoTransaccionNavigation)
+                @Html.DisplayNameFor(model => model.IdProductoNavigation)
             </th>
             <th></th>
         </tr>
@@ -50,16 +52,22 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Fecha)
+                @Html.DisplayFor(modelItem => item.TipoMovimiento)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Monto)
+                @Html.DisplayFor(modelItem => item.Cantidad)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaMovimiento)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NumeroDespacho)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Descripcion)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Estado)
+                @Html.DisplayFor(modelItem => item.EstadoBoolean)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.FechaCreacion)
@@ -74,18 +82,12 @@
                 @Html.DisplayFor(modelItem => item.UsuarioModificacion)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdCuentaNavigation.IdCuenta)
+                @Html.DisplayFor(modelItem => item.IdProductoNavigation.IdProducto)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdEmpresaNavigation.IdEmpresa)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdTipoTransaccionNavigation.IdTipoTransaccion)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.IdTransaccion">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.IdTransaccion">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdTransaccion">Eliminar</a>
+                <a asp-action="Edit" asp-route-id="@item.IdInventario">Editar</a> |
+                <a asp-action="Details" asp-route-id="@item.IdInventario">Detalles</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdInventario">Eliminar</a>
             </td>
         </tr>
 }

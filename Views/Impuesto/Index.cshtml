@@ -1,0 +1,71 @@
+﻿@model IEnumerable<ContaFacil.Models.Impuesto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+
+<p>
+    <a asp-action="Create">Crear Nuevo</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Nombre)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Porcentaje)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstadoBoolean)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaCreacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaModificacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UsuarioCreacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UsuarioModificacion)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Porcentaje)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstadoBoolean)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaCreacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaModificacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UsuarioCreacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UsuarioModificacion)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdImpuesto">Editar</a> |
+                <a asp-action="Details" asp-route-id="@item.IdImpuesto">Detalles</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdImpuesto">Eliminar</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
