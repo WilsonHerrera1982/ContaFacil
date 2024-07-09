@@ -5,10 +5,10 @@
 }
 
 <h1>Eliminar</h1>
+<h4>Cliente</h4>
 
-<h3>¿Seguro quieres eliminar este elemento?</h3>
+<h4>¿Seguro quieres eliminar este elemento?</h4>
 <div>
-    <h4>Persona</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -42,46 +42,16 @@
             @Html.DisplayFor(model => model.Estado)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaCreacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaCreacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaModificacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaModificacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UsuarioCreacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UsuarioCreacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UsuarioModificacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UsuarioModificacion)
-        </dd>
-        <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Identificacion)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Identificacion)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdEmpresaNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdEmpresaNavigation.IdEmpresa)
-        </dd>
     </dl>
     
     <form asp-action="Eliminar">
         <input type="hidden" asp-for="IdPersona" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <input type="submit" value="Eliminar" class="btn btn-danger" /> |
         <a asp-action="Index">Volver a la Lista</a>
     </form>
 </div>
