@@ -313,6 +313,12 @@ namespace ContaFacil.Models
                 entity.Property(e => e.Descripcion)
                     .HasMaxLength(100)
                     .HasColumnName("descripcion");
+                entity.Property(e => e.Controller)
+                   .HasMaxLength(50)
+                   .HasColumnName("controller");
+                entity.Property(e => e.Action)
+                  .HasMaxLength(50)
+                  .HasColumnName("action");
 
                 entity.Property(e => e.Estado)
                     .IsRequired()

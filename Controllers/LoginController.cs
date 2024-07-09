@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 namespace ContaFacil.Controllers
 {
     public class LoginController : NotificacionClass
@@ -33,7 +34,8 @@ namespace ContaFacil.Controllers
         public IActionResult Login(LoginViewModel viewModel)
         {
             LoginViewModel viewModel2 = viewModel;
-            Usuario usuario = _context.Usuarios.FirstOrDefault((Usuario u) => u.Nombre == viewModel2.Username && u.Clave == viewModel2.Password);
+            Usuario usuario = _context.Usuarios.Include(u =>u.UsuarioPerfils).FirstOrDefault((Usuario u) => u.Nombre == viewModel2.Username && u.Clave == viewModel2.Password);
+          
             if (usuario != null)
             {
                 var options = new JsonSerializerOptions
@@ -42,8 +44,9 @@ namespace ContaFacil.Controllers
                     MaxDepth = 256 // Aumenta la profundidad máxima si es necesario
                 };
 
-                int perfilId = 5;
-                List<Menu> menus = ObtenerMenusPorPerfil(perfilId);
+               UsuarioPerfil perfil= usuario.UsuarioPerfils.FirstOrDefault();
+
+                List<Menu> menus = ObtenerMenusPorPerfil(perfil.IdPerfil);
                 string jsonString = JsonSerializer.Serialize(menus, options);
                 HttpContext.Session.SetString("menu", jsonString);
                 //base.HttpContext.Session.SetString("menu", JsonSerializer.Serialize(menus));
@@ -67,10 +70,12 @@ namespace ContaFacil.Controllers
             foreach (Menu menuPrincipal in menusPrincipales)
             {
                 menuPrincipal.subMenus = (from m in _context.Menus
-                                          where m.IdMenu == (int?)menuPrincipal.IdMenu
+                                          where m.MenuId == (int?)menuPrincipal.IdMenu
                                           orderby m.IdMenu
                                           select m).ToList();
+                
             }
+           
             return menusPrincipales;
         }
         public IActionResult Logout()
