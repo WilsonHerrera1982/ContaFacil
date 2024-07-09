@@ -20,8 +20,11 @@ namespace ContaFacil.Controllers
         public IActionResult Index()
         {
             string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            string idEmpresa = HttpContext.Session.GetString("_empresa");
             Usuario usuario = _context.Usuarios.FirstOrDefault((Usuario u) => u.IdUsuario == int.Parse(idUsuario));
             ViewBag.Usuario = usuario.Nombre;
+            Empresa empresa = _context.Empresas.FirstOrDefault((Empresa u) => u.IdEmpresa == int.Parse(idEmpresa));
+            ViewBag.Empresa = empresa.Nombre;
             return View();
         }
 

@@ -22,7 +22,8 @@ namespace ContaFacil.Controllers
         // GET: Persona
         public async Task<IActionResult> Index()
         {
-            var contableContext = _context.Personas.Include(p => p.IdEmpresaNavigation);
+            string idEmpresa = HttpContext.Session.GetString("_empresa");
+            var contableContext = _context.Personas.Include(p => p.IdEmpresaNavigation).Where(p=>p.IdEmpresa==int.Parse(idEmpresa));
             return View(await contableContext.ToListAsync());
         }
 
@@ -62,14 +63,17 @@ namespace ContaFacil.Controllers
             try
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                string idEmpresa = HttpContext.Session.GetString("_empresa");
                 persona.FechaCreacion = new DateTime();
                 persona.UsuarioCreacion = int.Parse(idUsuario);
+                persona.IdEmpresa = int.Parse(idEmpresa);
                 _context.Add(persona);
                 Cliente cliente = new Cliente();
                 cliente.IdPersonaNavigation = persona;
                 cliente.Estado = true;
                 cliente.FechaCreacion = persona.FechaCreacion;
                 cliente.UsuarioCreacion = 1;
+                cliente.IdEmpresa= int.Parse(idEmpresa);
                 _context.Add(cliente);
 
                 await _context.SaveChangesAsync();

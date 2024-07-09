@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using ContaFacil.Models;
 
 namespace ContaFacil.Models
 {
@@ -689,6 +688,8 @@ namespace ContaFacil.Models
 
                 entity.ToTable("producto");
 
+                entity.HasIndex(e => e.IdEmpresa, "fki_fk_producto_empresa");
+
                 entity.HasIndex(e => e.Codigo, "producto_codigo_key")
                     .IsUnique();
 
@@ -719,6 +720,8 @@ namespace ContaFacil.Models
 
                 entity.Property(e => e.IdCategoriaProducto).HasColumnName("id_categoria_producto");
 
+                entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+
                 entity.Property(e => e.IdUnidadMedida).HasColumnName("id_unidad_medida");
 
                 entity.Property(e => e.Nombre)
@@ -742,6 +745,11 @@ namespace ContaFacil.Models
                     .WithMany(p => p.Productos)
                     .HasForeignKey(d => d.IdCategoriaProducto)
                     .HasConstraintName("producto_id_categoria_producto_fkey");
+
+                entity.HasOne(d => d.IdEmpresaNavigation)
+                    .WithMany(p => p.Productos)
+                    .HasForeignKey(d => d.IdEmpresa)
+                    .HasConstraintName("fk_producto_empresa");
 
                 entity.HasOne(d => d.IdUnidadMedidaNavigation)
                     .WithMany(p => p.Productos)

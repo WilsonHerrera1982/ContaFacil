@@ -54,6 +54,7 @@ namespace ContaFacil.Controllers
                 string id = usuario.IdUsuario.ToString();
                 base.HttpContext.Session.SetString("_idUsuario", id);
                 base.HttpContext.Session.SetString("_usuario", usuario.Nombre);
+                base.HttpContext.Session.SetString("_empresa", usuario.IdEmpresa.ToString());
                 return RedirectToAction("Index", "Home");
             }
             base.ViewBag.ErrorMessage = "Usuario o contraseña incorrectos.";
