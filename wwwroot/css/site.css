@@ -71,8 +71,20 @@ body {
     padding: 0.5rem 1rem;
 }
 
-.form-container {
+.create-container {
     width: 500px;
+    margin: 0 auto;
+    margin-top: 50px;
+    margin-bottom: 50px;
+    background-color: #FFFFFF;
+    border: 5px solid #1A3263;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.form-container {
+    width: 700px;
     margin: 0 auto;
     margin-top: 50px;
     margin-bottom: 50px;
