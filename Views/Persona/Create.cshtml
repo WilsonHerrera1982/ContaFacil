@@ -5,48 +5,95 @@
 }
 
 <style>
+    .create-container {
+        width: 500px;
+        margin: 0 auto;
+        margin-top: 50px;
+        margin-bottom: 50px;
+        background-color: #FFFFFF;
+        border: 5px solid #1A3263;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
     .uppercase-input {
         text-transform: uppercase;
     }
+
+    .form-group {
+        padding: 10px;
+    }
+    
+    .row {
+        display: flex;
+        justify-content: center;
+    }
+
+    .button {
+        background-color: #1A3263;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        width: 100%;
+        border: none;
+        border-radius: 5px;
+        margin-top: 15px;
+        margin-bottom: 5px;
+        cursor: pointer;
+    }
+    }
+
+    .form-control {
+        width: 100%;
+    }
+
+    .col-md-4 {
+        width: 75%;
+    }
+        
 </style>
 
 <h1>Crear</h1>
 
-<h4>Persona</h4>
+<h4>Cliente</h4>
+
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Nombre" class="control-label"></label>
-                <input asp-for="Nombre" class="form-control uppercase-input" />
-                <span asp-validation-for="Nombre" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Direccion" class="control-label"></label>
-                <input asp-for="Direccion" class="form-control uppercase-input" />
-                <span asp-validation-for="Direccion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Telefono" class="control-label"></label>
-                <input asp-for="Telefono" class="form-control" type="text" inputmode="numeric" pattern="\d*"/>
-                <span asp-validation-for="Telefono" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" type="email"/>
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Identificacion" class="control-label">Identificación</label>
-                <input asp-for="Identificacion" class="form-control" type="text" inputmode="numeric" pattern="\d*"/>
-                <span asp-validation-for="Identificacion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Crear" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="create-container">
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Nombre" class="control-label"></label>
+                    <input asp-for="Nombre" class="form-control uppercase-input" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Direccion" class="control-label">Dirección</label>
+                    <input asp-for="Direccion" class="form-control uppercase-input" />
+                    <span asp-validation-for="Direccion" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Telefono" class="control-label">Teléfono</label>
+                    <input asp-for="Telefono" class="form-control" type="text" inputmode="numeric" pattern="\d*"/>
+                    <span asp-validation-for="Telefono" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Email" class="control-label"></label>
+                    <input asp-for="Email" class="form-control" type="email"/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Identificacion" class="control-label">Identificación (CI)</label>
+                    <input asp-for="Identificacion" class="form-control" type="text" inputmode="numeric" pattern="\d*"/>
+                    <span asp-validation-for="Identificacion" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                <center>
+                    <button class="button" type="submit"><i class="fas fa-solid""></i>Crear</button>
+                </center>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -60,6 +107,13 @@
     <script>
         $(document).ready(function () {
             $('#Identificacion').on('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#Telefono').on('input', function () {
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
         });
