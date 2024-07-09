@@ -1,26 +1,32 @@
-﻿@model ContaFacil.Models.Usuario
+﻿@model ContaFacil.Models.Transaccion
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Details";
 }
 
-<h1>Eliminar</h1>
-<h3>Estas seguro de eliminar este registro?</h3>
+<h1>Details</h1>
+
 <div>
-    <h4>Usuario</h4>
+    <h4>Transaccion</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Nombre)
+            @Html.DisplayNameFor(model => model.Fecha)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
+            @Html.DisplayFor(model => model.Fecha)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Clave)
+            @Html.DisplayNameFor(model => model.Monto)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Clave)
+            @Html.DisplayFor(model => model.Monto)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Descripcion)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Descripcion)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Estado)
@@ -53,22 +59,26 @@
             @Html.DisplayFor(model => model.UsuarioModificacion)
         </dd>
         <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.IdCuentaNavigation)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.IdCuentaNavigation.IdCuenta)
+        </dd>
+        <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.IdEmpresaNavigation)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.IdEmpresaNavigation.IdEmpresa)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdPersonaNavigation)
+            @Html.DisplayNameFor(model => model.IdTipoTransaccionNavigation)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdPersonaNavigation.Direccion)
+            @Html.DisplayFor(model => model.IdTipoTransaccionNavigation.IdTipoTransaccion)
         </dd>
     </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="IdUsuario" />
-        <input type="submit" value="Eliminar" class="btn btn-danger" /> |
-        <a asp-action="Index">Regresar a la Lista</a>
-    </form>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IdTransaccion">Edit</a> |
+    <a asp-action="Index">Volver a la Lista</a>
 </div>
