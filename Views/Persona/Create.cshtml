@@ -87,18 +87,19 @@
                     <input asp-for="Identificacion" class="form-control" type="text" inputmode="numeric" pattern="\d*"/>
                     <span asp-validation-for="Identificacion" class="text-danger"></span>
                 </div>
+                <div class="form-group">
+                    <center>
+                        <button class="button" type="submit">Crear</button>
+                    </center>
+                </div>
             </form>
-            <div class="form-group">
-                <center>
-                    <button class="button" type="submit"><i class="fas fa-solid" "></i>Crear</button>
-                </center>
-            </div>
+            
         </div>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Volver a la Lista</a>
+    <a asp-action="">Volver a la Lista</a>
 </div>
 
 @section Scripts {
