@@ -19,9 +19,6 @@
                 @Html.DisplayNameFor(model => model.Cantidad)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FechaMovimiento)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.NumeroDespacho)
             </th>
             <th>
@@ -31,19 +28,7 @@
                 @Html.DisplayNameFor(model => model.EstadoBoolean)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FechaCreacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FechaModificacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UsuarioCreacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UsuarioModificacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdProductoNavigation)
+                @Html.DisplayNameFor(model => model.IdProductoNavigation.Nombre)
             </th>
             <th></th>
         </tr>
@@ -58,9 +43,6 @@
                 @Html.DisplayFor(modelItem => item.Cantidad)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.FechaMovimiento)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.NumeroDespacho)
             </td>
             <td>
@@ -70,19 +52,7 @@
                 @Html.DisplayFor(modelItem => item.EstadoBoolean)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.FechaCreacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaModificacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UsuarioCreacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UsuarioModificacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdProductoNavigation.IdProducto)
+                @Html.DisplayFor(modelItem => item.IdProductoNavigation.Nombre)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.IdInventario">Editar</a> |

@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
 
 namespace ContaFacil.Controllers
 {
-    public class ProveedorController : Controller
+    public class ProveedorController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -56,16 +57,25 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdProveedor,Nombre,Direccion,Telefono,Email,Estado,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion,IdEmpresa")] Proveedor proveedor)
+        public async Task<IActionResult> Create(Proveedor proveedor)
         {
-            if (ModelState.IsValid)
+            try
             {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                proveedor.UsuarioCreacion = int.Parse(idUsuario);
+                proveedor.FechaCreacion = new DateTime();
                 _context.Add(proveedor);
+
                 await _context.SaveChangesAsync();
+                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", proveedor.IdEmpresa);
-            return View(proveedor);
+            catch (Exception ex)
+            { 
+                ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", proveedor.IdEmpresa);
+                Notificacion("Error al guardar el Registro" + ex.Message, NotificacionTipo.Error);
+                return View(proveedor);
+            }
         }
 
         // GET: Proveedor/Edit/5
@@ -101,10 +111,14 @@ namespace ContaFacil.Controllers
             {
                 try
                 {
+                    string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                    proveedor.UsuarioModificacion = int.Parse(idUsuario);
+                    proveedor.FechaModificacion = new DateTime();
                     _context.Update(proveedor);
                     await _context.SaveChangesAsync();
+                    Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!ProveedorExists(proveedor.IdProveedor))
                     {
@@ -112,6 +126,7 @@ namespace ContaFacil.Controllers
                     }
                     else
                     {
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
                         throw;
                     }
                 }
@@ -152,10 +167,15 @@ namespace ContaFacil.Controllers
             var proveedor = await _context.Proveedors.FindAsync(id);
             if (proveedor != null)
             {
-                _context.Proveedors.Remove(proveedor);
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                proveedor.UsuarioModificacion = int.Parse(idUsuario);
+                proveedor.FechaModificacion = new DateTime();
+                proveedor.Estado = false;
+                _context.Proveedors.Update(proveedor);
             }
             
             await _context.SaveChangesAsync();
+            Notificacion("Registro eliminado con éxito", NotificacionTipo.Success);
             return RedirectToAction(nameof(Index));
         }
 

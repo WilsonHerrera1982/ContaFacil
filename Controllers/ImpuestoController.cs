@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
 
 namespace ContaFacil.Controllers
 {
-    public class ImpuestoController : Controller
+    public class ImpuestoController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -55,15 +56,24 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdImpuesto,Nombre,Porcentaje,EstadoBoolean,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] Impuesto impuesto)
+        public async Task<IActionResult> Create(Impuesto impuesto)
         {
-            if (ModelState.IsValid)
+            try
             {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                impuesto.UsuarioCreacion = int.Parse(idUsuario);
+                impuesto.FechaCreacion = new DateTime();
                 _context.Add(impuesto);
+
                 await _context.SaveChangesAsync();
+                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }
-            return View(impuesto);
+            catch (Exception ex)
+            {
+                Notificacion("Error al guardar el Registro" + ex.Message, NotificacionTipo.Error);
+                return View(impuesto);
+            }
         }
 
         // GET: Impuesto/Edit/5
@@ -98,10 +108,14 @@ namespace ContaFacil.Controllers
             {
                 try
                 {
+                    string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                    impuesto.UsuarioModificacion = int.Parse(idUsuario);
+                    impuesto.FechaModificacion = new DateTime();
                     _context.Update(impuesto);
                     await _context.SaveChangesAsync();
+                    Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!ImpuestoExists(impuesto.IdImpuesto))
                     {
@@ -109,6 +123,7 @@ namespace ContaFacil.Controllers
                     }
                     else
                     {
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
                         throw;
                     }
                 }
@@ -147,10 +162,15 @@ namespace ContaFacil.Controllers
             var impuesto = await _context.Impuestos.FindAsync(id);
             if (impuesto != null)
             {
-                _context.Impuestos.Remove(impuesto);
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                impuesto.UsuarioModificacion = int.Parse(idUsuario);
+                impuesto.FechaModificacion = new DateTime();
+                impuesto.EstadoBoolean = false;
+                _context.Impuestos.Update(impuesto);
             }
             
             await _context.SaveChangesAsync();
+            Notificacion("Registro eliminado con éxito", NotificacionTipo.Success);
             return RedirectToAction(nameof(Index));
         }
 

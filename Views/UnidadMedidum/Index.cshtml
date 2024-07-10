@@ -21,18 +21,6 @@
             <th>
                 @Html.DisplayNameFor(model => model.EstadoBoolean)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FechaCreacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FechaModificacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UsuarioCreacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UsuarioModificacion)
-            </th>
             <th></th>
         </tr>
     </thead>
@@ -47,18 +35,6 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.EstadoBoolean)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaCreacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaModificacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UsuarioCreacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UsuarioModificacion)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.IdUnidadMedida">Editar</a> |

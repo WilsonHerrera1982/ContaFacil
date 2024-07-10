@@ -14,11 +14,11 @@
             <form asp-action="Create">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group">
-                    <label asp-for="IdProducto" class="control-label"></label>
+                    <label asp-for="IdProducto" class="control-label">ID Producto</label>
                     <select asp-for="IdProducto" class ="form-control" asp-items="ViewBag.IdProducto"></select>
                 </div>
                 <div class="form-group">
-                    <label asp-for="TipoMovimiento" class="control-label"></label>
+                    <label asp-for="TipoMovimiento" class="control-label">Tipo de Movimiento</label>
                     <input asp-for="TipoMovimiento" class="form-control" />
                     <span asp-validation-for="TipoMovimiento" class="text-danger"></span>
                 </div>
@@ -28,24 +28,14 @@
                     <span asp-validation-for="Cantidad" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="NumeroDespacho" class="control-label"></label>
+                    <label asp-for="NumeroDespacho" class="control-label">Número de Despacho</label>
                     <input asp-for="NumeroDespacho" class="form-control" />
                     <span asp-validation-for="NumeroDespacho" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="Descripcion" class="control-label"></label>
+                    <label asp-for="Descripcion" class="control-label">Descripción</label>
                     <input asp-for="Descripcion" class="form-control" />
                     <span asp-validation-for="Descripcion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="UsuarioCreacion" class="control-label"></label>
-                    <input asp-for="UsuarioCreacion" class="form-control" />
-                    <span asp-validation-for="UsuarioCreacion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="UsuarioModificacion" class="control-label"></label>
-                    <input asp-for="UsuarioModificacion" class="form-control" />
-                    <span asp-validation-for="UsuarioModificacion" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <center><button class="button" type="submit">Crear</button></center>

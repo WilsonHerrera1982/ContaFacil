@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
 
 namespace ContaFacil.Controllers
 {
-    public class CategoriaProductoController : Controller
+    public class CategoriaProductoController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -55,15 +56,25 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdCategoriaProducto,Nombre,Descripcion,EstadoBoolean,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] CategoriaProducto categoriaProducto)
+        public async Task<IActionResult> Create(CategoriaProducto categoriaProducto)
         {
-            if (ModelState.IsValid)
+            try
             {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                categoriaProducto.UsuarioCreacion = int.Parse(idUsuario);
+                categoriaProducto.FechaCreacion = new DateTime();
                 _context.Add(categoriaProducto);
+
                 await _context.SaveChangesAsync();
+                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }
-            return View(categoriaProducto);
+            catch (Exception ex)
+            {
+                Notificacion("Error al guardar el Registro" + ex.Message, NotificacionTipo.Error);
+                return View(categoriaProducto);
+            }
+            
         }
 
         // GET: CategoriaProducto/Edit/5
@@ -98,10 +109,14 @@ namespace ContaFacil.Controllers
             {
                 try
                 {
+                    string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                    categoriaProducto.UsuarioModificacion = int.Parse(idUsuario);
+                    categoriaProducto.FechaModificacion = new DateTime();
                     _context.Update(categoriaProducto);
                     await _context.SaveChangesAsync();
+                    Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!CategoriaProductoExists(categoriaProducto.IdCategoriaProducto))
                     {
@@ -109,6 +124,7 @@ namespace ContaFacil.Controllers
                     }
                     else
                     {
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
                         throw;
                     }
                 }
@@ -147,10 +163,15 @@ namespace ContaFacil.Controllers
             var categoriaProducto = await _context.CategoriaProductos.FindAsync(id);
             if (categoriaProducto != null)
             {
-                _context.CategoriaProductos.Remove(categoriaProducto);
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                categoriaProducto.UsuarioModificacion = int.Parse(idUsuario);
+                categoriaProducto.FechaModificacion = new DateTime();
+                categoriaProducto.EstadoBoolean = false;
+                _context.CategoriaProductos.Update(categoriaProducto);
             }
             
             await _context.SaveChangesAsync();
+            Notificacion("Registro eliminado con éxito", NotificacionTipo.Success);
             return RedirectToAction(nameof(Index));
         }
 

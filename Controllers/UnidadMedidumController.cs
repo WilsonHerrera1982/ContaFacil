@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
 
 namespace ContaFacil.Controllers
 {
-    public class UnidadMedidumController : Controller
+    public class UnidadMedidumController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -55,15 +56,24 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdUnidadMedida,Nombre,Abreviatura,EstadoBoolean,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] UnidadMedidum unidadMedidum)
+        public async Task<IActionResult> Create(UnidadMedidum unidadMedidum)
         {
-            if (ModelState.IsValid)
+            try
             {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                unidadMedidum.UsuarioCreacion = int.Parse(idUsuario);
+                unidadMedidum.FechaCreacion = new DateTime();
                 _context.Add(unidadMedidum);
+
                 await _context.SaveChangesAsync();
+                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }
-            return View(unidadMedidum);
+            catch (Exception ex)
+            {
+                Notificacion("Error al guardar el Registro" + ex.Message, NotificacionTipo.Error);
+                return View(unidadMedidum);
+            }
         }
 
         // GET: UnidadMedidum/Edit/5
@@ -98,10 +108,15 @@ namespace ContaFacil.Controllers
             {
                 try
                 {
+                    string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                    unidadMedidum.UsuarioModificacion = int.Parse(idUsuario);
+                    unidadMedidum.FechaModificacion = new DateTime();
                     _context.Update(unidadMedidum);
+
+                    Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!UnidadMedidumExists(unidadMedidum.IdUnidadMedida))
                     {
@@ -109,6 +124,7 @@ namespace ContaFacil.Controllers
                     }
                     else
                     {
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
                         throw;
                     }
                 }
@@ -147,10 +163,15 @@ namespace ContaFacil.Controllers
             var unidadMedidum = await _context.UnidadMedida.FindAsync(id);
             if (unidadMedidum != null)
             {
-                _context.UnidadMedida.Remove(unidadMedidum);
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                unidadMedidum.UsuarioModificacion = int.Parse(idUsuario);
+                unidadMedidum.FechaModificacion = new DateTime();
+                unidadMedidum.EstadoBoolean = false;
+                _context.UnidadMedida.Update(unidadMedidum);
             }
             
             await _context.SaveChangesAsync();
+            Notificacion("Registro eliminado con éxito", NotificacionTipo.Success);
             return RedirectToAction(nameof(Index));
         }
 

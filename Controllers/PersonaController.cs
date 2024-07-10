@@ -121,11 +121,14 @@ namespace ContaFacil.Controllers
             {
                 try
                 {
+                    string idUsuario = HttpContext.Session.GetString("_idUsuario");
                     persona.FechaModificacion = new DateTime();
+                    persona.UsuarioModificacion = int.Parse(idUsuario);
                     _context.Update(persona);
                     await _context.SaveChangesAsync();
+                    Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!PersonaExists(persona.IdPersona))
                     {
@@ -133,6 +136,7 @@ namespace ContaFacil.Controllers
                     }
                     else
                     {
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
                         throw;
                     }
                 }
@@ -173,10 +177,24 @@ namespace ContaFacil.Controllers
             var persona = await _context.Personas.FindAsync(id);
             if (persona != null)
             {
-                _context.Personas.Remove(persona);
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                persona.UsuarioModificacion = int.Parse(idUsuario);
+                persona.FechaModificacion = new DateTime();
+                persona.Estado = false;
+                _context.Personas.Update(persona);
+
+                Cliente cliente = _context.Clientes.Where(c => c.IdPersona == id).FirstOrDefault();
+                if (cliente != null)
+                {
+                    cliente.UsuarioModificacion = int.Parse(idUsuario);
+                    cliente.FechaModificacion = new DateTime();
+                    cliente.Estado = false;
+                    _context.Clientes.Update(cliente);
+                }                
             }
             
             await _context.SaveChangesAsync();
+            Notificacion("Registro eliminado con éxito", NotificacionTipo.Success);
             return RedirectToAction(nameof(Index));
         }
 

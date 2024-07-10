@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
 
 namespace ContaFacil.Controllers
 {
-    public class InventarioController : Controller
+    public class InventarioController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -56,16 +57,25 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdInventario,IdProducto,TipoMovimiento,Cantidad,FechaMovimiento,NumeroDespacho,Descripcion,EstadoBoolean,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] Inventario inventario)
+        public async Task<IActionResult> Create(Inventario inventario)
         {
-            if (ModelState.IsValid)
+            try
             {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                inventario.UsuarioCreacion = int.Parse(idUsuario);
+                inventario.FechaCreacion = new DateTime();
                 _context.Add(inventario);
+
                 await _context.SaveChangesAsync();
+                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdProducto"] = new SelectList(_context.Productos, "IdProducto", "IdProducto", inventario.IdProducto);
-            return View(inventario);
+            catch (Exception ex)
+            {
+                ViewData["IdProducto"] = new SelectList(_context.Productos, "IdProducto", "IdProducto", inventario.IdProducto);
+                Notificacion("Error al guardar el Registro" + ex.Message, NotificacionTipo.Error);
+                return View(inventario);
+            }
         }
 
         // GET: Inventario/Edit/5
@@ -101,10 +111,14 @@ namespace ContaFacil.Controllers
             {
                 try
                 {
+                    string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                    inventario.UsuarioModificacion = int.Parse(idUsuario);
+                    inventario.FechaModificacion = new DateTime();
                     _context.Update(inventario);
                     await _context.SaveChangesAsync();
+                    Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!InventarioExists(inventario.IdInventario))
                     {
@@ -112,6 +126,7 @@ namespace ContaFacil.Controllers
                     }
                     else
                     {
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
                         throw;
                     }
                 }
@@ -152,10 +167,23 @@ namespace ContaFacil.Controllers
             var inventario = await _context.Inventarios.FindAsync(id);
             if (inventario != null)
             {
-                _context.Inventarios.Remove(inventario);
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                inventario.UsuarioModificacion = int.Parse(idUsuario);
+                inventario.FechaModificacion = new DateTime();
+                inventario.EstadoBoolean = false;
+                _context.Inventarios.Update(inventario);
+
+                Producto producto = new Producto();
+                producto = _context.Productos.Where(p => p.IdProducto == inventario.IdProducto).FirstOrDefault();
+                if (producto != null)
+                {
+                    producto.Stock = 0;
+                    _context.Update(producto);
+                }
             }
             
             await _context.SaveChangesAsync();
+            Notificacion("Registro eliminado con éxito", NotificacionTipo.Success);
             return RedirectToAction(nameof(Index));
         }
 

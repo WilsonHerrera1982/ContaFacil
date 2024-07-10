@@ -4,8 +4,6 @@
     ViewData["Title"] = "Index";
 }
 
-
-
 <p>
     <a asp-action="Create">Crear Nuevo</a>
 </p>
@@ -31,22 +29,10 @@
                 @Html.DisplayNameFor(model => model.EstadoBoolean)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FechaCreacion)
+                Categoría
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FechaModificacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UsuarioCreacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UsuarioModificacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdCategoriaProductoNavigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdUnidadMedidaNavigation)
+                Unidad de Medida
             </th>
             <th></th>
         </tr>
@@ -73,22 +59,10 @@
                 @Html.DisplayFor(modelItem => item.EstadoBoolean)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.FechaCreacion)
+                @Html.DisplayFor(modelItem => item.IdCategoriaProductoNavigation.Descripcion)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.FechaModificacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UsuarioCreacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UsuarioModificacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdCategoriaProductoNavigation.IdCategoriaProducto)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdUnidadMedidaNavigation.IdUnidadMedida)
+                @Html.DisplayFor(modelItem => item.IdUnidadMedidaNavigation.Abreviatura)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.IdProducto">Editar</a> |
