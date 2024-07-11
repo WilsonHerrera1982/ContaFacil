@@ -51,9 +51,9 @@ namespace ContaFacil.Controllers
         // GET: Producto/Create
         public IActionResult Create()
         {
-            ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos, "IdCategoriaProducto", "IdCategoriaProducto");
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa");
-            ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "IdUnidadMedida");
+            ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos, "IdCategoriaProducto", "Nombre");
+            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre");
+            ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "Nombre");
             return View();
         }
 
@@ -80,8 +80,15 @@ namespace ContaFacil.Controllers
                 product.FechaCreacion = new DateTime();
                 product.UsuarioCreacion = int.Parse(idUsuario);
                 product.IdEmpresa = int.Parse(idEmpresa);
-                _context.Add(producto);
-
+                _context.Add(product);
+                await _context.SaveChangesAsync();
+                Inventario inventario = new Inventario();
+                inventario.TipoMovimiento = 'E';
+                inventario.Cantidad = producto.Stock;
+                inventario.FechaCreacion= new DateTime();
+                inventario.UsuarioCreacion= int.Parse(idUsuario);
+                inventario.IdProducto=product.IdProducto;
+                _context.Add(inventario);
                 await _context.SaveChangesAsync();
                 Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));

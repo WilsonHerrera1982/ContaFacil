@@ -62,8 +62,10 @@ namespace ContaFacil.Controllers
             try
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                string idEmpresa = HttpContext.Session.GetString("_empresa");
                 proveedor.UsuarioCreacion = int.Parse(idUsuario);
                 proveedor.FechaCreacion = new DateTime();
+                proveedor.IdEmpresa=int.Parse(idEmpresa);
                 _context.Add(proveedor);
 
                 await _context.SaveChangesAsync();
