@@ -30,6 +30,9 @@ namespace ContaFacil.Controllers
             }
 
             var inventarios = await query.ToListAsync();
+
+            ViewData["StartDate"] = startDate?.ToString("yyyy-MM-dd");
+            ViewData["EndDate"] = endDate?.ToString("yyyy-MM-dd");
             return View(inventarios);
         }
 
