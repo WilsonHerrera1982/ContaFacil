@@ -4,12 +4,34 @@
     ViewData["Title"] = "Index";
 }
 
+<style>
+    .form-group {
+        width: 400px;
+    }
+    .row {
+        justify-content: left;
+    }
+</style>
 
+<form asp-action="Index" method="get">
+    <div class="row">
+        <div class="form-group">
+            <label class="control-label">Desde:</label>
+            <input class="form-control" type="date" id="startDate" name="startDate" />
+            <span class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Hasta:</label>
+            <input class="form-control" type="date" id="endDate" name="endDate" />
+            <span class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <button class="button" type="submit">Filtrar</button>
+        </div>
+    </div>
+</form>
 
-<p>
-    <a asp-action="Create">Crear Nuevo</a>
-</p>
-<table class="table">
+<table class="table" id="tblInventario">
     <thead>
         <tr>
             <th>
@@ -63,3 +85,18 @@
 }
     </tbody>
 </table>
+
+@section Scripts {
+    <script src="~/js/jquery-3.6.0.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/js/bootstrap.js"></script>
+    <script src="~/js/inventario.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

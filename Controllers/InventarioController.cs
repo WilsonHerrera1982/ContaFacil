@@ -20,10 +20,17 @@ namespace ContaFacil.Controllers
         }
 
         // GET: Inventario
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
         {
-            var contableContext = _context.Inventarios.Include(i => i.IdProductoNavigation);
-            return View(await contableContext.ToListAsync());
+            var query = _context.Inventarios.Include(i => i.IdProductoNavigation).AsQueryable();
+
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                query = query.Where(i => i.FechaMovimiento >= startDate.Value && i.FechaMovimiento <= endDate.Value);
+            }
+
+            var inventarios = await query.ToListAsync();
+            return View(inventarios);
         }
 
         // GET: Inventario/Details/5

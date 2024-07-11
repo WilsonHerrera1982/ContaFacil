@@ -1,15 +1,17 @@
-﻿@model IEnumerable<ContaFacil.Models.CategoriaProducto>
+﻿@model IEnumerable<ContaFacil.Models.Producto>
 
 @{
     ViewData["Title"] = "Index";
 }
 
-<p>
-    <a asp-action="Create">Crear Nuevo</a>
-</p>
-<table class="table" id="tblCategoriaProducto">
+<h1>Productos con bajo stock</h1>
+
+<table class="table" id="tblProductoBajoStock">
     <thead>
         <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Codigo)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Nombre)
             </th>
@@ -17,7 +19,22 @@
                 @Html.DisplayNameFor(model => model.Descripcion)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.PrecioUnitario)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Stock)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.EstadoBoolean)
+            </th>
+            <th>
+                Categoría
+            </th>
+            <th>
+                Empresa
+            </th>
+            <th>
+                Abreviatura
             </th>
             <th></th>
         </tr>
@@ -26,18 +43,31 @@
 @foreach (var item in Model) {
         <tr>
             <td>
+                @Html.DisplayFor(modelItem => item.Codigo)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.Nombre)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Descripcion)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.PrecioUnitario)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Stock)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.EstadoBoolean)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.IdCategoriaProducto">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.IdCategoriaProducto">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdCategoriaProducto">Eliminar</a>
+                @Html.DisplayFor(modelItem => item.IdCategoriaProductoNavigation.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdEmpresaNavigation.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdUnidadMedidaNavigation.Abreviatura)
             </td>
         </tr>
 }
@@ -49,7 +79,7 @@
     <script src="~/js/jquery-3.6.0.min.js"></script>
     <script src="~/js/DataTables/datatables.min.js"></script>
     <script type="text/javascript" src="~/js/bootstrap.js"></script>
-    <script src="~/js/categoriaproducto.js"></script>
+    <script src="~/js/productobajostock.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
