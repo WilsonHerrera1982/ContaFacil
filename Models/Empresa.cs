@@ -9,6 +9,7 @@ namespace ContaFacil.Models
         {
             Clientes = new HashSet<Cliente>();
             Cuenta = new HashSet<Cuentum>();
+            Emisors = new HashSet<Emisor>();
             Personas = new HashSet<Persona>();
             Productos = new HashSet<Producto>();
             Proveedors = new HashSet<Proveedor>();
@@ -29,6 +30,7 @@ namespace ContaFacil.Models
 
         public virtual ICollection<Cliente> Clientes { get; set; }
         public virtual ICollection<Cuentum> Cuenta { get; set; }
+        public virtual ICollection<Emisor> Emisors { get; set; }
         public virtual ICollection<Persona> Personas { get; set; }
         public virtual ICollection<Producto> Productos { get; set; }
         public virtual ICollection<Proveedor> Proveedors { get; set; }

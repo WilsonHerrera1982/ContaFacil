@@ -7,6 +7,7 @@ namespace ContaFacil.Models
     {
         public Producto()
         {
+            DetalleFacturas = new HashSet<DetalleFactura>();
             Inventarios = new HashSet<Inventario>();
             ProductoProveedors = new HashSet<ProductoProveedor>();
         }
@@ -25,10 +26,13 @@ namespace ContaFacil.Models
         public int UsuarioCreacion { get; set; }
         public int UsuarioModificacion { get; set; }
         public int? IdEmpresa { get; set; }
+        public int? IdImpuesto { get; set; }
 
         public virtual CategoriaProducto? IdCategoriaProductoNavigation { get; set; }
         public virtual Empresa? IdEmpresaNavigation { get; set; }
+        public virtual Impuesto? IdImpuestoNavigation { get; set; }
         public virtual UnidadMedidum? IdUnidadMedidaNavigation { get; set; }
+        public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; }
         public virtual ICollection<Inventario> Inventarios { get; set; }
         public virtual ICollection<ProductoProveedor> ProductoProveedors { get; set; }
     }

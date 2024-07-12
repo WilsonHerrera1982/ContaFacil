@@ -15,7 +15,9 @@ namespace ContaFacil.Models
         public DateTime? FechaModificacion { get; set; }
         public int UsuarioCreacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public int? IdProducto { get; set; }
 
         public virtual Factura IdFacturaNavigation { get; set; } = null!;
+        public virtual Producto? IdProductoNavigation { get; set; }
     }
 }

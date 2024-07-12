@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Session;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using ContaFacil.Utilities;
+using ContaFacil.Controllers;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -27,7 +29,8 @@ builder.Services.AddDbContext<ContableContext>(options =>
 {
     options.UseNpgsql("Host=localhost;Database=contable;Username=postgres;Password=postgres");
 });
-
+builder.Services.AddTransient<FacturaController>();
+builder.Services.AddTransient<FacturaXmlGenerator>();
 var app = builder.Build();
 var supportedCultures = new[]
 {

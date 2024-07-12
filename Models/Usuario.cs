@@ -7,7 +7,10 @@ namespace ContaFacil.Models
     {
         public Usuario()
         {
+            Emisors = new HashSet<Emisor>();
+            PaqueteContadors = new HashSet<PaqueteContador>();
             UsuarioPerfils = new HashSet<UsuarioPerfil>();
+            VentaPaquetes = new HashSet<VentaPaquete>();
         }
 
         public int IdUsuario { get; set; }
@@ -23,6 +26,9 @@ namespace ContaFacil.Models
 
         public virtual Empresa? IdEmpresaNavigation { get; set; }
         public virtual Persona IdPersonaNavigation { get; set; } = null!;
+        public virtual ICollection<Emisor> Emisors { get; set; }
+        public virtual ICollection<PaqueteContador> PaqueteContadors { get; set; }
         public virtual ICollection<UsuarioPerfil> UsuarioPerfils { get; set; }
+        public virtual ICollection<VentaPaquete> VentaPaquetes { get; set; }
     }
 }
