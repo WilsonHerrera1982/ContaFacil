@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FirmaXades.Net" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.31" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.31">
