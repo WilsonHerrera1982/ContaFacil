@@ -505,6 +505,8 @@ namespace ContaFacil.Models
 
                 entity.ToTable("factura");
 
+                entity.HasIndex(e => e.IdEmisor, "fki_fk_emisor_factura");
+
                 entity.Property(e => e.IdFactura)
                     .HasColumnName("id_factura")
                     .HasDefaultValueSql("nextval('seq_factura'::regclass)");
@@ -532,6 +534,8 @@ namespace ContaFacil.Models
 
                 entity.Property(e => e.IdCliente).HasColumnName("id_cliente");
 
+                entity.Property(e => e.IdEmisor).HasColumnName("id_emisor");
+
                 entity.Property(e => e.MontoTotal)
                     .HasPrecision(15, 2)
                     .HasColumnName("monto_total");
@@ -545,6 +549,11 @@ namespace ContaFacil.Models
                     .HasForeignKey(d => d.IdCliente)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("factura_id_cliente_fkey");
+
+                entity.HasOne(d => d.IdEmisorNavigation)
+                    .WithMany(p => p.Facturas)
+                    .HasForeignKey(d => d.IdEmisor)
+                    .HasConstraintName("fk_emisor_factura");
             });
 
             modelBuilder.Entity<Impuesto>(entity =>

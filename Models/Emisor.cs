@@ -5,6 +5,11 @@ namespace ContaFacil.Models
 {
     public partial class Emisor
     {
+        public Emisor()
+        {
+            Facturas = new HashSet<Factura>();
+        }
+
         public int IdEmisor { get; set; }
         public int IdUsuario { get; set; }
         public int IdEmpresa { get; set; }
@@ -30,5 +35,6 @@ namespace ContaFacil.Models
 
         public virtual Empresa IdEmpresaNavigation { get; set; } = null!;
         public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
+        public virtual ICollection<Factura> Facturas { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace ContaFacil.Models
         public int IdInventario { get; set; }
         public int? IdProducto { get; set; }
         public char TipoMovimiento { get; set; }
-        public decimal? Cantidad { get; set; }
+        public decimal Cantidad { get; set; }
         public DateTime FechaMovimiento { get; set; }
         public string? NumeroDespacho { get; set; }
         public string? Descripcion { get; set; }

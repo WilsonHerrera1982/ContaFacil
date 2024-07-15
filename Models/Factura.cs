@@ -21,8 +21,10 @@ namespace ContaFacil.Models
         public DateTime? FechaModificacion { get; set; }
         public int UsuarioCreacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public int? IdEmisor { get; set; }
 
         public virtual Cliente IdClienteNavigation { get; set; } = null!;
+        public virtual Emisor? IdEmisorNavigation { get; set; }
         public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; }
         public virtual ICollection<Pago> Pagos { get; set; }
     }
