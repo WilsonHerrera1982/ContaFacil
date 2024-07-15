@@ -1,0 +1,155 @@
+﻿@model IEnumerable<ContaFacil.Models.Emisor>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.RazonSocial)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NombreComercial)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Ruc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NombreUsuario)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Telefono)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CorreoElectronico)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Establecimiento)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PuntoEmision)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Secuencial)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Direccion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CertificadoDigital)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Clave)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ObligadoContabilidad)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TipoAmbiente)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstadoBoolean)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaCreacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaModificacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UsuarioCreacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UsuarioModificacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdEmpresaNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdUsuarioNavigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.RazonSocial)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NombreComercial)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Ruc)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NombreUsuario)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Telefono)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CorreoElectronico)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Establecimiento)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PuntoEmision)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Secuencial)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Direccion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CertificadoDigital)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Clave)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ObligadoContabilidad)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TipoAmbiente)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstadoBoolean)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaCreacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaModificacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UsuarioCreacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UsuarioModificacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdEmpresaNavigation.IdEmpresa)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdUsuarioNavigation.IdUsuario)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdEmisor">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdEmisor">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdEmisor">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
