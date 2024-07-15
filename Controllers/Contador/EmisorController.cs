@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
+using Humanizer.Localisation.TimeToClockNotation;
 
 namespace ContaFacil.Controllers.Contador
 {
-    public class EmisorController : Controller
+    public class EmisorController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -60,15 +62,72 @@ namespace ContaFacil.Controllers.Contador
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("IdEmisor,IdUsuario,IdEmpresa,RazonSocial,NombreComercial,Ruc,NombreUsuario,Telefono,CorreoElectronico,Establecimiento,PuntoEmision,Secuencial,Direccion,CertificadoDigital,Clave,ObligadoContabilidad,TipoAmbiente,EstadoBoolean,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] Emisor emisor)
         {
-            if (ModelState.IsValid)
+            try
             {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                string idEmpresa = HttpContext.Session.GetString("_empresa");
+                emisor.FechaCreacion = new DateTime();
+                emisor.UsuarioCreacion = int.Parse(idUsuario);
+
+                Empresa empresa = new Empresa();
+                empresa.FechaCreacion = new DateTime();
+                empresa.UsuarioCreacion = int.Parse(idUsuario);
+                empresa.IdEmpresa = int.Parse(idEmpresa);
+                empresa.Nombre = emisor.NombreComercial;
+                empresa.Identificacion = emisor.Ruc;
+                empresa.Direccion = emisor.Direccion;
+                _context.Add(empresa);
+
+                Persona persona = new Persona();
+                persona.FechaCreacion = new DateTime();
+                persona.UsuarioCreacion = int.Parse(idUsuario);
+                persona.Email = emisor.CorreoElectronico;
+                persona.Telefono = emisor.Telefono;
+                persona.IdEmpresa = int.Parse(idEmpresa);
+                persona.Identificacion = emisor.Ruc;
+                persona.Direccion = emisor.Direccion;
+                persona.Nombre = emisor.NombreComercial;
+                _context.Add(persona);
+
+                Cliente cliente = new Cliente();
+                cliente.FechaCreacion = new DateTime();
+                cliente.UsuarioCreacion = int.Parse(idUsuario);
+                cliente.IdPersona = persona.IdPersona;
+                cliente.IdEmpresa = int.Parse(idEmpresa);
+                _context.Add(cliente);
+
+                Usuario usuario = new Usuario();
+                usuario.FechaCreacion = new DateTime();
+                usuario.UsuarioCreacion = int.Parse(idUsuario);
+                usuario.Nombre = emisor.NombreComercial;
+                usuario.Clave = emisor.Clave;
+                usuario.IdPersona = persona.IdPersona;
+                usuario.IdEmpresa = int.Parse(idEmpresa);
+                _context.Add(usuario);
+
+                Perfil perfil = new Perfil();
+                perfil = _context.Perfils.Where(p => p.Descripcion == "Vendedor").FirstOrDefault();
+                
+                UsuarioPerfil usuarioPerfil = new UsuarioPerfil();
+                usuarioPerfil.IdUsuario = usuario.IdUsuario;
+                usuarioPerfil.IdPerfil = perfil.IdPerfil;
+                usuarioPerfil.FechaCreacion = new DateTime();
+                usuarioPerfil.UsuarioCreacion = int.Parse(idUsuario);
+                _context.Add(usuarioPerfil);
+
                 _context.Add(emisor);
+
                 await _context.SaveChangesAsync();
+                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", emisor.IdEmpresa);
-            ViewData["IdUsuario"] = new SelectList(_context.Usuarios, "IdUsuario", "IdUsuario", emisor.IdUsuario);
-            return View(emisor);
+            catch (Exception ex)
+            {
+                ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", emisor.IdEmpresa);
+                ViewData["IdUsuario"] = new SelectList(_context.Usuarios, "IdUsuario", "IdUsuario", emisor.IdUsuario);
+                Notificacion("Error al guardar el Registro" + ex.Message, NotificacionTipo.Error);
+                return View(emisor);
+            }
         }
 
         // GET: Emisor/Edit/5
@@ -105,10 +164,14 @@ namespace ContaFacil.Controllers.Contador
             {
                 try
                 {
+                    string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                    emisor.UsuarioModificacion = int.Parse(idUsuario);
+                    emisor.FechaCreacion = new DateTime();
                     _context.Update(emisor);
+                    Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!EmisorExists(emisor.IdEmisor))
                     {
@@ -116,6 +179,7 @@ namespace ContaFacil.Controllers.Contador
                     }
                     else
                     {
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
                         throw;
                     }
                 }
@@ -158,10 +222,15 @@ namespace ContaFacil.Controllers.Contador
             var emisor = await _context.Emisors.FindAsync(id);
             if (emisor != null)
             {
-                _context.Emisors.Remove(emisor);
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                emisor.UsuarioModificacion = int.Parse(idUsuario);
+                emisor.FechaModificacion = new DateTime();
+                emisor.EstadoBoolean = false;
+                _context.Emisors.Update(emisor);
             }
             
             await _context.SaveChangesAsync();
+            Notificacion("Registro eliminado con éxito", NotificacionTipo.Success);
             return RedirectToAction(nameof(Index));
         }
 
