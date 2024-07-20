@@ -26,7 +26,11 @@ namespace ContaFacil.Controllers
         {
             idUsuario = HttpContext.Session.GetString("_idUsuario");
             idEmpresa = HttpContext.Session.GetString("_empresa");
-            var contableContext = _context.Facturas.Include(f => f.IdClienteNavigation);
+            Usuario usuario = new Usuario();
+            usuario=_context.Usuarios.Where(u=>u.IdUsuario==int.Parse(idUsuario)).Include(p=>p.IdPersonaNavigation).FirstOrDefault();
+            Emisor emisor = new Emisor();   
+            emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            var contableContext = _context.Facturas.Where(f=>f.IdEmisor==emisor.IdEmisor).Include(f => f.IdClienteNavigation);
             return View(await contableContext.ToListAsync());
         }
 
@@ -56,7 +60,7 @@ namespace ContaFacil.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Factura factura, List<DetalleFactura> detalles)
+        public async Task<IActionResult> Create(Factura factura, List<DetalleFactura> detalles)
         {
             try
             {
@@ -83,16 +87,25 @@ namespace ContaFacil.Controllers
                 _context.SaveChanges();
                 Cliente cliente = new Cliente();
                 cliente=_context.Clientes.Where(c=>c.IdCliente==factura.IdCliente).Include(c=>c.IdPersonaNavigation).FirstOrDefault();
+                Emisor emisor = new Emisor();
+                emisor =_context.Emisors.Where(e=>e.IdEmisor==factura.IdEmisor).FirstOrDefault();
                 var generator = new FacturaXmlGenerator(_configuration);
-                var xmlDocument = generator.GenerateXml(factura, cliente.IdPersonaNavigation, cliente.IdPersonaNavigation);
+                var xmlDocument = generator.GenerateXml(factura, cliente.IdPersonaNavigation, emisor);
 
                 // Para guardar el XML en un archivo:
                 xmlDocument.Save("factura.xml");
 
                 // Para obtener el XML como string:
                 string xmlString = xmlDocument.ToString();
-                generator.FirmarXml(xmlString);
+                string xmlFirmado=generator.FirmarXml(xmlString,emisor.CertificadoDigital,emisor.Clave);
+                var (estado, descripcion) = await generator.EnviarXmlFirmadoYProcesarRespuesta(emisor.TipoAmbiente, xmlFirmado, factura.IdFactura);
+                factura.DescripcionSri = descripcion;
+                factura.Estado = estado;
+                _context.Update(factura);
+                _context.SaveChanges();
                 Notificacion("Registro guardado con exito", NotificacionTipo.Success);
+                ViewBag.Clientes = _context.Clientes.Include(p => p.IdPersonaNavigation).ToList();
+                ViewBag.Productos = _context.Productos.ToList();
                 return RedirectToAction("Index", "Factura");
             }
             catch (Exception ex)

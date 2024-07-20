@@ -21,7 +21,7 @@ namespace ContaFacil.Utilities
         {
             _configuration = configuration;
         }
-        public XDocument GenerateXml(Factura factura, Persona cliente, Persona emisor)
+        public XDocument GenerateXml(Factura factura, Persona cliente, Emisor emisor)
         {
             XDocument doc = new XDocument(
                 new XDeclaration("1.0", "UTF-8", null),
@@ -37,19 +37,19 @@ namespace ContaFacil.Utilities
             return doc;
         }
 
-        private XElement GenerateInfoTributaria(Factura factura, Persona emisor)
+        private XElement GenerateInfoTributaria(Factura factura, Emisor emisor)
         {
             return new XElement("infoTributaria",
                 new XElement("ambiente", "1"),
                 new XElement("tipoEmision", "1"),
-                new XElement("razonSocial", emisor.Nombre),
-                new XElement("nombreComercial", emisor.Nombre),
-                new XElement("ruc", emisor.Identificacion),
-                new XElement("claveAcceso", GenerateClaveAcceso(factura,emisor.Identificacion)),
+                new XElement("razonSocial", emisor.RazonSocial),
+                new XElement("nombreComercial", emisor.NombreComercial),
+                new XElement("ruc", emisor.Ruc),
+                new XElement("claveAcceso", GenerateClaveAcceso(factura,emisor.Ruc)),
                 new XElement("codDoc", "01"),
-                new XElement("estab", "001"),
-                new XElement("ptoEmi", "001"),
-                new XElement("secuencial", "000000001"),
+                new XElement("estab", emisor.Establecimiento),
+                new XElement("ptoEmi", emisor.PuntoEmision),
+                new XElement("secuencial", emisor.Secuencial),
                 new XElement("dirMatriz", emisor.Direccion)
             );
         }
@@ -172,11 +172,11 @@ namespace ContaFacil.Utilities
 
             return verifierDigit;
         }
-        public string FirmarXml(string xmlString)
+        public string FirmarXml(string xmlString, string ruta, string clave)
         {
             // Cargar el certificado
-            var rutaCertificado = _configuration["CertificadoDigital:Ruta"];
-            var claveCertificado = _configuration["CertificadoDigital:Clave"];
+            var rutaCertificado = ruta;
+            var claveCertificado = clave;
             try
             {
                 string certificadoPath = rutaCertificado;
@@ -241,6 +241,98 @@ namespace ContaFacil.Utilities
             }
         }
 
+
+        public async Task<(string Estado, string Descripcion)> EnviarXmlFirmadoYProcesarRespuesta(string ambiente,string xmlFirmado, int facturaId)
+        {
+            string url = "";
+            // URL del servicio web
+            if (ambiente.Equals("2"))
+            {
+                 url = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline";
+            }
+            else
+            {
+                 url = "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline";
+
+            }
+
+
+            // Validar el XML antes de enviarlo
+            XmlDocument xmlDoc = new XmlDocument();
+            try
+            {
+                xmlDoc.LoadXml(xmlFirmado); // Esto validará el XML
+            }
+            catch (XmlException ex)
+            {
+                Console.WriteLine($"El XML proporcionado no es válido: {ex.Message}");
+                return ("ERROR", $"El XML proporcionado no es válido: {ex.Message}");
+            }
+
+            // Codificar el XML en base64
+            string xmlBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(xmlFirmado));
+
+            // Crear la solicitud SOAP con el XML codificado en base64
+            string soapEnvelope = $@"
+    <soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:ec='http://ec.gob.sri.ws.recepcion'>
+       <soapenv:Header/>
+       <soapenv:Body>
+          <ec:validarComprobante>
+             <xml>{xmlBase64}</xml>
+          </ec:validarComprobante>
+       </soapenv:Body>
+    </soapenv:Envelope>";
+
+            // Crear el cliente HTTP
+            using (var client = new HttpClient())
+            {
+                // Configurar el contenido de la solicitud
+                var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
+
+                try
+                {
+                    // Enviar la solicitud POST
+                    var response = await client.PostAsync(url, content);
+
+                    // Leer la respuesta
+                    string responseString = await response.Content.ReadAsStringAsync();
+
+                    // Verificar el estado de la respuesta
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"Error en la respuesta del servidor: {response.StatusCode} {response.ReasonPhrase}");
+                        return ("ERROR", $"Error en la respuesta del servidor: {response.StatusCode} {response.ReasonPhrase}");
+                    }
+
+                    // Procesar la respuesta XML
+                    XmlDocument responseXmlDoc = new XmlDocument();
+                    responseXmlDoc.LoadXml(responseString);
+
+                    // Extraer el estado y el mensaje
+                    XmlNamespaceManager nsManager = new XmlNamespaceManager(responseXmlDoc.NameTable);
+                    nsManager.AddNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
+                    nsManager.AddNamespace("ns2", "http://ec.gob.sri.ws.recepcion");
+                    string estado = responseXmlDoc.SelectSingleNode("//ns2:validarComprobanteResponse//estado", nsManager)?.InnerText;
+                    string mensaje = responseXmlDoc.SelectSingleNode("//ns2:validarComprobanteResponse//mensaje", nsManager)?.InnerText;
+                    string informacionAdicional = responseXmlDoc.SelectSingleNode("//ns2:validarComprobanteResponse//informacionAdicional", nsManager)?.InnerText;
+                    string descripcion = $"{mensaje} {informacionAdicional}".Trim();
+
+                    return (estado, descripcion);
+                }
+                catch (HttpRequestException httpEx)
+                {
+                    // Manejar cualquier excepción relacionada con la solicitud HTTP
+                    Console.WriteLine($"Error en la solicitud HTTP: {httpEx.Message}");
+                    return ("ERROR", $"Error en la solicitud HTTP: {httpEx.Message}");
+                }
+                catch (Exception ex)
+                {
+                    // Manejar cualquier otra excepción
+                    Console.WriteLine($"Error al enviar XML o procesar respuesta: {ex.Message}");
+                    return ("ERROR", $"Error al procesar: {ex.Message}");
+                }
+            }
+        }
 
     }
 

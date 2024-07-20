@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ContaFacil.Models
+namespace ContaFacil.Models;
+
+public partial class Tipocuentum
 {
-    public partial class Tipocuentum
-    {
-        public Tipocuentum()
-        {
-            Cuenta = new HashSet<Cuentum>();
-        }
+    public int IdTipoCuenta { get; set; }
 
-        public int IdTipoCuenta { get; set; }
-        public string Nombre { get; set; } = null!;
+    public string Nombre { get; set; } = null!;
 
-        public virtual ICollection<Cuentum> Cuenta { get; set; }
-    }
+    public virtual ICollection<Cuentum> Cuenta { get; set; } = new List<Cuentum>();
 }

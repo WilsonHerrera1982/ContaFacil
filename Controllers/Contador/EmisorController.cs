@@ -60,7 +60,7 @@ namespace ContaFacil.Controllers.Contador
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdEmisor,IdUsuario,IdEmpresa,RazonSocial,NombreComercial,Ruc,NombreUsuario,Telefono,CorreoElectronico,Establecimiento,PuntoEmision,Secuencial,Direccion,CertificadoDigital,Clave,ObligadoContabilidad,TipoAmbiente,EstadoBoolean,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] Emisor emisor)
+        public async Task<IActionResult> Create(Emisor emisor)
         {
             try
             {
@@ -68,16 +68,15 @@ namespace ContaFacil.Controllers.Contador
                 string idEmpresa = HttpContext.Session.GetString("_empresa");
                 emisor.FechaCreacion = new DateTime();
                 emisor.UsuarioCreacion = int.Parse(idUsuario);
-
                 Empresa empresa = new Empresa();
                 empresa.FechaCreacion = new DateTime();
                 empresa.UsuarioCreacion = int.Parse(idUsuario);
-                empresa.IdEmpresa = int.Parse(idEmpresa);
                 empresa.Nombre = emisor.NombreComercial;
                 empresa.Identificacion = emisor.Ruc;
                 empresa.Direccion = emisor.Direccion;
+                empresa.Telefono = emisor.Telefono;
                 _context.Add(empresa);
-
+                await _context.SaveChangesAsync();
                 Persona persona = new Persona();
                 persona.FechaCreacion = new DateTime();
                 persona.UsuarioCreacion = int.Parse(idUsuario);
@@ -88,23 +87,23 @@ namespace ContaFacil.Controllers.Contador
                 persona.Direccion = emisor.Direccion;
                 persona.Nombre = emisor.NombreComercial;
                 _context.Add(persona);
-
+                _context.SaveChanges();
                 Cliente cliente = new Cliente();
                 cliente.FechaCreacion = new DateTime();
                 cliente.UsuarioCreacion = int.Parse(idUsuario);
                 cliente.IdPersona = persona.IdPersona;
                 cliente.IdEmpresa = int.Parse(idEmpresa);
                 _context.Add(cliente);
-
+                _context.SaveChanges();
                 Usuario usuario = new Usuario();
                 usuario.FechaCreacion = new DateTime();
                 usuario.UsuarioCreacion = int.Parse(idUsuario);
-                usuario.Nombre = emisor.NombreComercial;
+                usuario.Nombre = emisor.NombreUsuario;
                 usuario.Clave = emisor.Clave;
                 usuario.IdPersona = persona.IdPersona;
                 usuario.IdEmpresa = int.Parse(idEmpresa);
                 _context.Add(usuario);
-
+                _context.SaveChanges();
                 Perfil perfil = new Perfil();
                 perfil = _context.Perfils.Where(p => p.Descripcion == "Vendedor").FirstOrDefault();
                 
@@ -114,10 +113,12 @@ namespace ContaFacil.Controllers.Contador
                 usuarioPerfil.FechaCreacion = new DateTime();
                 usuarioPerfil.UsuarioCreacion = int.Parse(idUsuario);
                 _context.Add(usuarioPerfil);
-
+                await _context.SaveChangesAsync();
+                emisor.IdEmpresa= int.Parse(idEmpresa);
+                emisor.IdUsuario= int.Parse(idUsuario);
                 _context.Add(emisor);
 
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
                 Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }

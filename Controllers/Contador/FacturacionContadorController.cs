@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
 using ContaFacil.Logica;
 using ContaFacil.Utilities;
+using ContaFacil.Models.ViewModel;
 
 namespace ContaFacil.Controllers.Contador
 {
@@ -25,13 +26,36 @@ namespace ContaFacil.Controllers.Contador
         }
 
         // GET: FacturacionContador
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? IdEmisor)
         {
             idEmpresa = HttpContext.Session.GetString("_empresa");
-            var contableContext = _context.Facturas.Where(f=>f.IdEmisorNavigation.IdEmpresa==int.Parse(idEmpresa)).Include(f => f.IdClienteNavigation).Include(f=>f.IdEmisorNavigation);
-            return View(await contableContext.ToListAsync());
-        }
+            var contableContext = _context.Facturas
+                .Where(f => f.IdEmisorNavigation.IdEmpresa == int.Parse(idEmpresa));
 
+            if (IdEmisor != null)
+            {
+                contableContext = contableContext.Where(f => f.IdEmisor == IdEmisor);
+            }
+
+            // Apply the Include methods after all Where clauses
+            contableContext = contableContext
+                .Include(f => f.IdClienteNavigation)
+                .Include(f => f.IdEmisorNavigation);
+
+            var emisores = await _context.Emisors
+                .Where(e => e.IdEmpresa == int.Parse(idEmpresa))
+                .Select(e => new SelectListItem { Value = e.IdEmisor.ToString(), Text = e.RazonSocial })
+                .ToListAsync();
+
+            var viewModel = new FacturacionContadorViewModel
+            {
+                Facturas = await contableContext.ToListAsync(),
+                Emisores = emisores,
+                SelectedEmisorId = IdEmisor
+            };
+
+            return View(viewModel);
+        }
         // GET: FacturacionContador/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -51,15 +75,14 @@ namespace ContaFacil.Controllers.Contador
             return View(factura);
         }
 
-        // GET: FacturacionContador/Create
         public IActionResult Create()
         {
             idEmpresa = HttpContext.Session.GetString("_empresa");
-            ViewData["IdEmisor"] = new SelectList(_context.Emisors.Where(e=>e.IdEmpresa==int.Parse(idEmpresa)), "IdEmisor", "NombreComercial");
-            ViewData["IdCliente"] = new SelectList(_context.Clientes, "IdCliente", "Nombre");
+            ViewData["IdEmisor"] = new SelectList(_context.Emisors.Where(e => e.IdEmpresa == int.Parse(idEmpresa)), "IdEmisor", "NombreComercial");
+            ViewData["IdTipoPago"] = new SelectList(_context.TipoPagos,"IdTipoPago", "Nombre");
+            ViewBag.Productos = _context.Productos.ToList();
             return View();
         }
-
         // POST: FacturacionContador/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -92,17 +115,27 @@ namespace ContaFacil.Controllers.Contador
                 _context.SaveChanges();
                 Cliente cliente = new Cliente();
                 cliente = _context.Clientes.Where(c => c.IdCliente == factura.IdCliente).Include(c => c.IdPersonaNavigation).FirstOrDefault();
+                Emisor emisor = new Emisor();
+                emisor = _context.Emisors.Where(e=>e.IdEmisor==factura.IdEmisor).FirstOrDefault();
                 var generator = new FacturaXmlGenerator(_configuration);
-                var xmlDocument = generator.GenerateXml(factura, cliente.IdPersonaNavigation, cliente.IdPersonaNavigation);
+                var xmlDocument = generator.GenerateXml(factura, cliente.IdPersonaNavigation, emisor);
 
                 // Para guardar el XML en un archivo:
                 xmlDocument.Save("factura.xml");
 
                 // Para obtener el XML como string:
                 string xmlString = xmlDocument.ToString();
-                generator.FirmarXml(xmlString);
+                string xmlFirmado=generator.FirmarXml(xmlString,emisor.CertificadoDigital,emisor.Clave);
+                var (estado, descripcion) = await generator.EnviarXmlFirmadoYProcesarRespuesta(emisor.TipoAmbiente,xmlFirmado, factura.IdFactura);
+                factura.DescripcionSri = descripcion;
+                factura.Estado = estado;
+                _context.Update(factura);
+                _context.SaveChanges();
                 Notificacion("Registro guardado con exito", NotificacionTipo.Success);
-                return RedirectToAction("Index", "Factura");
+                ViewData["IdEmisor"] = new SelectList(_context.Emisors.Where(e => e.IdEmpresa == int.Parse(idEmpresa)), "IdEmisor", "NombreComercial");
+                ViewData["IdTipoPago"] = new SelectList(_context.TipoPagos, "IdTipoPago", "Nombre");
+                ViewBag.Productos = _context.Productos.ToList();
+                return RedirectToAction("Index", "FacturacionContador");
             }
             catch (Exception ex)
             {
@@ -207,6 +240,24 @@ namespace ContaFacil.Controllers.Contador
         private bool FacturaExists(int id)
         {
           return (_context.Facturas?.Any(e => e.IdFactura == id)).GetValueOrDefault();
+        }
+        [HttpGet]
+        public IActionResult GetClientesPorEmisor(int idEmisor)
+        {
+            var emisor = _context.Emisors.Find(idEmisor);
+            if (emisor == null)
+                return Json(new SelectList(Enumerable.Empty<SelectListItem>()));
+
+            var empresa = _context.Empresas.FirstOrDefault(e => e.Identificacion == emisor.Ruc);
+            if (empresa == null)
+                return Json(new SelectList(Enumerable.Empty<SelectListItem>()));
+
+            var clientes = _context.Clientes
+                .Where(c => c.IdEmpresa == empresa.IdEmpresa)
+                .Select(c => new { c.IdCliente, c.IdPersonaNavigation.Nombre })
+                .ToList();
+
+            return Json(new SelectList(clientes, "IdCliente", "Nombre"));
         }
     }
 }

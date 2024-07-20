@@ -21,10 +21,11 @@ namespace ContaFacil.Controllers
         {
             string idUsuario = HttpContext.Session.GetString("_idUsuario");
             string idEmpresa = HttpContext.Session.GetString("_empresa");
-            Usuario usuario = _context.Usuarios.FirstOrDefault((Usuario u) => u.IdUsuario == int.Parse(idUsuario));
+            Usuario usuario = _context.Usuarios.Include(u=>u.IdPersonaNavigation).FirstOrDefault((Usuario u) => u.IdUsuario == int.Parse(idUsuario));
             ViewBag.Usuario = usuario.Nombre;
-            Empresa empresa = _context.Empresas.FirstOrDefault((Empresa u) => u.IdEmpresa == int.Parse(idEmpresa));
-            ViewBag.Empresa = empresa.Nombre;
+            Emisor emisor = new Emisor();
+            emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            ViewBag.Empresa = emisor.RazonSocial;
             return View();
         }
 

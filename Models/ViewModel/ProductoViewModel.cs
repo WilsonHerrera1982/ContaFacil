@@ -11,5 +11,6 @@
         public decimal? Stock { get; set; } = 0;
         public int? IdEmpresa { get; set; }
         public int IdProveedor { get; set; }
+        public int? IdImpuesto { get; set; }
     }
 }

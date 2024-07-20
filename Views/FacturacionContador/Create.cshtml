@@ -4,13 +4,16 @@
 
 <form id="facturaForm" asp-action="Create" method="post">
     <div class="form-group">
-        <label asp-for="IdCliente">Cliente</label>
-        <select asp-for="IdCliente" class="form-control">
+        <label asp-for="IdEmisor" class="control-label"></label>
+        <select asp-for="IdEmisor" class="form-control" asp-items="ViewBag.IdEmisor" id="IdEmisor">
+            <option value="">-- Seleccione un emisor --</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdCliente" class="control-label"></label>
+        <select asp-for="IdCliente" class="form-control" id="IdCliente">
             <option value="">-- Seleccione un cliente --</option>
-            @foreach (var cliente in ViewBag.Clientes)
-            {
-                <option value="@cliente.IdCliente">@cliente.IdPersonaNavigation.Nombre</option>
-            }
         </select>
     </div>
 
@@ -35,7 +38,12 @@
         <label>Monto Total</label>
         <input type="text" id="montoTotal" name="MontoTotal" class="form-control" readonly />
     </div>
-
+     <div class="form-group">
+        <label asp-for="idPago" class="control-label">Forma de Pago</label>
+        <select asp-for="idPago" class="form-control" asp-items="ViewBag.IdTipoPago" id="IdPago">
+            <option value="">-- Seleccione un emisor --</option>
+        </select>
+    </div>
     <button type="submit" class="btn btn-primary">Crear Factura</button>
 </form>
 
@@ -105,6 +113,33 @@
                 });
                 $("#montoTotal").val(total.toFixed(2));
             }
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#IdEmisor').change(function () {
+                var idEmisor = $(this).val();
+                if (idEmisor) {
+                    $.ajax({
+                        url: '@Url.Action("GetClientesPorEmisor", "FacturacionContador")',
+                        type: 'GET',
+                        data: { idEmisor: idEmisor },
+                        success: function (data) {
+                            $('#IdCliente').empty();
+                            $('#IdCliente').append($('<option></option>').val('').text('-- Seleccione un cliente --'));
+                            $.each(data, function (i, item) {
+                                $('#IdCliente').append($('<option></option>').val(item.value).text(item.text));
+                            });
+                        },
+                        error: function () {
+                            alert('Ocurrió un error al cargar los clientes.');
+                        }
+                    });
+                } else {
+                    $('#IdCliente').empty();
+                    $('#IdCliente').append($('<option></option>').val('').text('-- Seleccione un cliente --'));
+                }
+            });
         });
     </script>
 }

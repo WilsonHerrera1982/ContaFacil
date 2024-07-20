@@ -35,12 +35,16 @@
                     <span asp-validation-for="PrecioUnitario" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="IdCategoriaProducto" class="control-label">ID Categoría de Producto</label>
+                    <label asp-for="IdCategoriaProducto" class="control-label">Categoría de Producto</label>
                     <select asp-for="IdCategoriaProducto" class ="form-control" asp-items="ViewBag.IdCategoriaProducto"></select>
                 </div>
                 <div class="form-group">
-                    <label asp-for="IdUnidadMedida" class="control-label">ID Unidad de Medida</label>
+                    <label asp-for="IdUnidadMedida" class="control-label">Unidad de Medida</label>
                     <select asp-for="IdUnidadMedida" class ="form-control" asp-items="ViewBag.IdUnidadMedida"></select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="IdImpuesto" class="control-label">Impuesto</label>
+                    <select asp-for="IdImpuesto" class="form-control" asp-items="ViewBag.IdImpuesto"></select>
                 </div>
                 <div class="form-group">
                     <label asp-for="Stock" class="control-label"></label>

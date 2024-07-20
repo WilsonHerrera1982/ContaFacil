@@ -63,6 +63,7 @@ namespace ContaFacil.Controllers
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
                 impuesto.UsuarioCreacion = int.Parse(idUsuario);
                 impuesto.FechaCreacion = new DateTime();
+                impuesto.EstadoBoolean = true;
                 _context.Add(impuesto);
 
                 await _context.SaveChangesAsync();

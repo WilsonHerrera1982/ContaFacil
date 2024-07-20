@@ -23,7 +23,12 @@ namespace ContaFacil.Controllers
         // GET: Producto
         public async Task<IActionResult> Index()
         {
-            var contableContext = _context.Productos.Include(p => p.IdCategoriaProductoNavigation).Include(p => p.IdEmpresaNavigation).Include(p => p.IdUnidadMedidaNavigation);
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario=new Usuario();
+            usuario= _context.Usuarios.Where(u=>u.IdUsuario==int.Parse(idUsuario)).Include(p=>p.IdPersonaNavigation).FirstOrDefault();
+            Emisor emisor=new Emisor();
+            emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            var contableContext = _context.Productos.Where(p=>p.IdEmpresa==emisor.IdEmpresa).Include(p => p.IdCategoriaProductoNavigation).Include(p => p.IdEmpresaNavigation).Include(p => p.IdUnidadMedidaNavigation);
             return View(await contableContext.ToListAsync());
         }
 
@@ -54,6 +59,7 @@ namespace ContaFacil.Controllers
             ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos, "IdCategoriaProducto", "Nombre");
             ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre");
             ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "Nombre");
+            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos, "IdImpuesto", "Nombre");
             return View();
         }
 
@@ -80,6 +86,7 @@ namespace ContaFacil.Controllers
                 product.FechaCreacion = new DateTime();
                 product.UsuarioCreacion = int.Parse(idUsuario);
                 product.IdEmpresa = int.Parse(idEmpresa);
+                product.IdImpuesto=producto.IdImpuesto;
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 Inventario inventario = new Inventario();

@@ -1,0 +1,65 @@
+﻿@model (IEnumerable<ContaFacil.Models.Cliente> clientes, IEnumerable<SelectListItem> emisores, int? selectedEmisorId)
+@{
+    ViewData["Title"] = "Index";
+}
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<form id="filtroForm" asp-action="Index" method="get" class="mb-3">
+    <div class="form-row align-items-center">
+        <div class="col-auto">
+            <label class="sr-only" for="IdEmisor">Emisor</label>
+            <select id="IdEmisor" name="IdEmisor" class="form-control" asp-for="selectedEmisorId">
+                <option value="">-- Seleccione un emisor --</option>
+                @foreach (var emisor in Model.emisores)
+                {
+                    <option value="@emisor.Value">@emisor.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </div>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Item1.First().Estado)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Item1.First().FechaCreacion)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.Item1.First().IdPersonaNavigation.Nombre)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Item1)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Estado)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FechaCreacion)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.IdPersonaNavigation.Nombre)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.IdCliente">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.IdCliente">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.IdCliente">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

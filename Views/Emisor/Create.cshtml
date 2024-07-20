@@ -13,14 +13,7 @@
         <div class="col-md-4">
             <form asp-action="Create">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
-                    <label asp-for="IdUsuario" class="control-label">ID Usuario</label>
-                    <select asp-for="IdUsuario" class ="form-control" asp-items="ViewBag.IdUsuario"></select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="IdEmpresa" class="control-label">ID Empresa</label>
-                    <select asp-for="IdEmpresa" class ="form-control" asp-items="ViewBag.IdEmpresa"></select>
-                </div>
+               
                 <div class="form-group">
                     <label asp-for="RazonSocial" class="control-label">Razón Social</label>
                     <input asp-for="RazonSocial" class="form-control" />
@@ -82,10 +75,18 @@
                     <span asp-validation-for="Clave" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="ObligadoContabilidad" class="control-label">Obligado a Contabilidad</label>
-                    <input asp-for="ObligadoContabilidad" class="form-control" />
-                    <span asp-validation-for="ObligadoContabilidad" class="text-danger"></span>
-                </div>
+    <label asp-for="ObligadoContabilidad" class="control-label">Obligado a Contabilidad</label>
+    <select asp-for="ObligadoContabilidad" class="form-control" id="obligadoContabilidad">
+        <option value="">-- Seleccione una opción --</option>
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+    </select>
+    <span asp-validation-for="ObligadoContabilidad" class="text-danger"></span>
+</div>
+
+<div id="mensajeObligado" class="alert alert-warning" style="display: none;">
+    Su paquete no permite registro de empresas
+</div>
                 <div class="form-group">
                     <label asp-for="TipoAmbiente" class="control-label">Tipo de Ambiente</label>
                     <input asp-for="TipoAmbiente" class="form-control" />
@@ -105,4 +106,18 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            $('#obligadoContabilidad').change(function () {
+                if ($(this).val() === 'true') {
+                    $('#mensajeObligado').show();
+                    setTimeout(function () {
+                        $('#obligadoContabilidad').val('false').trigger('change');
+                    }, 3000); // Espera 3 segundos antes de cambiar a "No"
+                } else {
+                    $('#mensajeObligado').hide();
+                }
+            });
+        });
+    </script>
 }
