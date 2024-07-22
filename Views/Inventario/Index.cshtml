@@ -12,7 +12,9 @@
         justify-content: left;
     }
 </style>
-
+<p>
+    <a asp-action="Create">Crear Igreso/Egreso</a>
+</p>
 <form asp-action="Index" method="get">
     <div class="row">
         <div class="form-group">
@@ -35,10 +37,16 @@
     <thead>
         <tr>
             <th>
+                @Html.DisplayNameFor(model => model.FechaMovimiento)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.TipoMovimiento)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Cantidad)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdProductoNavigation.Stock)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.NumeroDespacho)
@@ -59,11 +67,17 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.TipoMovimiento)
+                @Html.DisplayFor(modelItem => item.FechaMovimiento)
             </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TipoMovimiento)
+                </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Cantidad)
             </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IdProductoNavigation.Stock)
+                </td>
             <td>
                 @Html.DisplayFor(modelItem => item.NumeroDespacho)
             </td>

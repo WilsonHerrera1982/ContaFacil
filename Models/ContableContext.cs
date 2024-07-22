@@ -102,11 +102,16 @@ public partial class ContableContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
                 .HasColumnName("nombre");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.CategoriaProductos)
+                .HasForeignKey(d => d.IdEmpresa)
+                .HasConstraintName("categoria_producto_empresa_fk");
         });
 
         modelBuilder.Entity<Cliente>(entity =>

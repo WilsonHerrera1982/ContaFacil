@@ -12,5 +12,6 @@
         public int? IdEmpresa { get; set; }
         public int IdProveedor { get; set; }
         public int? IdImpuesto { get; set; }
+        public string? NumeroDespacho {  get; set; }
     }
 }

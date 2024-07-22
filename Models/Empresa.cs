@@ -25,6 +25,8 @@ public partial class Empresa
 
     public int UsuarioModificacion { get; set; }
 
+    public virtual ICollection<CategoriaProducto> CategoriaProductos { get; set; } = new List<CategoriaProducto>();
+
     public virtual ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
 
     public virtual ICollection<Cuentum> Cuenta { get; set; } = new List<Cuentum>();

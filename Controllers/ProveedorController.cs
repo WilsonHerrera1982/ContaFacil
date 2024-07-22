@@ -22,7 +22,14 @@ namespace ContaFacil.Controllers
         // GET: Proveedor
         public async Task<IActionResult> Index()
         {
-            var contableContext = _context.Proveedors.Include(p => p.IdEmpresaNavigation);
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = new Usuario();
+            usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
+            Emisor emisor = new Emisor();
+            emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            Empresa empresa = new Empresa();
+            empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
+            var contableContext = _context.Proveedors.Where(e=>e.IdEmpresa==empresa.IdEmpresa).Include(p => p.IdEmpresaNavigation);
             return View(await contableContext.ToListAsync());
         }
 
@@ -62,10 +69,15 @@ namespace ContaFacil.Controllers
             try
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
-                string idEmpresa = HttpContext.Session.GetString("_empresa");
+                Usuario usuario = new Usuario();
+                usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
+                Emisor emisor = new Emisor();
+                emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+                Empresa empresa = new Empresa();
+                empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
                 proveedor.UsuarioCreacion = int.Parse(idUsuario);
                 proveedor.FechaCreacion = new DateTime();
-                proveedor.IdEmpresa=int.Parse(idEmpresa);
+                proveedor.IdEmpresa=empresa.IdEmpresa;
                 _context.Add(proveedor);
 
                 await _context.SaveChangesAsync();

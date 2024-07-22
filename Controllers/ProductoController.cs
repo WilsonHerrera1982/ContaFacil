@@ -28,7 +28,9 @@ namespace ContaFacil.Controllers
             usuario= _context.Usuarios.Where(u=>u.IdUsuario==int.Parse(idUsuario)).Include(p=>p.IdPersonaNavigation).FirstOrDefault();
             Emisor emisor=new Emisor();
             emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
-            var contableContext = _context.Productos.Where(p=>p.IdEmpresa==emisor.IdEmpresa).Include(p => p.IdCategoriaProductoNavigation).Include(p => p.IdEmpresaNavigation).Include(p => p.IdUnidadMedidaNavigation);
+            Empresa empresa=new Empresa();
+            empresa = _context.Empresas.Where(e=>e.Identificacion==emisor.Ruc).FirstOrDefault();
+            var contableContext = _context.Productos.Where(p=>p.IdEmpresa==empresa.IdEmpresa).Include(p => p.IdCategoriaProductoNavigation).Include(p => p.IdEmpresaNavigation).Include(p => p.IdUnidadMedidaNavigation);
             return View(await contableContext.ToListAsync());
         }
 
@@ -56,10 +58,18 @@ namespace ContaFacil.Controllers
         // GET: Producto/Create
         public IActionResult Create()
         {
-            ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos, "IdCategoriaProducto", "Nombre");
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario =  _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefault();
+            Emisor emisor = new Emisor();
+            emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            Empresa empresa = new Empresa();
+            empresa = _context.Empresas.Where(empresa => empresa.Identificacion == emisor.Ruc).FirstOrDefault();
+            ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos.Where(c=>c.IdEmpresa==empresa.IdEmpresa), "IdCategoriaProducto", "Nombre");
             ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre");
             ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "Nombre");
-            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos, "IdImpuesto", "Nombre");
+            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos, "IdImpuesto", "Porcentaje");
+            ViewData["IdProveedor"] = new SelectList(_context.Proveedors.Where(p => p.IdEmpresa == empresa.IdEmpresa), "IdProveedor", "Nombre");
+
             return View();
         }
 
@@ -74,6 +84,12 @@ namespace ContaFacil.Controllers
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
                 string idEmpresa = HttpContext.Session.GetString("_empresa");
+                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
+                Usuario usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefault();
+                Emisor emisor = new Emisor();
+                emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+                Empresa empresa=new Empresa();
+                empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
                 Producto product = new Producto();
                 product.Codigo = producto.Codigo;
                 product.Nombre = producto.Nombre;
@@ -85,19 +101,32 @@ namespace ContaFacil.Controllers
                 product.EstadoBoolean = true;
                 product.FechaCreacion = new DateTime();
                 product.UsuarioCreacion = int.Parse(idUsuario);
-                product.IdEmpresa = int.Parse(idEmpresa);
+                product.IdEmpresa = empresa.IdEmpresa;
                 product.IdImpuesto=producto.IdImpuesto;
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                _context.Productos.Add(product);
+                 _context.SaveChanges();
                 Inventario inventario = new Inventario();
                 inventario.TipoMovimiento = 'E';
                 inventario.Cantidad = producto.Stock;
                 inventario.FechaCreacion= new DateTime();
                 inventario.UsuarioCreacion= int.Parse(idUsuario);
                 inventario.IdProducto=product.IdProducto;
-                _context.Add(inventario);
+                inventario.NumeroDespacho = producto.NumeroDespacho;
+                _context.Inventarios.Add(inventario);
                 await _context.SaveChangesAsync();
-                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
+                ProductoProveedor productoProveedor = new ProductoProveedor();
+                productoProveedor.IdProducto = product.IdProducto;
+                productoProveedor.IdProveedor=producto.IdProveedor;
+                productoProveedor.FechaCreacion = new DateTime();
+                productoProveedor.UsuarioCreacion = int.Parse(idUsuario);
+                productoProveedor.PrecioCompra=product.PrecioUnitario;
+                productoProveedor.EstadoBoolean=true;
+                _context.ProductoProveedors.Add(productoProveedor);
+                await _context.SaveChangesAsync();
+                ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos.Where(c => c.IdEmpresa == emisor.IdEmpresa), "IdCategoriaProducto", "Nombre");
+                ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre");
+                ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "Nombre");
+                ViewData["IdImpuesto"] = new SelectList(_context.Impuestos, "IdImpuesto", "Porcentaje");
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

@@ -54,8 +54,15 @@ namespace ContaFacil.Controllers
         }
         public IActionResult Create()
         {
-            ViewBag.Clientes = _context.Clientes.Include(p=>p.IdPersonaNavigation).ToList();
-            ViewBag.Productos = _context.Productos.ToList();
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = new Usuario();
+            usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
+            Emisor emisor = new Emisor();
+            emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            Empresa empresa = new Empresa();
+            empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
+            ViewBag.Clientes = _context.Clientes.Include(p=>p.IdPersonaNavigation).Where(p=>p.IdEmpresa==empresa.IdEmpresa).ToList();
+            ViewBag.Productos = _context.Productos.Where(p=>p.IdEmpresa==empresa.IdEmpresa & p.Stock>0).ToList();
             return View();
         }
 
@@ -65,29 +72,44 @@ namespace ContaFacil.Controllers
             try
             {
                 idUsuario = HttpContext.Session.GetString("_idUsuario");
-                idEmpresa = HttpContext.Session.GetString("_empresa");
+                Usuario usuario = new Usuario();
+                usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
+                Emisor emisor = new Emisor();
+                emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+                Empresa empresa = new Empresa();
+                empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
                 factura.Fecha = DateOnly.FromDateTime(DateTime.Now);
                 factura.FechaCreacion = DateTime.Now;
                 factura.UsuarioCreacion = int.Parse(idUsuario);
                 factura.Estado = "Pendiente";
                 factura.EstadoBoolean = true;
+                factura.IdEmisor = emisor.IdEmisor;
                 _context.Facturas.Add(factura);
                 _context.SaveChanges();
                 foreach (var detalle in detalles)
                 {
                     Producto producto = new Producto();
-                    //producto = _context.Productos.FirstOrDefault(p => p.IdProducto==detalle.
+                    producto = _context.Productos.FirstOrDefault(p => p.IdProducto == detalle.IdProducto);
                     detalle.IdFactura = factura.IdFactura;
                     detalle.FechaCreacion = DateTime.Now;
                     detalle.UsuarioCreacion = int.Parse(idUsuario);
                     detalle.Estado = true;
                     _context.DetalleFacturas.Add(detalle);
+                    producto.Stock=producto.Stock-detalle.Cantidad;
+                    _context.Productos.Update(producto);
+                    Inventario inventario = new Inventario();
+                    inventario.Cantidad=detalle.Cantidad;
+                    inventario.IdProducto= detalle.IdProducto;
+                    inventario.TipoMovimiento = 'S';
+                    inventario.FechaMovimiento = new DateTime();
+                    inventario.UsuarioCreacion=int.Parse(idUsuario);
+                    inventario.Descripcion = "EGRESO POR VENTA FACTURA "+factura.IdFactura;
+                    _context.Inventarios.Add(inventario);
                 }
 
                 _context.SaveChanges();
-                Cliente cliente = new Cliente();
+                 Cliente cliente = new Cliente();
                 cliente=_context.Clientes.Where(c=>c.IdCliente==factura.IdCliente).Include(c=>c.IdPersonaNavigation).FirstOrDefault();
-                Emisor emisor = new Emisor();
                 emisor =_context.Emisors.Where(e=>e.IdEmisor==factura.IdEmisor).FirstOrDefault();
                 var generator = new FacturaXmlGenerator(_configuration);
                 var xmlDocument = generator.GenerateXml(factura, cliente.IdPersonaNavigation, emisor);

@@ -22,8 +22,13 @@ namespace ContaFacil.Controllers
         // GET: Persona
         public async Task<IActionResult> Index()
         {
-            string idEmpresa = HttpContext.Session.GetString("_empresa");
-            var contableContext = _context.Personas.Include(p => p.IdEmpresaNavigation).Where(p=>p.IdEmpresa==int.Parse(idEmpresa));
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefault();
+            Emisor emisor = new Emisor();
+            emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            Empresa empresa = new Empresa();
+            empresa = _context.Empresas.Where(empresa => empresa.Identificacion == emisor.Ruc).FirstOrDefault();
+            var contableContext = _context.Personas.Include(p => p.IdEmpresaNavigation).Where(p=>p.IdEmpresa==empresa.IdEmpresa);
             return View(await contableContext.ToListAsync());
         }
 

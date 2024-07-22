@@ -21,5 +21,9 @@ public partial class CategoriaProducto
 
     public int UsuarioModificacion { get; set; }
 
+    public int? IdEmpresa { get; set; }
+
+    public virtual Empresa? IdEmpresaNavigation { get; set; }
+
     public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
 }

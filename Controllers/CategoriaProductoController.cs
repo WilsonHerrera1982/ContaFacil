@@ -22,8 +22,12 @@ namespace ContaFacil.Controllers
         // GET: CategoriaProducto
         public async Task<IActionResult> Index()
         {
-              return _context.CategoriaProductos != null ? 
-                          View(await _context.CategoriaProductos.ToListAsync()) :
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = await _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefaultAsync();
+            Emisor emisor = new Emisor();
+            emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            return _context.CategoriaProductos != null ? 
+                          View(await _context.CategoriaProductos.Where(p=>p.IdEmpresa==emisor.IdEmpresa).ToListAsync()) :
                           Problem("Entity set 'ContableContext.CategoriaProductos'  is null.");
         }
 
@@ -61,8 +65,13 @@ namespace ContaFacil.Controllers
             try
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                Usuario usuario = await _context.Usuarios.Where(u=>u.IdUsuario==int.Parse(idUsuario)).Include(u=>u.IdPersonaNavigation).FirstOrDefaultAsync();
+                Emisor emisor = new Emisor();
+                emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
                 categoriaProducto.UsuarioCreacion = int.Parse(idUsuario);
                 categoriaProducto.FechaCreacion = new DateTime();
+                categoriaProducto.IdEmpresa = emisor.IdEmpresa;
+                categoriaProducto.EstadoBoolean = true;
                 _context.Add(categoriaProducto);
 
                 await _context.SaveChangesAsync();

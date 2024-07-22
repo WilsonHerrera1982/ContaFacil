@@ -19,7 +19,11 @@
                 </div>
                 <div class="form-group">
                     <label asp-for="TipoMovimiento" class="control-label">Tipo de Movimiento</label>
-                    <input asp-for="TipoMovimiento" class="form-control" />
+                    <select asp-for="TipoMovimiento" class="form-control">
+                        <option value="">Seleccione un tipo de movimiento</option>
+                        <option value="E">Ingreso</option>
+                        <option value="S">Egreso</option>
+                    </select>
                     <span asp-validation-for="TipoMovimiento" class="text-danger"></span>
                 </div>
                 <div class="form-group">

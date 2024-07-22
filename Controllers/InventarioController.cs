@@ -22,7 +22,17 @@ namespace ContaFacil.Controllers
         // GET: Inventario
         public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
         {
-            var query = _context.Inventarios.Include(i => i.IdProductoNavigation).AsQueryable();
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = new Usuario();
+            usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
+            Emisor emisor = new Emisor();
+            emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            Empresa empresa = new Empresa();
+            empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
+            var query = _context.Inventarios
+     .Include(i => i.IdProductoNavigation)
+     .Where(i => i.IdProductoNavigation.IdEmpresa == empresa.IdEmpresa)
+     .AsQueryable();
 
             if (startDate.HasValue && endDate.HasValue)
             {
@@ -58,7 +68,15 @@ namespace ContaFacil.Controllers
         // GET: Inventario/Create
         public IActionResult Create()
         {
-            ViewData["IdProducto"] = new SelectList(_context.Productos, "IdProducto", "IdProducto");
+
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = new Usuario();
+            usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
+            Emisor emisor = new Emisor();
+            emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            Empresa empresa = new Empresa();
+            empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
+            ViewData["IdProducto"] = new SelectList(_context.Productos.Where(e=>e.IdEmpresa==empresa.IdEmpresa), "IdProducto", "Nombre");
             return View();
         }
 
@@ -72,10 +90,31 @@ namespace ContaFacil.Controllers
             try
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
-                inventario.UsuarioCreacion = int.Parse(idUsuario);
-                inventario.FechaCreacion = new DateTime();
-                _context.Add(inventario);
-
+               
+                Producto producto = new Producto();
+                producto=_context.Productos.Where(p => p.IdProducto==inventario.IdProducto).FirstOrDefault();
+                if (inventario.TipoMovimiento.Equals('E'))
+                {
+                    inventario.UsuarioCreacion = int.Parse(idUsuario);
+                    inventario.FechaCreacion = new DateTime();
+                    _context.Add(inventario);
+                    await _context.SaveChangesAsync();
+                    producto.Stock=producto.Stock+inventario.Cantidad;
+                }
+                else if(producto.Stock>=0 && producto.Stock>inventario.Cantidad)
+                {
+                    inventario.UsuarioCreacion = int.Parse(idUsuario);
+                    inventario.FechaCreacion = new DateTime();
+                    _context.Add(inventario);
+                    await _context.SaveChangesAsync();
+                    producto.Stock = producto.Stock - inventario.Cantidad;
+                }
+                else
+                {
+                    Notificacion("Revisar la cantidad del despacho", NotificacionTipo.Warning);
+                    return RedirectToAction(nameof(Index));
+                }
+                _context.Update(producto);
                 await _context.SaveChangesAsync();
                 Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
