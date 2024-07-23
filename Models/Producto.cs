@@ -35,6 +35,8 @@ public partial class Producto
 
     public int? IdImpuesto { get; set; }
 
+    public virtual ICollection<DetalleDespacho> DetalleDespachos { get; set; } = new List<DetalleDespacho>();
+
     public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();
 
     public virtual CategoriaProducto? IdCategoriaProductoNavigation { get; set; }

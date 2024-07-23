@@ -25,6 +25,10 @@ public partial class Usuario
 
     public int? IdEmpresa { get; set; }
 
+    public virtual ICollection<Despacho> Despachos { get; set; } = new List<Despacho>();
+
+    public virtual ICollection<DetalleDespacho> DetalleDespachos { get; set; } = new List<DetalleDespacho>();
+
     public virtual ICollection<Emisor> Emisors { get; set; } = new List<Emisor>();
 
     public virtual Empresa? IdEmpresaNavigation { get; set; }
@@ -32,6 +36,8 @@ public partial class Usuario
     public virtual Persona IdPersonaNavigation { get; set; } = null!;
 
     public virtual ICollection<PaqueteContador> PaqueteContadors { get; set; } = new List<PaqueteContador>();
+
+    public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
 
     public virtual ICollection<UsuarioPerfil> UsuarioPerfils { get; set; } = new List<UsuarioPerfil>();
 

@@ -54,4 +54,6 @@ public partial class Emisor
     public virtual Empresa IdEmpresaNavigation { get; set; } = null!;
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
+    public virtual ICollection<Sucursal> Sucursals { get; set; } = new List<Sucursal>();
+    
 }
