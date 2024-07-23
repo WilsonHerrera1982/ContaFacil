@@ -11,7 +11,7 @@ public partial class Inventario
 
     public char TipoMovimiento { get; set; }
 
-    public decimal? Cantidad { get; set; }
+    public decimal Cantidad { get; set; }
 
     public DateTime FechaMovimiento { get; set; }
 
@@ -28,6 +28,8 @@ public partial class Inventario
     public int UsuarioCreacion { get; set; }
 
     public int UsuarioModificacion { get; set; }
+
+    public int? Stock { get; set; }
 
     public virtual Producto? IdProductoNavigation { get; set; }
 }

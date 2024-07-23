@@ -40,4 +40,6 @@ public partial class Sucursal
     public virtual Emisor IdEmisorNavigation { get; set; } = null!;
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
+
+    public virtual ICollection<UsuarioSucursal> UsuarioSucursals { get; set; } = new List<UsuarioSucursal>();
 }

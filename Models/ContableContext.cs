@@ -79,6 +79,8 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<UsuarioPerfil> UsuarioPerfils { get; set; }
 
+    public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
+
     public virtual DbSet<VentaPaquete> VentaPaquetes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -622,6 +624,7 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(50)
                 .HasColumnName("numero_despacho");
+            entity.Property(e => e.Stock).HasColumnName("stock");
             entity.Property(e => e.TipoMovimiento)
                 .HasMaxLength(1)
                 .HasColumnName("tipo_movimiento");
@@ -1312,6 +1315,41 @@ public partial class ContableContext : DbContext
                 .HasConstraintName("usuario_perfil_id_usuario_fkey");
         });
 
+        modelBuilder.Entity<UsuarioSucursal>(entity =>
+        {
+            entity.HasKey(e => e.IdUsuarioSucursal).HasName("usuario_sucursal_pkey");
+
+            entity.ToTable("usuario_sucursal");
+
+            entity.Property(e => e.IdUsuarioSucursal)
+                .HasDefaultValueSql("nextval('seq_usuario_sucursal'::regclass)")
+                .HasColumnName("id_usuario_sucursal");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
+            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.UsuarioSucursals)
+                .HasForeignKey(d => d.IdSucursal)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("usuario_sucursal_id_sucursal_fkey");
+
+            entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.UsuarioSucursals)
+                .HasForeignKey(d => d.IdUsuario)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("usuario_sucursal_id_usuario_fkey");
+        });
+
         modelBuilder.Entity<VentaPaquete>(entity =>
         {
             entity.HasKey(e => e.IdVentaPaquete).HasName("venta_paquete_pkey");
@@ -1378,6 +1416,7 @@ public partial class ContableContext : DbContext
         modelBuilder.HasSequence("seq_unidad_medida_id");
         modelBuilder.HasSequence("seq_usuario");
         modelBuilder.HasSequence("seq_usuario_perfil");
+        modelBuilder.HasSequence("seq_usuario_sucursal");
         modelBuilder.HasSequence("seq_venta_paquete");
 
         OnModelCreatingPartial(modelBuilder);

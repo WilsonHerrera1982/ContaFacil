@@ -116,7 +116,7 @@ namespace ContaFacil.Controllers.Sucursal
                 _context.Add(usu);
                 await _context.SaveChangesAsync();
                 Perfil perfil= new Perfil();
-                perfil = _context.Perfils.Where(p=>p.Descripcion== "Vendedor").FirstOrDefault();
+                perfil = _context.Perfils.Where(p=>p.Descripcion== "Sucursal").FirstOrDefault();
                 UsuarioPerfil usuarioPerfil = new UsuarioPerfil();
                 usuarioPerfil.IdUsuario=usu.IdUsuario;
                 usuarioPerfil.IdPerfil=perfil.IdPerfil;
@@ -124,6 +124,14 @@ namespace ContaFacil.Controllers.Sucursal
                 usuarioPerfil.FechaCreacion=new DateTime();
                 usuarioPerfil.Estado = true;
                 _context.Add(usuarioPerfil);
+                await _context.SaveChangesAsync();
+                UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
+                usuarioSucursal.IdUsuario = usu.IdUsuario;
+                usuarioSucursal.IdSucursal=sucursal.IdSucursal;
+                usuarioSucursal.UsuarioCreacion=int.Parse(idUsuario);
+                usuarioSucursal.FechaCreacion = new DateTime();
+                usuarioSucursal.EstadoBoolean=true;
+                _context.Add(usuarioSucursal);
                 await _context.SaveChangesAsync();
                 Notificacion("Registro guardado con exito",NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
