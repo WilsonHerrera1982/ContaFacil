@@ -11,7 +11,7 @@ public partial class Inventario
 
     public char TipoMovimiento { get; set; }
 
-    public decimal Cantidad { get; set; }
+    public decimal? Cantidad { get; set; }
 
     public DateTime FechaMovimiento { get; set; }
 
