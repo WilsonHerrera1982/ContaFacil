@@ -23,11 +23,16 @@ namespace ContaFacil.Controllers
         public async Task<IActionResult> Index()
         {
             string idUsuario = HttpContext.Session.GetString("_idUsuario");
-            Usuario usuario = await _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefaultAsync();
+            string idEmpresa = HttpContext.Session.GetString("_empresa");
+            Usuario usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefault();
+            UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
+            usuarioSucursal = _context.UsuarioSucursals.Where(u => u.IdUsuario == usuario.IdUsuario).FirstOrDefault();
             Emisor emisor = new Emisor();
             emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+            Empresa empresa = new Empresa();
+            empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
             return _context.CategoriaProductos != null ? 
-                          View(await _context.CategoriaProductos.Where(p=>p.IdEmpresa==emisor.IdEmpresa).ToListAsync()) :
+                          View(await _context.CategoriaProductos.Where(p=>p.IdEmpresa==empresa.IdEmpresa).ToListAsync()) :
                           Problem("Entity set 'ContableContext.CategoriaProductos'  is null.");
         }
 
@@ -65,12 +70,17 @@ namespace ContaFacil.Controllers
             try
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
-                Usuario usuario = await _context.Usuarios.Where(u=>u.IdUsuario==int.Parse(idUsuario)).Include(u=>u.IdPersonaNavigation).FirstOrDefaultAsync();
+                string idEmpresa = HttpContext.Session.GetString("_empresa");
+                Usuario usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefault();
+                UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
+                usuarioSucursal = _context.UsuarioSucursals.Where(u => u.IdUsuario == usuario.IdUsuario).FirstOrDefault();
                 Emisor emisor = new Emisor();
-                emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+                emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+                Empresa empresa = new Empresa();
+                empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
                 categoriaProducto.UsuarioCreacion = int.Parse(idUsuario);
                 categoriaProducto.FechaCreacion = new DateTime();
-                categoriaProducto.IdEmpresa = emisor.IdEmpresa;
+                categoriaProducto.IdEmpresa = empresa.IdEmpresa;
                 categoriaProducto.EstadoBoolean = true;
                 _context.Add(categoriaProducto);
 

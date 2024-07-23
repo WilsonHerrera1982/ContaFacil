@@ -84,8 +84,9 @@ namespace ContaFacil.Controllers
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
                 string idEmpresa = HttpContext.Session.GetString("_empresa");
-                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
-                Usuario usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefault();
+                 Usuario usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefault();
+                UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
+                usuarioSucursal = _context.UsuarioSucursals.Where(u => u.IdUsuario == usuario.IdUsuario).FirstOrDefault();
                 Emisor emisor = new Emisor();
                 emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
                 Empresa empresa=new Empresa();
@@ -106,13 +107,23 @@ namespace ContaFacil.Controllers
                 _context.Productos.Add(product);
                  _context.SaveChanges();
                 Inventario inventario = new Inventario();
-                inventario.TipoMovimiento = 'E';
+                inventario.TipoMovimiento = "E";
                 inventario.Cantidad = producto.Stock;
                 inventario.FechaCreacion= new DateTime();
                 inventario.UsuarioCreacion= int.Parse(idUsuario);
                 inventario.IdProducto=product.IdProducto;
                 inventario.NumeroDespacho = producto.NumeroDespacho;
+                inventario.Stock=(int)producto.Stock;
+                inventario.EstadoBoolean=true;
                 _context.Inventarios.Add(inventario);
+                await _context.SaveChangesAsync();
+                SucursalInventario sucursalInventario = new SucursalInventario();
+                sucursalInventario.IdInventario=inventario.IdInventario;
+                sucursalInventario.IdSucursal = usuarioSucursal.IdSucursal;
+                sucursalInventario.FechaCreacion= new DateTime();
+                sucursalInventario.UsuarioCreacion=int.Parse(idUsuario);
+                sucursalInventario.EstadoBoolean = true;
+                _context.Add(sucursalInventario);
                 await _context.SaveChangesAsync();
                 ProductoProveedor productoProveedor = new ProductoProveedor();
                 productoProveedor.IdProducto = product.IdProducto;

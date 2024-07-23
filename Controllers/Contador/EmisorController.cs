@@ -23,7 +23,8 @@ namespace ContaFacil.Controllers.Contador
         // GET: Emisor
         public async Task<IActionResult> Index()
         {
-            var contableContext = _context.Emisors.Include(e => e.IdEmpresaNavigation).Include(e => e.IdUsuarioNavigation);
+            string idEmpresa = HttpContext.Session.GetString("_empresa");
+            var contableContext = _context.Emisors.Where(e=>e.IdEmpresa==int.Parse(idEmpresa)).Include(e => e.IdEmpresaNavigation).Include(e => e.IdUsuarioNavigation);
             return View(await contableContext.ToListAsync());
         }
 
@@ -106,18 +107,40 @@ namespace ContaFacil.Controllers.Contador
                 _context.SaveChanges();
                 Perfil perfil = new Perfil();
                 perfil = _context.Perfils.Where(p => p.Descripcion == "Vendedor").FirstOrDefault();
-                
+
                 UsuarioPerfil usuarioPerfil = new UsuarioPerfil();
                 usuarioPerfil.IdUsuario = usuario.IdUsuario;
                 usuarioPerfil.IdPerfil = perfil.IdPerfil;
                 usuarioPerfil.FechaCreacion = new DateTime();
                 usuarioPerfil.UsuarioCreacion = int.Parse(idUsuario);
+                usuarioPerfil.Estado = true;
                 _context.Add(usuarioPerfil);
                 await _context.SaveChangesAsync();
-                emisor.IdEmpresa= int.Parse(idEmpresa);
-                emisor.IdUsuario= int.Parse(idUsuario);
+                emisor.IdEmpresa = int.Parse(idEmpresa);
+                emisor.IdUsuario = int.Parse(idUsuario);
                 _context.Add(emisor);
-
+                _context.SaveChanges();
+                ContaFacil.Models.Sucursal sucursal = new ContaFacil.Models.Sucursal();
+                sucursal.NombreSucursal = "Sucursal Principal";
+                sucursal.IdEmisor = emisor.IdEmisor;
+                sucursal.Usuario = emisor.NombreUsuario;
+                sucursal.Clave = emisor.Clave;
+                sucursal.PuntoEmision=emisor.PuntoEmision;
+                sucursal.Secuencial = emisor.Secuencial;
+                sucursal.UsuarioCreacion=int.Parse(idUsuario);
+                sucursal.EstadoBoolean=true;
+                sucursal.FechaCreacion = new DateTime();
+                sucursal.DireccionSucursal = emisor.Direccion;
+                sucursal.Telefono=emisor.Telefono;
+                sucursal.IdUsuario=usuario.IdUsuario;
+                _context.Add(sucursal);
+                _context.SaveChanges();
+                UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
+                usuarioSucursal.IdUsuario = usuario.IdUsuario;
+                usuarioSucursal.IdSucursal=sucursal.IdSucursal;
+                usuarioSucursal.FechaCreacion = new DateTime();
+                usuarioSucursal.UsuarioCreacion = int.Parse(idUsuario);
+                _context.Add(usuarioSucursal);
                 _context.SaveChanges();
                 Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));

@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
 
 namespace ContaFacil.Controllers
 {
-    public class TipoIdentificacionController : Controller
+    public class TipoIdentificacionController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -55,15 +56,22 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdTipoIdemtificacion,CodigoSri,Descripcion,EstadoBoolean,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] TipoIdentificacion tipoIdentificacion)
+        public async Task<IActionResult> Create(TipoIdentificacion tipoIdentificacion)
         {
-            if (ModelState.IsValid)
+            try
             {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                tipoIdentificacion.UsuarioCreacion = int.Parse(idUsuario);
+                tipoIdentificacion.FechaCreacion = new DateTime();
+                tipoIdentificacion.EstadoBoolean = true;
                 _context.Add(tipoIdentificacion);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(tipoIdentificacion);
+            catch (Exception ex)
+            {
+                return View(tipoIdentificacion);
+            }
         }
 
         // GET: TipoIdentificacion/Edit/5

@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.Inventario
+﻿@model ContaFacil.Models.ViewModel.InventarioViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -10,41 +10,54 @@
 <hr />
 <div class="form-container">
     <div class="row">
-        <div class="col-md-4">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
-                    <label asp-for="IdProducto" class="control-label">ID Producto</label>
-                    <select asp-for="IdProducto" class ="form-control" asp-items="ViewBag.IdProducto"></select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="TipoMovimiento" class="control-label">Tipo de Movimiento</label>
-                    <select asp-for="TipoMovimiento" class="form-control">
-                        <option value="">Seleccione un tipo de movimiento</option>
-                        <option value="E">Ingreso</option>
-                        <option value="S">Egreso</option>
-                    </select>
-                    <span asp-validation-for="TipoMovimiento" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Cantidad" class="control-label"></label>
-                    <input asp-for="Cantidad" class="form-control" />
-                    <span asp-validation-for="Cantidad" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="NumeroDespacho" class="control-label">Número de Despacho</label>
-                    <input asp-for="NumeroDespacho" class="form-control" />
-                    <span asp-validation-for="NumeroDespacho" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Descripcion" class="control-label">Descripción</label>
-                    <input asp-for="Descripcion" class="form-control" />
-                    <span asp-validation-for="Descripcion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <center><button class="button" type="submit">Crear</button></center>
-                </div>
-            </form>
+        <div class="col-md-4">        
+
+<form asp-action="Create" id="inventarioForm">
+    <div class="form-group">
+        <label asp-for="tipoMovimiento" class="control-label">Tipo de Movimiento</label>
+        <select asp-for="tipoMovimiento" class="form-control" id="tipoMovimiento">
+            <option value="">Seleccione un tipo de movimiento</option>
+            <option value="E">Ingreso</option>
+            <option value="S">Egreso</option>
+            <option value="T">Transferencia entre bodegas</option>
+            <option value="A">Ajuste de inventario</option>
+        </select>
+    </div>
+
+    <div id="detallesMovimiento" style="display: none;">
+        <!-- Estos campos se mostrarán después de seleccionar el tipo de movimiento -->
+        <div class="form-group">
+            <label asp-for="idProducto" class="control-label">Producto</label>
+            <select asp-for="idProducto" class="form-control" asp-items="ViewBag.IdProducto"></select>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="cantidad" class="control-label"></label>
+            <input asp-for="cantidad" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="numeroDespacho" class="control-label">Número de Despacho</label>
+                        <input asp-for="numeroDespacho" id="NumeroDespacho" class="form-control" readonly />
+        </div>
+
+        <div class="form-group" id="sucursalDestinoDiv" style="display: none;">
+            <label asp-for="sucursalDestino" class="control-label">Sucursal Destino</label>
+            <select asp-for="sucursalDestino" class="form-control" asp-items="ViewBag.IdSucursal"></select>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="descripcion" class="control-label">Descripción</label>
+            <input asp-for="descripcion" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+    </div>
+</form>
+
+
         </div>
     </div>
 </div>
@@ -54,5 +67,32 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $('#tipoMovimiento').change(function () {
+                var tipoMovimiento = $(this).val();
+                if (tipoMovimiento) {
+                    $.ajax({
+                        url: '@Url.Action("ObtenerNumeroDespacho")',
+                        type: 'GET',
+                        data: { tipoMovimiento: tipoMovimiento },
+                        success: function (data) {
+                            $('#NumeroDespacho').val(data);
+                            $('#detallesMovimiento').show();
+                            if (tipoMovimiento === 'T') {
+                                $('#sucursalDestinoDiv').show();
+                            } else {
+                                $('#sucursalDestinoDiv').hide();
+                            }
+                        }
+                    });
+                } else {
+                    $('#detallesMovimiento').hide();
+                }
+            });
+        });
+    </script>
 }

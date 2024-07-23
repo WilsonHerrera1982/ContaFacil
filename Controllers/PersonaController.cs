@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
 using ContaFacil.Logica;
+using System.Diagnostics;
 
 namespace ContaFacil.Controllers
 {
@@ -52,11 +53,46 @@ namespace ContaFacil.Controllers
         }
 
         // GET: Persona/Create
+        // GET: Persona/Create
         public IActionResult Create()
         {
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa");
-            return View();
+            try
+            {
+                // Asegúrate de que _context no sea nulo y esté correctamente inicializado
+                if (_context == null)
+                {
+                    throw new InvalidOperationException("Database context is not initialized.");
+                }
+
+                ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "NombreEmpresa");
+
+                // Suponiendo que tienes una tabla TipoIdentificacion con IdTipoIdentificacion y Descripcion
+                var tiposIdentificacion = _context.TipoIdentificacions.ToList();
+
+                if (tiposIdentificacion == null || !tiposIdentificacion.Any())
+                {
+                    // Si no hay datos, crear una lista vacía para evitar errores
+                    ViewData["IdTipoIdentificacion"] = new SelectList(new List<TipoIdentificacion>());
+                    ViewBag.TipoIdentificacionError = "No se encontraron tipos de identificación.";
+                }
+                else
+                {
+                    ViewData["IdTipoIdentificacion"] = new SelectList(tiposIdentificacion, "IdTipoIdemtificacion", "Descripcion");
+                }
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"Error in Create action: {ex.Message}");
+                // You might want to log this to a file or database in a real application
+
+                // Return an error view
+                return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            }
         }
+
 
         // POST: Persona/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -68,17 +104,22 @@ namespace ContaFacil.Controllers
             try
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
-                string idEmpresa = HttpContext.Session.GetString("_empresa");
+                Usuario usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(u => u.IdPersonaNavigation).FirstOrDefault();
+                Emisor emisor = new Emisor();
+                emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
+                Empresa empresa = new Empresa();
+                empresa = _context.Empresas.Where(empresa => empresa.Identificacion == emisor.Ruc).FirstOrDefault();
                 persona.FechaCreacion = new DateTime();
                 persona.UsuarioCreacion = int.Parse(idUsuario);
-                persona.IdEmpresa = int.Parse(idEmpresa);
+                persona.IdEmpresa =empresa.IdEmpresa;
                 _context.Add(persona);
                 Cliente cliente = new Cliente();
                 cliente.IdPersonaNavigation = persona;
                 cliente.Estado = true;
                 cliente.FechaCreacion = persona.FechaCreacion;
                 cliente.UsuarioCreacion = 1;
-                cliente.IdEmpresa= int.Parse(idEmpresa);
+                cliente.IdEmpresa= empresa.IdEmpresa;
+                
                 _context.Add(cliente);
 
                 await _context.SaveChangesAsync();

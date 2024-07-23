@@ -100,7 +100,8 @@ namespace ContaFacil.Controllers
                     Inventario inventario = new Inventario();
                     inventario.Cantidad=detalle.Cantidad;
                     inventario.IdProducto= detalle.IdProducto;
-                    inventario.TipoMovimiento = 'S';
+                    inventario.TipoMovimiento = "S";
+                    inventario.Stock=(int)producto.Stock;
                     inventario.FechaMovimiento = new DateTime();
                     inventario.UsuarioCreacion=int.Parse(idUsuario);
                     inventario.Descripcion = "EGRESO POR VENTA FACTURA "+factura.IdFactura;

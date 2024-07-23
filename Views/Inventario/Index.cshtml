@@ -17,6 +17,7 @@
 </p>
 <form asp-action="Index" method="get">
     <div class="row">
+        <select class="form-control" id="idSucursal" name="idSucursal" asp-items="ViewBag.IdSucursal"></select>
         <div class="form-group">
             <label class="control-label">Desde:</label>
             <input class="form-control" type="date" id="startDate" name="startDate" value="@ViewData["StartDate"]" />
@@ -46,7 +47,7 @@
                 @Html.DisplayNameFor(model => model.Cantidad)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IdProductoNavigation.Stock)
+                @Html.DisplayNameFor(model => model.Stock)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.NumeroDespacho)

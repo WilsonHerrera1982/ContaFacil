@@ -66,6 +66,7 @@ namespace ContaFacil.Controllers
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
                 usuarioPerfil.FechaCreacion = new DateTime();
                 usuarioPerfil.UsuarioCreacion = int.Parse(idUsuario);
+                usuarioPerfil.Estado = true;
                 _context.Add(usuarioPerfil);
                 await _context.SaveChangesAsync();
                 Notificacion("Registro guardado con exito", NotificacionTipo.Success);

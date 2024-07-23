@@ -63,6 +63,8 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<Sucursal> Sucursals { get; set; }
 
+    public virtual DbSet<SucursalInventario> SucursalInventarios { get; set; }
+
     public virtual DbSet<TipoIdentificacion> TipoIdentificacions { get; set; }
 
     public virtual DbSet<TipoPago> TipoPagos { get; set; }
@@ -1093,6 +1095,41 @@ public partial class ContableContext : DbContext
                 .HasConstraintName("sucursal_id_usuario_fkey");
         });
 
+        modelBuilder.Entity<SucursalInventario>(entity =>
+        {
+            entity.HasKey(e => e.IdSucursalInventario).HasName("sucursal_inventario_pkey");
+
+            entity.ToTable("sucursal_inventario");
+
+            entity.Property(e => e.IdSucursalInventario)
+                .HasDefaultValueSql("nextval('seq_sucursal_inventario'::regclass)")
+                .HasColumnName("id_sucursal_inventario");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdInventario).HasColumnName("id_inventario");
+            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdInventarioNavigation).WithMany(p => p.SucursalInventarios)
+                .HasForeignKey(d => d.IdInventario)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("sucursal_inventario_id_inventario_fkey");
+
+            entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.SucursalInventarios)
+                .HasForeignKey(d => d.IdSucursal)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("sucursal_inventario_id_sucursal_fkey");
+        });
+
         modelBuilder.Entity<TipoIdentificacion>(entity =>
         {
             entity.HasKey(e => e.IdTipoIdemtificacion).HasName("tipo_identificacion_pkey");
@@ -1408,6 +1445,7 @@ public partial class ContableContext : DbContext
         modelBuilder.HasSequence("seq_producto_proveedor_id");
         modelBuilder.HasSequence("seq_proveedor");
         modelBuilder.HasSequence("seq_sucursal");
+        modelBuilder.HasSequence("seq_sucursal_inventario");
         modelBuilder.HasSequence("seq_tipo_cuenta");
         modelBuilder.HasSequence("seq_tipo_identificacion");
         modelBuilder.HasSequence("seq_tipo_pago");

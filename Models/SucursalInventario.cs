@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace ContaFacil.Models;
 
-public partial class TipoIdentificacion
+public partial class SucursalInventario
 {
-    public int IdTipoIdemtificacion { get; set; }
+    public int IdSucursalInventario { get; set; }
 
-    public string CodigoSri { get; set; }
+    public int IdInventario { get; set; }
 
-    public string Descripcion { get; set; } = null!;
+    public int IdSucursal { get; set; }
 
     public bool EstadoBoolean { get; set; }
 
@@ -21,5 +21,7 @@ public partial class TipoIdentificacion
 
     public int? UsuarioModificacion { get; set; }
 
-    public virtual ICollection<Persona> Personas { get; set; } = new List<Persona>();
+    public virtual Inventario IdInventarioNavigation { get; set; } = null!;
+
+    public virtual Sucursal IdSucursalNavigation { get; set; } = null!;
 }
