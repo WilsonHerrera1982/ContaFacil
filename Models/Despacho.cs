@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ContaFacil.Models;
 
@@ -25,9 +27,30 @@ public partial class Despacho
 
     public int? UsuarioModificacion { get; set; }
 
+    public string? EstadoDespacho { get; set; }
+
+    public int? IdSucursalDestino { get; set; }
+    [NotMapped]
+    public string? NombreSucursalDestino { get; set; }
+
+
     public virtual Empresa IdEmpresaNavigation { get; set; } = null!;
 
     public virtual Sucursal IdSucursalNavigation { get; set; } = null!;
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
+
+    public void CargarNombreSucursalDestino(DbContext context)
+    {
+        if (IdSucursalDestino == null)
+        {
+            NombreSucursalDestino = string.Empty;
+            return;
+        }
+
+        NombreSucursalDestino = context.Set<Sucursal>()
+            .Where(s => s.IdSucursal == IdSucursalDestino)
+            .Select(s => s.NombreSucursal)
+            .FirstOrDefault() ?? string.Empty;
+    }
 }

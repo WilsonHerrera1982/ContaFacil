@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ContaFacil.Models;
 
@@ -34,6 +36,14 @@ public partial class Producto
     public int? IdEmpresa { get; set; }
 
     public int? IdImpuesto { get; set; }
+    [NotMapped]
+    public decimal? Porcentaje
+    {
+        get
+        {
+            return IdImpuestoNavigation?.Porcentaje;
+        }
+    }
 
     public virtual ICollection<DetalleDespacho> DetalleDespachos { get; set; } = new List<DetalleDespacho>();
 

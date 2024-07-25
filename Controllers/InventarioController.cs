@@ -24,10 +24,18 @@ namespace ContaFacil.Controllers
         // GET: Inventario
         public async Task<IActionResult> Index(int? idSucursal, DateTime? startDate, DateTime? endDate)
         {
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            string idEmpresa = HttpContext.Session.GetString("_empresa");
+            Usuario usuario = new Usuario();
+            usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
+            UsuarioSucursal usuarioSucursal= new UsuarioSucursal();
+            usuarioSucursal = _context.UsuarioSucursals.Where(s => s.IdUsuario == usuario.IdUsuario).FirstOrDefault();
+
             var query = _context.Inventarios
-                .Include(i => i.IdProductoNavigation)
-                .Include(i => i.SucursalInventarios)
-                .AsQueryable();
+             .Include(i => i.IdProductoNavigation)
+             /*.Include(i => i.SucursalInventarios)
+             .Where(i => i.SucursalInventarios.Any(s => s.IdSucursal == usuarioSucursal.IdSucursal))*/
+             .AsQueryable();
 
             if (idSucursal.HasValue)
             {
@@ -44,13 +52,14 @@ namespace ContaFacil.Controllers
                 query = query.Where(i => i.FechaMovimiento <= endDate.Value);
             }
 
-            var inventarios = await query.ToListAsync();
+            var inventarios = await query.OrderByDescending(i => i.FechaMovimiento).ToListAsync();
 
             ViewData["StartDate"] = startDate?.ToString("yyyy-MM-dd");
             ViewData["EndDate"] = endDate?.ToString("yyyy-MM-dd");
 
             // Asegúrese de que esto esté configurado correctamente
-            ViewBag.IdSucursal = new SelectList(_context.Sucursals, "IdSucursal", "NombreSucursal");
+            ViewBag.IdSucursal = new SelectList(_context.Sucursals, "IdSucursal", "NombreSucursal", idSucursal);
+            ViewBag.SelectedSucursal = idSucursal;
 
             return View(inventarios);
         }
@@ -127,11 +136,43 @@ namespace ContaFacil.Controllers
             try
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
-               UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
+                string idEmpresa = HttpContext.Session.GetString("_empresa");
+                Despacho despacho = new Despacho();
+                UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
                 usuarioSucursal = _context.UsuarioSucursals.Where(s => s.IdUsuario == int.Parse(idUsuario)).FirstOrDefault();
                 SucursalInventario  sucursalInventario = new SucursalInventario();
                 Producto producto = new Producto();
                 producto=_context.Productos.Where(p => p.IdProducto==inventario.idProducto).FirstOrDefault();
+                Inventario ultimoMovimiento=new Inventario();
+                if (inventario.tipoMovimiento.Equals("T"))
+                {
+                    ultimoMovimiento = _context.Inventarios
+                   .Where(i => i.TipoMovimiento == "E")
+                   .OrderByDescending(i => i.FechaCreacion)
+                   .FirstOrDefault();
+                }
+                if (inventario.tipoMovimiento.Equals("S"))
+                {
+                    ultimoMovimiento = _context.Inventarios
+                   .Where(i => i.TipoMovimiento == "S")
+                   .OrderByDescending(i => i.FechaCreacion)
+                   .FirstOrDefault();
+                    if (ultimoMovimiento == null)
+                    {
+                        ultimoMovimiento = _context.Inventarios
+                  .Where(i => i.TipoMovimiento == "E")
+                  .OrderByDescending(i => i.FechaCreacion)
+                  .FirstOrDefault();
+
+                    }
+                }
+                else
+                {
+                    ultimoMovimiento = _context.Inventarios
+                  .Where(i => i.TipoMovimiento == inventario.tipoMovimiento)
+                  .OrderByDescending(i => i.FechaCreacion)
+                  .FirstOrDefault();
+                }
                 Inventario inv = new Inventario();
                 if (inventario.tipoMovimiento.Equals("E"))
                 {
@@ -141,7 +182,17 @@ namespace ContaFacil.Controllers
                     inv.EstadoBoolean = true;
                     inv.UsuarioCreacion = int.Parse(idUsuario);
                     inv.FechaCreacion = new DateTime();
-                    _context.Add(inventario);
+                    inv.Cantidad= inventario.cantidad;
+                    inv.Descripcion = "ENTRADA";
+                    if (ultimoMovimiento != null)
+                    {
+                        inv.Stock = ultimoMovimiento.Stock + inventario.cantidad;
+                    }
+                    else
+                    {
+                        inv.Stock = 0 + inventario.cantidad;
+                    }
+                    _context.Add(inv);
                     await _context.SaveChangesAsync();
                     producto.Stock=producto.Stock+inventario.cantidad;
                     sucursalInventario.EstadoBoolean = true;
@@ -150,7 +201,7 @@ namespace ContaFacil.Controllers
                     sucursalInventario.FechaCreacion= new DateTime();
                     sucursalInventario.UsuarioCreacion= int.Parse(idUsuario);
                     _context.Add(sucursalInventario);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();                   
                 }
                 else if(inventario.tipoMovimiento.Equals("S") && producto.Stock>=0 && producto.Stock>inventario.cantidad)
                 {
@@ -160,7 +211,10 @@ namespace ContaFacil.Controllers
                     inv.EstadoBoolean = true;
                     inv.UsuarioCreacion = int.Parse(idUsuario);
                     inv.FechaCreacion = new DateTime();
-                    _context.Add(inventario);
+                    inv.Stock = ultimoMovimiento.Stock - inventario.cantidad;
+                    inv.Cantidad = inventario.cantidad;
+                    inv.Descripcion = "SALIDA";
+                    _context.Add(inv);
                     await _context.SaveChangesAsync();
                     producto.Stock = producto.Stock - inventario.cantidad;
                     sucursalInventario.EstadoBoolean = true;
@@ -179,7 +233,18 @@ namespace ContaFacil.Controllers
                     inv.EstadoBoolean = true;
                     inv.UsuarioCreacion = int.Parse(idUsuario);
                     inv.FechaCreacion = new DateTime();
-                    _context.Add(inventario);
+                    inv.Cantidad=inventario.cantidad;
+                    inv.Descripcion = "TRANSFERENCIA";
+                    if (ultimoMovimiento != null)
+                    {
+                        inv.Stock = ultimoMovimiento.Stock - inventario.cantidad;
+                    }
+                    else
+                    {
+                        inv.Stock = 0 - inventario.cantidad;
+                    }
+                    
+                    _context.Add(inv);
                     await _context.SaveChangesAsync();
                     producto.Stock = producto.Stock - inventario.cantidad;
                     sucursalInventario.EstadoBoolean = true;
@@ -188,6 +253,18 @@ namespace ContaFacil.Controllers
                     sucursalInventario.FechaCreacion = new DateTime();
                     sucursalInventario.UsuarioCreacion = int.Parse(idUsuario);
                     _context.Add(sucursalInventario);
+                    await _context.SaveChangesAsync();
+                    despacho.EstadoBoolean = true;
+                    despacho.IdSucursal = usuarioSucursal.IdSucursal;
+                    despacho.IdSucursalDestino=inventario.sucursalDestino;
+                    despacho.IdUsuario=int.Parse(idUsuario);
+                    despacho.IdEmpresa=int.Parse(idEmpresa);
+                    despacho.EstadoDespacho = "PEDIENTE";
+                    despacho.EstadoBoolean=true;
+                    despacho.NumeroDespacho=inventario.numeroDespacho;
+                    despacho.UsuarioCreacion = int.Parse(idUsuario);
+                    despacho.FechaCreacion=new DateTime();  
+                    _context.Add(despacho);
                     await _context.SaveChangesAsync();
                 }
                 else

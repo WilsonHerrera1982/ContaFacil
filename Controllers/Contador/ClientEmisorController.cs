@@ -91,7 +91,18 @@ namespace ContaFacil.Controllers.Contador
         {
             string idEmpresa = HttpContext.Session.GetString("_empresa");
             ViewData["IdEmmisor"] = new SelectList(_context.Emisors.Where(e=>e.IdEmpresa==int.Parse(idEmpresa)), "IdEmisor", "RazonSocial");
-          
+            var tiposIdentificacion = _context.TipoIdentificacions.ToList();
+
+            if (tiposIdentificacion == null || !tiposIdentificacion.Any())
+            {
+                // Si no hay datos, crear una lista vacía para evitar errores
+                ViewData["IdTipoIdentificacion"] = new SelectList(new List<TipoIdentificacion>());
+                ViewBag.TipoIdentificacionError = "No se encontraron tipos de identificación.";
+            }
+            else
+            {
+                ViewData["IdTipoIdentificacion"] = new SelectList(tiposIdentificacion, "IdTipoIdemtificacion", "Descripcion");
+            }
             return View();
         }
 
@@ -119,6 +130,7 @@ namespace ContaFacil.Controllers.Contador
                 persona.IdEmpresa = empresa.IdEmpresa;
                 persona.FechaCreacion = new DateTime();
                 persona.UsuarioCreacion = int.Parse(idUsuario);
+                persona.IdTipoIdentificacion=cliente.IdTipoIdentificacion;
                 _context.Add(persona);
                 _context.SaveChanges();
                 Cliente clie = new Cliente();

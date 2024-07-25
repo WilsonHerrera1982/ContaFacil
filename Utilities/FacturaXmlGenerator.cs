@@ -29,8 +29,9 @@ namespace ContaFacil.Utilities
                     new XAttribute("id", "comprobante"),
                     new XAttribute("version", "1.0.0"),
                     GenerateInfoTributaria(factura,emisor),
-                    GenerateInfoFactura(factura, cliente),
-                    GenerateDetalles(factura)
+                    GenerateInfoFactura(factura, cliente,emisor),
+                    GenerateDetalles(factura),
+                    GenerateInfoAdicional(cliente)
                 )
             );
 
@@ -45,7 +46,7 @@ namespace ContaFacil.Utilities
                 new XElement("razonSocial", emisor.RazonSocial),
                 new XElement("nombreComercial", emisor.NombreComercial),
                 new XElement("ruc", emisor.Ruc),
-                new XElement("claveAcceso", GenerateClaveAcceso(factura,emisor.Ruc)),
+                new XElement("claveAcceso", GenerateClaveAcceso(factura,emisor)),
                 new XElement("codDoc", "01"),
                 new XElement("estab", emisor.Establecimiento),
                 new XElement("ptoEmi", emisor.PuntoEmision),
@@ -54,58 +55,89 @@ namespace ContaFacil.Utilities
             );
         }
 
-        private XElement GenerateInfoFactura(Factura factura, Persona cliente)
+        private XElement GenerateInfoFactura(Factura factura, Persona cliente,Emisor emisor)
         {
-            return new XElement("infoFactura",
+            var infoFactura = new XElement("infoFactura",
                 new XElement("fechaEmision", factura.Fecha.ToString("dd/MM/yyyy")),
-                new XElement("dirEstablecimiento", "Dirección Establecimiento"),
+                new XElement("dirEstablecimiento", emisor.Direccion),
                 new XElement("obligadoContabilidad", "NO"),
-                new XElement("tipoIdentificacionComprador", "05"),
+                new XElement("tipoIdentificacionComprador",cliente.IdTipoIdentificacionNavigation.CodigoSri),
                 new XElement("razonSocialComprador", cliente.Nombre),
                 new XElement("identificacionComprador", cliente.Identificacion),
-                new XElement("totalSinImpuestos", factura.MontoTotal.ToString("F2")),
+                new XElement("totalSinImpuestos", factura.Subtotal.ToString("F2")),
                 new XElement("totalDescuento", "0.00"),
-                new XElement("totalConImpuestos",
-                    new XElement("totalImpuesto",
-                        new XElement("codigo", "2"),
-                        new XElement("codigoPorcentaje", "2"),
-                        new XElement("baseImponible", factura.MontoTotal.ToString("F2")),
-                        new XElement("valor", (factura.MontoTotal * 0.12m).ToString("F2"))
-                    )
-                ),
+               new XElement("totalConImpuestos",
+    factura.DetalleFacturas.GroupBy(df => df.IdProductoNavigation.IdImpuestoNavigation)
+        .Select(group =>
+            new XElement("totalImpuesto",
+                new XElement("codigo", group.Key.CodigoSri),
+                new XElement("codigoPorcentaje", group.Key.CodigoPorcentajeSri),
+                new XElement("baseImponible", group.Sum(df => df.Cantidad * df.PrecioUnitario).ToString("F2")),
+                new XElement("valor", group.Sum(df => df.Cantidad * df.PrecioUnitario * (group.Key.Porcentaje / 100m)).ToString("F2"))
+            )
+        )
+),
                 new XElement("propina", "0.00"),
-                new XElement("importeTotal", (factura.MontoTotal * 1.12m).ToString("F2")),
+                new XElement("importeTotal", (factura.MontoTotal).ToString("F2")),
                 new XElement("moneda", "DOLAR")
             );
+            // Agregar información de pagos
+            var pagosElement = new XElement("pagos");
+            foreach (var pago in factura.Pagos)
+            {
+                pagosElement.Add(new XElement("pago",
+                    new XElement("formaPago", pago.IdTipoPagoNavigation.CodigoSri),
+                    new XElement("total", pago.Monto.ToString("F2"))
+                ));
+            }
+            infoFactura.Add(pagosElement);
+
+            return infoFactura;
         }
 
         private XElement GenerateDetalles(Factura factura)
         {
             return new XElement("detalles",
-                factura.DetalleFacturas.Select(detalle =>
-                    new XElement("detalle",
-                        new XElement("codigoPrincipal", detalle.IdDetalleFactura.ToString()),
-                        new XElement("descripcion", detalle.Descripcion),
-                        new XElement("cantidad", detalle.Cantidad.ToString()),
-                        new XElement("precioUnitario", detalle.PrecioUnitario.ToString("F2")),
-                        new XElement("descuento", "0.00"),
-                        new XElement("precioTotalSinImpuesto", (detalle.Cantidad * detalle.PrecioUnitario).ToString("F2")),
-                        new XElement("impuestos",
-                            new XElement("impuesto",
-                                new XElement("codigo", "2"),
-                                new XElement("codigoPorcentaje", "2"),
-                                new XElement("tarifa", "12"),
-                                new XElement("baseImponible", (detalle.Cantidad * detalle.PrecioUnitario).ToString("F2")),
-                                new XElement("valor", (detalle.Cantidad * detalle.PrecioUnitario * 0.12m).ToString("F2"))
-                            )
-                        )
-                    )
-                )
+     factura.DetalleFacturas.Select(detalle =>
+         new XElement("detalle",
+             new XElement("codigoPrincipal", detalle.IdProductoNavigation.Codigo),
+             new XElement("descripcion", detalle.Descripcion),
+             new XElement("cantidad", detalle.Cantidad.ToString()),
+             new XElement("precioUnitario", detalle.PrecioUnitario.ToString("F2")),
+             new XElement("descuento", "0.00"),
+             new XElement("precioTotalSinImpuesto", (detalle.Cantidad * detalle.PrecioUnitario).ToString("F2")),
+             new XElement("impuestos",
+                 new XElement("impuesto",
+                     new XElement("codigo", detalle.IdProductoNavigation.IdImpuestoNavigation.CodigoSri),
+                     new XElement("codigoPorcentaje", detalle.IdProductoNavigation.IdImpuestoNavigation.CodigoPorcentajeSri),
+                     new XElement("tarifa", detalle.IdProductoNavigation.IdImpuestoNavigation.Porcentaje.ToString("F2")),
+                     new XElement("baseImponible", (detalle.Cantidad * detalle.PrecioUnitario).ToString("F2")),
+                     new XElement("valor", (detalle.Cantidad * detalle.PrecioUnitario * (detalle.IdProductoNavigation.IdImpuestoNavigation.Porcentaje / 100m)).ToString("F2"))
+                 )
+             )
+         )
+     )
+ );
+        }
+
+        private XElement GenerateInfoAdicional(Persona cliente)
+        {
+            return new XElement("infoAdicional",
+                new XElement("campoAdicional",
+                    new XAttribute("nombre", "Direccion"),
+                    cliente.Direccion ?? "xxxxx"),
+                new XElement("campoAdicional",
+                    new XAttribute("nombre", "Telefono"),
+                    cliente.Telefono ?? "000000000"),
+                new XElement("campoAdicional",
+                    new XAttribute("nombre", "Email"),
+                    cliente.Email ?? "xxxxx@GMAIL.COM")
             );
         }
 
-        private string GenerateClaveAcceso(Factura factura, string ruc)
+        private string GenerateClaveAcceso(Factura factura, Emisor emisor)
         {
+           
             // Obtener la fecha actual
             var fechaEmision = DateTime.Now;
 
@@ -116,13 +148,13 @@ namespace ContaFacil.Utilities
             string tipoComprobante = "01";
 
             // 3. Número de RUC
-            string numeroRuc = ruc;
+            string numeroRuc = emisor.Ruc;
 
             // 4. Tipo de ambiente (1: pruebas, 2: producción)
-            string tipoAmbiente = "2"; // Asumimos producción, cámbialo si es necesario
+            string tipoAmbiente = emisor.TipoAmbiente; // Asumimos producción, cámbialo si es necesario
 
             // 5. Serie (establecimiento y punto de emisión)
-            string serie = "001001"; // Asumimos 001001, ajusta según tus necesidades
+            string serie = emisor.Establecimiento+emisor.PuntoEmision; // Asumimos 001001, ajusta según tus necesidades
 
             // 6. Número de comprobante (secuencial de 9 dígitos)
             string numeroComprobante = factura.IdFactura.ToString("D9");

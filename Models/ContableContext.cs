@@ -286,6 +286,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
+            entity.Property(e => e.EstadoDespacho)
+                .HasMaxLength(50)
+                .HasColumnName("estado_despacho");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
@@ -295,6 +298,7 @@ public partial class ContableContext : DbContext
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
             entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
+            entity.Property(e => e.IdSucursalDestino).HasColumnName("id_sucursal_destino");
             entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(100)
@@ -525,6 +529,15 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.DescripcionSri)
                 .HasMaxLength(200)
                 .HasColumnName("descripcion_sri");
+            entity.Property(e => e.Xml)
+                .HasMaxLength(1000000)
+                .HasColumnName("xml");
+            entity.Property(e => e.ClaveAcceso)
+    .HasMaxLength(200)
+    .HasColumnName("clave_acceso");
+            entity.Property(e => e.NumeroFactura)
+    .HasMaxLength(100)
+    .HasColumnName("numero_factura");
             entity.Property(e => e.Estado)
                 .HasMaxLength(50)
                 .HasColumnName("estado");
@@ -545,6 +558,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.MontoTotal)
                 .HasPrecision(15, 2)
                 .HasColumnName("monto_total");
+            entity.Property(e => e.Subtotal)
+               .HasPrecision(15, 2)
+               .HasColumnName("subtotal");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 
@@ -1139,7 +1155,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdTipoIdemtificacion)
                 .HasDefaultValueSql("nextval('seq_tipo_identificacion'::regclass)")
                 .HasColumnName("id_tipo_idemtificacion");
-            entity.Property(e => e.CodigoSri).HasColumnName("codigo_sri");
+            entity.Property(e => e.CodigoSri)
+                .HasMaxLength(10)
+                .HasColumnName("codigo_sri");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(50)
                 .HasColumnName("descripcion");
@@ -1167,6 +1185,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
                 .HasColumnName("nombre");
+            entity.Property(e => e.CodigoSri)
+                .HasMaxLength(10)
+                .HasColumnName("codigo_sri");
         });
 
         modelBuilder.Entity<TipoTransaccion>(entity =>

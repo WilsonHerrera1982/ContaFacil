@@ -92,6 +92,7 @@ namespace ContaFacil.Controllers.Sucursal
                 usu.Clave = sucursal.Clave;
                 usu.UsuarioCreacion = int.Parse(idUsuario);
                 usu.FechaCreacion=new DateTime();
+                usu.IdEmpresa = empresa.IdEmpresa;
                 usu.IdPersona=usuario.IdPersona;
                 _context.Add(usu);
                 await _context.SaveChangesAsync();

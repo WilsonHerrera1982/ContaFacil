@@ -1,11 +1,12 @@
-﻿using ContaFacil.Models;
+﻿using ContaFacil.Logica;
+using ContaFacil.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace ContaFacil.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : NotificacionClass
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ContableContext _context;
@@ -19,14 +20,22 @@ namespace ContaFacil.Controllers
 
         public IActionResult Index()
         {
-            string idUsuario = HttpContext.Session.GetString("_idUsuario");
-            string idEmpresa = HttpContext.Session.GetString("_empresa");
-            Usuario usuario = _context.Usuarios.Include(u=>u.IdEmpresaNavigation).FirstOrDefault((Usuario u) => u.IdUsuario == int.Parse(idUsuario));
-            ViewBag.Usuario = usuario.Nombre;
-            Emisor emisor = new Emisor();
-            emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdEmpresaNavigation.Identificacion).FirstOrDefault();
-            ViewBag.Empresa = usuario.IdEmpresaNavigation.Nombre;
-            return View();
+            try
+            {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                string idEmpresa = HttpContext.Session.GetString("_empresa");
+                Usuario usuario = _context.Usuarios.Include(u => u.IdEmpresaNavigation).FirstOrDefault((Usuario u) => u.IdUsuario == int.Parse(idUsuario));
+                ViewBag.Usuario = usuario.Nombre;
+                Emisor emisor = new Emisor();
+                emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdEmpresaNavigation.Identificacion).FirstOrDefault();
+                ViewBag.Empresa = usuario.IdEmpresaNavigation.Nombre;
+                return View();
+            }
+            catch (Exception e)
+            {
+                Notificacion("Error en el Login",NotificacionTipo.Error);
+                return View();
+            }
         }
 
         public IActionResult Privacy()

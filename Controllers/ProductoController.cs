@@ -69,7 +69,6 @@ namespace ContaFacil.Controllers
             ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "Nombre");
             ViewData["IdImpuesto"] = new SelectList(_context.Impuestos, "IdImpuesto", "Porcentaje");
             ViewData["IdProveedor"] = new SelectList(_context.Proveedors.Where(p => p.IdEmpresa == empresa.IdEmpresa), "IdProveedor", "Nombre");
-
             return View();
         }
 
@@ -112,7 +111,7 @@ namespace ContaFacil.Controllers
                 inventario.FechaCreacion= new DateTime();
                 inventario.UsuarioCreacion= int.Parse(idUsuario);
                 inventario.IdProducto=product.IdProducto;
-                inventario.NumeroDespacho = producto.NumeroDespacho;
+                inventario.NumeroDespacho = "E-000001";
                 inventario.Stock=(int)producto.Stock;
                 inventario.EstadoBoolean=true;
                 _context.Inventarios.Add(inventario);

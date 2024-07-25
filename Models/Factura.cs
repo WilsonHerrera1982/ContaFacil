@@ -29,7 +29,10 @@ public partial class Factura
     public int? IdEmisor { get; set; }
 
     public string? DescripcionSri { get; set; }
-
+    public decimal Subtotal { get; set; }
+    public string? Xml { get; set; }
+    public string? ClaveAcceso { get; set; }
+    public string? NumeroFactura {  get; set; }
     public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();
 
     public virtual Cliente IdClienteNavigation { get; set; } = null!;

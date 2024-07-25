@@ -34,14 +34,30 @@
 
     <button type="button" id="addDetalle" class="btn btn-secondary">Agregar Detalle</button>
 
+
+
+    <div class="form-group">
+        <label>Subtotal 0%</label>
+        <input type="text" id="subtotal0" name="Subtotal0" class="form-control" readonly />
+    </div>
+
+    <div class="form-group">
+        <label>Subtotal 15%</label>
+        <input type="text" id="subtotal15" name="Subtotal15" class="form-control" readonly />
+    </div>
+    <div class="form-group">
+        <label>Subtotal Sin Impuestos</label>
+        <input type="text" id="subtotalSinImpuestos" name="SubtotalSinImpuestos" class="form-control" readonly />
+    </div>
     <div class="form-group">
         <label>Monto Total</label>
         <input type="text" id="montoTotal" name="MontoTotal" class="form-control" readonly />
     </div>
-     <div class="form-group">
+
+    <div class="form-group">
         <label asp-for="idPago" class="control-label">Forma de Pago</label>
         <select asp-for="idPago" class="form-control" asp-items="ViewBag.IdTipoPago" id="IdPago">
-            <option value="">-- Seleccione un emisor --</option>
+            <option value="">-- Seleccione un metodo de pago --</option>
         </select>
     </div>
     <button type="submit" class="btn btn-primary">Crear Factura</button>
@@ -56,24 +72,23 @@
 
             $("#addDetalle").click(function () {
                 let newRow = `
-                                    <tr>
-                                        <td>
-                                                    <select name="detalles[${detalleCount}].IdProducto" class="form-control producto-select">
-                                                <option value="">-- Seleccione un producto --</option>
+                            <tr>
+                                <td>
+                                    <select name="detalles[${detalleCount}].IdProducto" class="form-control producto-select">
+                                        <option value="">-- Seleccione un producto --</option>
         @foreach (var producto in ViewBag.Productos)
         {
-                                                                        <option value="@producto.IdProducto" data-descripcion="@producto.Nombre">@producto.Nombre</option>
+                                                    <option value="@producto.IdProducto" data-descripcion="@producto.Nombre" data-porcentaje="@producto.Porcentaje">@producto.Nombre</option>
         }
-                                            </select>
-                                                     <input type="hidden" name="detalles[${detalleCount}].Descripcion" class="producto-descripcion">
-
-                                                </td>
-                                        <td><input type="number" name="detalles[${detalleCount}].Cantidad" class="form-control cantidad" value="1" min="1" /></td>
-                                        <td><input type="number" name="detalles[${detalleCount}].PrecioUnitario" class="form-control precio" readonly /></td>
-                                        <td><input type="number" class="form-control subtotal" readonly /></td>
-                                        <td><button type="button" class="btn btn-danger removeDetalle">Eliminar</button></td>
-                                    </tr>
-                                `;
+                                    </select>
+                                    <input type="hidden" name="detalles[${detalleCount}].Descripcion" class="producto-descripcion">
+                                </td>
+                                <td><input type="number" name="detalles[${detalleCount}].Cantidad" class="form-control cantidad" value="1" min="1" /></td>
+                                <td><input type="number" name="detalles[${detalleCount}].PrecioUnitario" class="form-control precio" readonly /></td>
+                                <td><input type="number" class="form-control subtotal" readonly /></td>
+                                <td><button type="button" class="btn btn-danger removeDetalle">Eliminar</button></td>
+                            </tr>
+                        `;
                 $("#detallesTable tbody").append(newRow);
                 detalleCount++;
             });
@@ -86,9 +101,11 @@
             $(document).on("change", ".producto-select", function () {
                 let productoId = $(this).val();
                 let descripcion = $(this).find("option:selected").data("descripcion");
+                let porcentaje = $(this).find("option:selected").data("porcentaje");
                 let row = $(this).closest("tr");
                 row.find(".producto-descripcion").val(descripcion);
-                $.get(`/Factura/GetProductoDetails?idProducto=${productoId}`, function (data) {
+                row.data("porcentaje", porcentaje);
+                $.get(`/FacturacionContador/GetProductoDetails?idProducto=${productoId}`, function (data) {
                     row.find(".precio").val(data.precioUnitario);
                     calcularSubtotal(row);
                 });
@@ -108,12 +125,36 @@
 
             function calcularTotal() {
                 let total = 0;
-                $(".subtotal").each(function () {
-                    total += parseFloat($(this).val()) || 0;
+                let subtotal0 = 0;
+                let subtotal15 = 0;
+                let subtotalSinImpuestos = 0;
+
+                $("#detallesTable tbody tr").each(function () {
+                    let subtotal = parseFloat($(this).find(".subtotal").val()) || 0;
+                    let porcentaje = parseFloat($(this).data("porcentaje")) || 0;
+
+                    console.log("Porcentaje:", porcentaje); // Verificación del valor de porcentaje
+
+                    if (porcentaje === 0) {
+                        subtotal0 += subtotal;
+                    } else if (porcentaje === 15) {
+                        subtotal15 += subtotal;
+                    }
+
+                    subtotalSinImpuestos += subtotal;
+                    total += subtotal;
                 });
-                $("#montoTotal").val(total.toFixed(2));
+
+                let impuesto15 = subtotal15 * 0.15;
+                let totalConImpuestos = subtotal0 + subtotal15 + impuesto15;
+
+                $("#subtotal0").val(subtotal0.toFixed(2));
+                $("#subtotal15").val((subtotal15 + impuesto15).toFixed(2));
+                $("#subtotalSinImpuestos").val(subtotalSinImpuestos.toFixed(2));
+                $("#montoTotal").val(totalConImpuestos.toFixed(2));
             }
         });
+
     </script>
     <script>
         $(document).ready(function () {

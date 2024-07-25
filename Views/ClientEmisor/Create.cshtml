@@ -22,6 +22,18 @@
                 <span asp-validation-for="nombre" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="IdTipoIdentificacion" class="control-label">Tipo de Identificación</label>
+                @if (ViewBag.TipoIdentificacionError != null)
+                {
+                    <p class="text-danger">@ViewBag.TipoIdentificacionError</p>
+                }
+                else
+                {
+                    @Html.DropDownListFor(m => m.IdTipoIdentificacion, (SelectList)ViewData["IdTipoIdentificacion"], "Seleccione un tipo", new { @class = "form-control" })
+                }
+                <span asp-validation-for="IdTipoIdentificacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="identificacion" class="control-label"></label>
                 <input asp-for="identificacion" class="form-control" />
                 <span asp-validation-for="identificacion" class="text-danger"></span>

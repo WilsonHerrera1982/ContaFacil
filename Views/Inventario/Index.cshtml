@@ -17,7 +17,9 @@
 </p>
 <form asp-action="Index" method="get">
     <div class="row">
-        <select class="form-control" id="idSucursal" name="idSucursal" asp-items="ViewBag.IdSucursal"></select>
+        <select class="form-control" id="idSucursal" name="idSucursal" asp-items="ViewBag.IdSucursal">
+            <option value="">-- Seleccione una sucursal --</option>
+        </select>
         <div class="form-group">
             <label class="control-label">Desde:</label>
             <input class="form-control" type="date" id="startDate" name="startDate" value="@ViewData["StartDate"]" />
@@ -77,7 +79,7 @@
                 @Html.DisplayFor(modelItem => item.Cantidad)
             </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.IdProductoNavigation.Stock)
+                    @Html.DisplayFor(modelItem => item.Stock)
                 </td>
             <td>
                 @Html.DisplayFor(modelItem => item.NumeroDespacho)
@@ -111,7 +113,17 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
 }

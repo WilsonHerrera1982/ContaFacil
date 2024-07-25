@@ -126,3 +126,21 @@ body {
     .active-menu:hover {
         color: #f8f9fa !important;
     }
+header {
+    background: conic-gradient(from 0deg at 50% 50%, #1A3263, #64B5F6, #1A3263);
+    width: 100%;
+    min-height: 100px;
+}
+
+    header .navbar-brand,
+    header .nav-link,
+    header .navbar-text {
+        color: white !important; /* Asegura que el texto sea blanco */
+    }
+
+    header .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+    header .navbarDropdown {
+        color: white !important;
+    }
