@@ -63,8 +63,10 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<Sucursal> Sucursals { get; set; }
 
+    public virtual DbSet<SucursalFactura> SucursalFacturas { get; set; }
+
     public virtual DbSet<SucursalInventario> SucursalInventarios { get; set; }
-   
+
     public virtual DbSet<TipoIdentificacion> TipoIdentificacions { get; set; }
 
     public virtual DbSet<TipoPago> TipoPagos { get; set; }
@@ -373,6 +375,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(255)
                 .HasColumnName("descripcion");
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasColumnName("descuento");
             entity.Property(e => e.Estado)
                 .HasDefaultValue(true)
                 .HasColumnName("estado");
@@ -389,9 +394,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.PrecioUnitario)
                 .HasPrecision(15, 2)
                 .HasColumnName("precio_unitario");
-            entity.Property(e => e.Descuento)
-               .HasPrecision(10, 2)
-               .HasColumnName("descuento");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 
@@ -529,18 +531,12 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdFactura)
                 .HasDefaultValueSql("nextval('seq_factura'::regclass)")
                 .HasColumnName("id_factura");
+            entity.Property(e => e.ClaveAcceso)
+                .HasMaxLength(200)
+                .HasColumnName("clave_acceso");
             entity.Property(e => e.DescripcionSri)
                 .HasMaxLength(200)
                 .HasColumnName("descripcion_sri");
-            entity.Property(e => e.Xml)
-                .HasMaxLength(1000000)
-                .HasColumnName("xml");
-            entity.Property(e => e.ClaveAcceso)
-    .HasMaxLength(200)
-    .HasColumnName("clave_acceso");
-            entity.Property(e => e.NumeroFactura)
-    .HasMaxLength(100)
-    .HasColumnName("numero_factura");
             entity.Property(e => e.Estado)
                 .HasMaxLength(50)
                 .HasColumnName("estado");
@@ -561,11 +557,17 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.MontoTotal)
                 .HasPrecision(15, 2)
                 .HasColumnName("monto_total");
+            entity.Property(e => e.NumeroFactura)
+                .HasMaxLength(100)
+                .HasColumnName("numero_factura");
             entity.Property(e => e.Subtotal)
-               .HasPrecision(15, 2)
-               .HasColumnName("subtotal");
+                .HasPrecision(15, 2)
+                .HasColumnName("subtotal");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Xml)
+                .HasMaxLength(1000000)
+                .HasColumnName("xml");
 
             entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Facturas)
                 .HasForeignKey(d => d.IdCliente)
@@ -1114,6 +1116,41 @@ public partial class ContableContext : DbContext
                 .HasConstraintName("sucursal_id_usuario_fkey");
         });
 
+        modelBuilder.Entity<SucursalFactura>(entity =>
+        {
+            entity.HasKey(e => e.IdSucursalFactura).HasName("sucursal_factura_pkey");
+
+            entity.ToTable("sucursal_factura");
+
+            entity.Property(e => e.IdSucursalFactura)
+                .HasDefaultValueSql("nextval('seq_sucursal_factura'::regclass)")
+                .HasColumnName("id_sucursal_factura");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
+            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdFacturaNavigation).WithMany(p => p.SucursalFacturas)
+                .HasForeignKey(d => d.IdFactura)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("sucursal_factura_id_factura_fkey");
+
+            entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.SucursalFacturas)
+                .HasForeignKey(d => d.IdSucursal)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("sucursal_factura_id_sucursal_fkey");
+        });
+
         modelBuilder.Entity<SucursalInventario>(entity =>
         {
             entity.HasKey(e => e.IdSucursalInventario).HasName("sucursal_inventario_pkey");
@@ -1139,40 +1176,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdInventarioNavigation).WithMany(p => p.SucursalInventarios)
-                .HasForeignKey(d => d.IdInventario)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("sucursal_inventario_id_inventario_fkey");
-
-            entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.SucursalInventarios)
-                .HasForeignKey(d => d.IdSucursal)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("sucursal_inventario_id_sucursal_fkey");
-        });
-        modelBuilder.Entity<SucursalFactura>(entity =>
-        {
-            entity.HasKey(e => e.IdSucursalFactura).HasName("sucursal_factura_pkey");
-
-            entity.ToTable("sucursal_factura");
-
-            entity.Property(e => e.IdSucursalFactura)
-                .HasDefaultValueSql("nextval('seq_sucursal_factura'::regclass)")
-                .HasColumnName("id_sucursal_factura");
-            entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
-                .HasColumnName("estado_boolean");
-            entity.Property(e => e.FechaCreacion)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("fecha_creacion");
-            entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
-            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
-
-            entity.HasOne(d => d.IdNavigation).WithMany(p => p.SucursalInventarios)
                 .HasForeignKey(d => d.IdInventario)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("sucursal_inventario_id_inventario_fkey");
@@ -1219,12 +1222,12 @@ public partial class ContableContext : DbContext
             entity.ToTable("tipo_pago");
 
             entity.Property(e => e.IdTipoPago).HasColumnName("id_tipo_pago");
-            entity.Property(e => e.Nombre)
-                .HasMaxLength(100)
-                .HasColumnName("nombre");
             entity.Property(e => e.CodigoSri)
                 .HasMaxLength(10)
                 .HasColumnName("codigo_sri");
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(100)
+                .HasColumnName("nombre");
         });
 
         modelBuilder.Entity<TipoTransaccion>(entity =>
@@ -1503,6 +1506,7 @@ public partial class ContableContext : DbContext
         modelBuilder.HasSequence("seq_producto_proveedor_id");
         modelBuilder.HasSequence("seq_proveedor");
         modelBuilder.HasSequence("seq_sucursal");
+        modelBuilder.HasSequence("seq_sucursal_factura");
         modelBuilder.HasSequence("seq_sucursal_inventario");
         modelBuilder.HasSequence("seq_tipo_cuenta");
         modelBuilder.HasSequence("seq_tipo_identificacion");

@@ -64,7 +64,7 @@ namespace ContaFacil.Utilities
                 new XElement("tipoIdentificacionComprador",cliente.IdTipoIdentificacionNavigation.CodigoSri),
                 new XElement("razonSocialComprador", cliente.Nombre),
                 new XElement("identificacionComprador", cliente.Identificacion),
-                new XElement("totalSinImpuestos", factura.Subtotal.ToString("F2")),
+                new XElement("totalSinImpuestos", factura.Subtotal?.ToString("F2") ?? "0.00"),
                 new XElement("totalDescuento", "0.00"),
                new XElement("totalConImpuestos",
     factura.DetalleFacturas.GroupBy(df => df.IdProductoNavigation.IdImpuestoNavigation)

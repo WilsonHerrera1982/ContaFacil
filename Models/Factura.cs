@@ -29,17 +29,24 @@ public partial class Factura
     public int? IdEmisor { get; set; }
 
     public string? DescripcionSri { get; set; }
-    public decimal Subtotal { get; set; }
+
+    public decimal? Subtotal { get; set; }
+
     public string? Xml { get; set; }
+
     public string? ClaveAcceso { get; set; }
-    public string? NumeroFactura {  get; set; }
+
+    public string? NumeroFactura { get; set; }
+    [NotMapped]
+    public virtual int? idPago { get; set; }
+
     public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();
-    public virtual ICollection<SucursalFactura> SucursalFacturas { get; set; } = new List<SucursalFactura>();
+
     public virtual Cliente IdClienteNavigation { get; set; } = null!;
 
     public virtual Emisor? IdEmisorNavigation { get; set; }
 
     public virtual ICollection<Pago> Pagos { get; set; } = new List<Pago>();
-    [NotMapped]
-   public virtual int? idPago {  get; set; }
+
+    public virtual ICollection<SucursalFactura> SucursalFacturas { get; set; } = new List<SucursalFactura>();
 }
