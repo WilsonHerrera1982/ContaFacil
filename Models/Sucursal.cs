@@ -42,6 +42,8 @@ public partial class Sucursal
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
 
     public virtual ICollection<SucursalInventario> SucursalInventarios { get; set; } = new List<SucursalInventario>();
+    public virtual ICollection<SucursalFactura> SucursalFacturas { get; set; } = new List<SucursalFactura>();
+
 
     public virtual ICollection<UsuarioSucursal> UsuarioSucursals { get; set; } = new List<UsuarioSucursal>();
 }

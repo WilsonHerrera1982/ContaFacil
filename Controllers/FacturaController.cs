@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Xml.Serialization;
 using System.Xml.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Components.Forms;
+using iTextSharp.text.pdf.codec.wmf;
 
 namespace ContaFacil.Controllers
 {
@@ -118,21 +120,10 @@ namespace ContaFacil.Controllers
                 factura.UsuarioCreacion = int.Parse(idUsuario);
                 factura.Estado = "Pendiente";
                 factura.EstadoBoolean = true;
-                factura.IdEmisor = emisor.IdEmisor;
-               _context.Facturas.Add(factura);
+                factura.IdEmisor = emisor.IdEmisor;                
+                _context.Facturas.Add(factura);
                 _context.SaveChanges();
-                foreach (var pago in pagos)
-                {
-                    Pago pago1 = new Pago();
-                    pago1.IdFactura = factura.IdFactura;
-                    pago1.IdTipoPago = pago.IdTipoPago;
-                    pago1.Monto=pago.Monto;
-                    pago1.Fecha = new DateOnly();
-                    pago1.UsuarioCreacion=int.Parse(idUsuario);
-                    pago1.FechaCreacion=DateTime.Now;
-                    _context.Add(pago1);
-                    _context.SaveChanges();
-                }
+                
                     foreach (var detalle in detalles)
                 {
                     Inventario ultimoMovimiento = _context.Inventarios
@@ -343,5 +334,43 @@ namespace ContaFacil.Controllers
 
             return nuevoNumeroFactura;
         }
+        [HttpPost]
+        public IActionResult GenerarXml(int id)
+        {
+            var factura = _context.Facturas
+                .Include(f => f.IdClienteNavigation)
+                .ThenInclude(c => c.IdPersonaNavigation)
+                .FirstOrDefault(f => f.IdFactura == id);
+
+            if (factura == null)
+            {
+                return NotFound();
+            }
+
+            // Obtener el contenido del XML de la factura
+            string xmlContent = factura.Xml;
+
+            // Convertir el contenido del XML a un array de bytes
+            byte[] textBytes = System.Text.Encoding.UTF8.GetBytes(xmlContent);
+
+            // Retorna el archivo como descarga
+            return File(textBytes, "text/plain", "Factura.xml");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult>  ReenviarSri(int id)
+        {
+            var generator = new FacturaXmlGenerator(_configuration);
+            Factura factura=_context.Facturas.Where(f => f.IdFactura==id).Include(f=>f.IdEmisorNavigation).FirstOrDefault();
+            var (estado, descripcion) = await generator.EnviarXmlFirmadoYProcesarRespuesta(factura.IdEmisorNavigation.TipoAmbiente, factura.Xml, factura.IdFactura);
+            factura.DescripcionSri = descripcion;
+            factura.Estado = estado;            
+            _context.Update(factura);
+            _context.SaveChanges();
+            Notificacion("Registro guardado con exito", NotificacionTipo.Success);
+            ViewBag.Clientes = _context.Clientes.Include(p => p.IdPersonaNavigation).ToList();
+            ViewBag.Productos = _context.Productos.ToList();
+            return RedirectToAction("Index", "Factura");
+        } 
     }
 }

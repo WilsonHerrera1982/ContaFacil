@@ -30,8 +30,7 @@ namespace ContaFacil.Utilities
                 AgregarInformacionComprador(pdfDoc, xmlDoc);
                 AgregarDetallesFactura(pdfDoc, xmlDoc);
                 AgregarInformacionAdicional(pdfDoc, xmlDoc);
-                AgregarTotales(pdfDoc, xmlDoc);
-                AgregarFormasDePago(pdfDoc, xmlDoc);
+                  AgregarFormasDePago(pdfDoc, xmlDoc);
 
                 pdfDoc.Close();
                 return ms.ToArray();
@@ -150,35 +149,20 @@ namespace ContaFacil.Utilities
             pdfDoc.Add(tabla);
         }
 
-        private void AgregarTotales(Document pdfDoc, XmlDocument xmlDoc)
-        {
-            PdfPTable tabla = new PdfPTable(2);
-            tabla.WidthPercentage = 50;
-            tabla.HorizontalAlignment = Element.ALIGN_RIGHT;
-
-            AgregarCelda(tabla, "SUBTOTAL 15%:", ObtenerValorXML(xmlDoc, "//totalConImpuestos/totalImpuesto[codigo='2']/baseImponible"));
-            AgregarCelda(tabla, "SUBTOTAL 0%:", ObtenerValorXML(xmlDoc, "//totalConImpuestos/totalImpuesto[codigo='0']/baseImponible"));
-            AgregarCelda(tabla, "SUBTOTAL NO OBJETO DE IVA:", ObtenerValorXML(xmlDoc, "//totalSinImpuestos"));
-            AgregarCelda(tabla, "SUBTOTAL EXENTO DE IVA:", "0.00");
-            AgregarCelda(tabla, "SUBTOTAL SIN IMPUESTOS:", ObtenerValorXML(xmlDoc, "//totalSinImpuestos"));
-            AgregarCelda(tabla, "TOTAL DESCUENTO:", ObtenerValorXML(xmlDoc, "//totalDescuento"));
-            AgregarCelda(tabla, "ICE:", "0.00");
-            AgregarCelda(tabla, "IVA 15%:", ObtenerValorXML(xmlDoc, "//totalConImpuestos/totalImpuesto[codigo='2']/valor"));
-            AgregarCelda(tabla, "IRBPNR:", "0.00");
-            AgregarCelda(tabla, "PROPINA:", ObtenerValorXML(xmlDoc, "//propina"));
-            AgregarCelda(tabla, "VALOR TOTAL:", ObtenerValorXML(xmlDoc, "//importeTotal"));
-
-            pdfDoc.Add(tabla);
-        }
+       
 
         private void AgregarFormasDePago(Document pdfDoc, XmlDocument xmlDoc)
         {
+            // Añadir título
             Paragraph titulo = new Paragraph("Formas de Pago", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10));
             pdfDoc.Add(titulo);
 
+            // Crear la tabla con 2 columnas
             PdfPTable tabla = new PdfPTable(2);
-            tabla.WidthPercentage = 100;
+            tabla.WidthPercentage = 50; // Ajusta el ancho de la tabla como desees
+            tabla.HorizontalAlignment = Element.ALIGN_LEFT; // Alinea la tabla al borde izquierdo
 
+            // Añadir filas a la tabla
             XmlNodeList formasPago = xmlDoc.SelectNodes("//pago");
             foreach (XmlNode pago in formasPago)
             {
@@ -187,6 +171,7 @@ namespace ContaFacil.Utilities
                 AgregarCelda(tabla, ObtenerDescripcionFormaPago(formaPago), total);
             }
 
+            // Añadir la tabla al documento
             pdfDoc.Add(tabla);
         }
 
@@ -223,21 +208,97 @@ namespace ContaFacil.Utilities
 
         private void AgregarInformacionAdicional(Document pdfDoc, XmlDocument xmlDoc)
         {
-            Paragraph titulo = new Paragraph("Información Adicional", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10));
-            pdfDoc.Add(titulo);
+            // Crear una tabla para contener las dos tablas
+            PdfPTable tablaContenedora = new PdfPTable(2);
+            tablaContenedora.WidthPercentage = 100;
+            tablaContenedora.SetWidths(new float[] { 3f, 2f }); // Aumentar el ancho de la columna de Información Adicional
 
-            PdfPTable tabla = new PdfPTable(2);
-            tabla.WidthPercentage = 50;
+            // Crear la tabla para Información Adicional
+            PdfPTable tablaInformacionAdicional = new PdfPTable(2);
+            tablaInformacionAdicional.WidthPercentage = 100;
+            tablaInformacionAdicional.SetWidths(new float[] { 1f, 2f });
 
-            XmlNodeList infoAdicional = xmlDoc.SelectNodes("//infoAdicional/campoAdicional");
-            foreach (XmlNode campo in infoAdicional)
+            // Añadir la fila de título en la tabla de Información Adicional
+            PdfPCell celdaTitulo = new PdfPCell(new Phrase("Información Adicional", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10)))
             {
+                Colspan = 2, // Ocupa las dos primeras columnas
+                HorizontalAlignment = Element.ALIGN_LEFT, // Alinear al borde izquierdo
+                BorderWidth = 1f, // Borde externo
+                BorderColor = BaseColor.BLACK, // Color del borde
+                Padding = 5f, // Padding
+                MinimumHeight = 20f // Altura mínima
+            };
+            tablaInformacionAdicional.AddCell(celdaTitulo);
+
+            // Añadir celdas con información adicional
+            foreach (XmlNode campo in xmlDoc.SelectNodes("//infoAdicional/campoAdicional"))
+    {
                 string nombre = campo.Attributes["nombre"]?.Value ?? "";
                 string valor = campo.InnerText;
-                AgregarCelda(tabla, nombre, valor);
+
+                // Celda para nombre sin borde interno
+                PdfPCell celdaNombre = new PdfPCell(new Phrase(nombre, FontFactory.GetFont(FontFactory.HELVETICA, 8)))
+                {
+                    BorderWidth = 0, // Sin borde
+                    Padding = 0, // Sin padding
+                    HorizontalAlignment = Element.ALIGN_LEFT,
+                    VerticalAlignment = Element.ALIGN_MIDDLE,
+                    MinimumHeight = 15f
+                };
+                tablaInformacionAdicional.AddCell(celdaNombre);
+
+                // Celda para valor sin borde interno
+                PdfPCell celdaValor = new PdfPCell(new Phrase(valor, FontFactory.GetFont(FontFactory.HELVETICA, 8)))
+                {
+                    BorderWidth = 0, // Sin borde
+                    Padding = 0, // Sin padding
+                    HorizontalAlignment = Element.ALIGN_LEFT,
+                    VerticalAlignment = Element.ALIGN_MIDDLE,
+                    MinimumHeight = 15f
+                };
+                tablaInformacionAdicional.AddCell(celdaValor);
             }
 
-            pdfDoc.Add(tabla);
+            // Añadir la tabla de Información Adicional a la celda de la tabla contenedora
+            PdfPCell celdaInformacionAdicional = new PdfPCell(tablaInformacionAdicional)
+            {
+                BorderWidth = 1f, // Borde externo
+                BorderColor = BaseColor.BLACK, // Color del borde
+                Padding = 0, // Sin padding
+                MinimumHeight = 20f // Altura mínima
+            };
+            tablaContenedora.AddCell(celdaInformacionAdicional);
+
+            // Crear la tabla para los valores con ancho ajustado
+            PdfPTable tablaValores = new PdfPTable(2);
+            tablaValores.WidthPercentage = 100;
+            tablaValores.HorizontalAlignment = Element.ALIGN_RIGHT;
+            tablaValores.SetWidths(new float[] { 5f, 2.1f }); // Ajustar el ancho de las columnas (aumentar la primera columna)
+
+            // Añadir celdas con los totales
+            AgregarCelda(tablaValores, "SUBTOTAL 15%:", ObtenerValorXML(xmlDoc, "//totalConImpuestos/totalImpuesto[codigo='2']/baseImponible"));
+            AgregarCelda(tablaValores, "SUBTOTAL 0%:", ObtenerValorXML(xmlDoc, "//totalConImpuestos/totalImpuesto[codigo='0']/baseImponible"));
+            AgregarCelda(tablaValores, "SUBTOTAL NO OBJETO DE IVA:", ObtenerValorXML(xmlDoc, "//totalSinImpuestos"));
+            AgregarCelda(tablaValores, "SUBTOTAL EXENTO DE IVA:", "0.00");
+            AgregarCelda(tablaValores, "SUBTOTAL SIN IMPUESTOS:", ObtenerValorXML(xmlDoc, "//totalSinImpuestos"));
+            AgregarCelda(tablaValores, "TOTAL DESCUENTO:", ObtenerValorXML(xmlDoc, "//totalDescuento"));
+            AgregarCelda(tablaValores, "ICE:", "0.00");
+            AgregarCelda(tablaValores, "IVA 15%:", ObtenerValorXML(xmlDoc, "//totalConImpuestos/totalImpuesto[codigo='2']/valor"));
+            AgregarCelda(tablaValores, "IRBPNR:", "0.00");
+            AgregarCelda(tablaValores, "PROPINA:", ObtenerValorXML(xmlDoc, "//propina"));
+            AgregarCelda(tablaValores, "VALOR TOTAL:", ObtenerValorXML(xmlDoc, "//importeTotal"));
+
+            // Añadir la tabla de valores a la celda de la tabla contenedora
+            PdfPCell celdaValores = new PdfPCell(tablaValores)
+            {
+                BorderWidth = 0, // Sin borde en la celda contenedora
+                Padding = 0, // Sin padding
+                MinimumHeight = 20f // Altura mínima
+            };
+            tablaContenedora.AddCell(celdaValores);
+
+            // Añadir la tabla contenedora al documento
+            pdfDoc.Add(tablaContenedora);
         }
 
         private ITImage GenerarCodigoBarras(string claveAcceso)

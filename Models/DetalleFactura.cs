@@ -26,6 +26,7 @@ public partial class DetalleFactura
     public int? UsuarioModificacion { get; set; }
 
     public int? IdProducto { get; set; }
+    public decimal? Descuento { get; set; }
 
     public virtual Factura IdFacturaNavigation { get; set; } = null!;
 

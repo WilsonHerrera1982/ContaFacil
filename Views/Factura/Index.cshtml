@@ -4,12 +4,12 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Inicio</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Crear Nueva</a>
 </p>
-<table class="table">
+<table id="tblFactura" class="table">
     <thead>
         <tr>
             <th>
@@ -60,15 +60,36 @@
                 @Html.DisplayFor(modelItem => item.IdClienteNavigation.IdPersonaNavigation.Nombre)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.IdFactura">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.IdFactura">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdFactura">Delete</a>
+                <a asp-action="Details" asp-route-id="@item.IdFactura">Detalles</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdFactura">Nota Credito</a>
                     <form asp-action="GenerarRIDE" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@item.IdFactura" />
                         <button type="submit" class=" btn btn-primary"><i class='fas fa-file-pdf'></i> RIDE</button>
                     </form>
+                    <form asp-action="GenerarXml" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.IdFactura" />
+                        <button type="submit" class=" btn btn-primary"><i class="fas fa-arrow-alt-circle-down"></i> XML</button>
+                    </form>
+                    @if(!item.Estado.Equals("RECIBIDA")){
+                    <form asp-action="ReenviarSri" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.IdFactura" />
+                            <button type="submit" class=" btn btn-primary"><i class="fas fa-angle-double-right"></i>Reenviar SRI</button>
+                    </form>
+                    }
             </td>
         </tr>
 }
     </tbody>
 </table>
+@section Scripts {
+    <script src="~/js/jquery-3.6.0.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/js/bootstrap.js"></script>
+    <script src="~/js/factura.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+
+}

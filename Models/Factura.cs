@@ -34,7 +34,7 @@ public partial class Factura
     public string? ClaveAcceso { get; set; }
     public string? NumeroFactura {  get; set; }
     public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();
-
+    public virtual ICollection<SucursalFactura> SucursalFacturas { get; set; } = new List<SucursalFactura>();
     public virtual Cliente IdClienteNavigation { get; set; } = null!;
 
     public virtual Emisor? IdEmisorNavigation { get; set; }

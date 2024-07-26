@@ -64,7 +64,7 @@ public partial class ContableContext : DbContext
     public virtual DbSet<Sucursal> Sucursals { get; set; }
 
     public virtual DbSet<SucursalInventario> SucursalInventarios { get; set; }
-
+   
     public virtual DbSet<TipoIdentificacion> TipoIdentificacions { get; set; }
 
     public virtual DbSet<TipoPago> TipoPagos { get; set; }
@@ -389,6 +389,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.PrecioUnitario)
                 .HasPrecision(15, 2)
                 .HasColumnName("precio_unitario");
+            entity.Property(e => e.Descuento)
+               .HasPrecision(10, 2)
+               .HasColumnName("descuento");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 
@@ -1136,6 +1139,40 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdInventarioNavigation).WithMany(p => p.SucursalInventarios)
+                .HasForeignKey(d => d.IdInventario)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("sucursal_inventario_id_inventario_fkey");
+
+            entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.SucursalInventarios)
+                .HasForeignKey(d => d.IdSucursal)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("sucursal_inventario_id_sucursal_fkey");
+        });
+        modelBuilder.Entity<SucursalFactura>(entity =>
+        {
+            entity.HasKey(e => e.IdSucursalFactura).HasName("sucursal_factura_pkey");
+
+            entity.ToTable("sucursal_factura");
+
+            entity.Property(e => e.IdSucursalFactura)
+                .HasDefaultValueSql("nextval('seq_sucursal_factura'::regclass)")
+                .HasColumnName("id_sucursal_factura");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
+            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdNavigation).WithMany(p => p.SucursalInventarios)
                 .HasForeignKey(d => d.IdInventario)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("sucursal_inventario_id_inventario_fkey");
