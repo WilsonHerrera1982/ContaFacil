@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
+using ContaFacil.Logica;
 
 namespace ContaFacil.Controllers
 {
-    public class DespachoController : Controller
+    public class DespachoController : NotificacionClass
     {
         private readonly ContableContext _context;
 
@@ -41,7 +42,7 @@ namespace ContaFacil.Controllers
                 .FirstOrDefaultAsync();
 
             var despachos = await _context.Despachos
-                .Where(d => d.IdSucursal == usuarioSucursal.IdSucursal)
+                .Where(d => d.IdSucursal == usuarioSucursal.IdSucursal || d.IdSucursalDestino==usuarioSucursal.IdSucursal)
                 .Include(d => d.IdEmpresaNavigation)
                 .Include(d => d.IdSucursalNavigation)
                 .Include(d => d.IdUsuarioNavigation)
@@ -52,6 +53,7 @@ namespace ContaFacil.Controllers
             {
                 despacho.CargarNombreSucursalDestino(_context);
             }
+            ViewBag.SucursalId = usuarioSucursal.IdSucursal;
 
             return View(despachos);
         }
@@ -201,6 +203,62 @@ namespace ContaFacil.Controllers
         private bool DespachoExists(int id)
         {
             return _context.Despachos.Any(e => e.IdDespacho == id);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AceptarDespacho(int id)
+        {
+            Despacho despacho=_context.Despachos.Find(id);
+            if (despacho != null)
+            {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                despacho.FechaModificacion = new DateTime();
+                despacho.UsuarioModificacion=int.Parse(idUsuario);
+                despacho.EstadoDespacho = "ACEPTADO";
+                _context.Add(despacho);
+                _context.SaveChanges();
+                Inventario inventario = new Inventario();
+                inventario = _context.Inventarios
+                       .Where(i=>i.NumeroDespacho == despacho.NumeroDespacho)
+                       .OrderByDescending(i => i.FechaCreacion)
+                       .FirstOrDefault();
+                Inventario ultimoMovimiento = new Inventario();
+                ultimoMovimiento = _context.Inventarios
+                       .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.IdProducto)
+                       .OrderByDescending(i => i.FechaCreacion)
+                       .FirstOrDefault();
+
+                Notificacion("Despacho aceptado con exito",NotificacionTipo.Success);
+                return View();
+            }
+            else
+            {
+                Notificacion("Despacho no econtrado!",NotificacionTipo.Warning);
+                return View();
+            }
+           
+        }
+        [HttpPost]
+        public async Task<IActionResult> RechazarDespacho(int id)
+        {
+            Despacho despacho = _context.Despachos.Find(id);
+            if (despacho != null)
+            {
+                string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                despacho.FechaModificacion = new DateTime();
+                despacho.UsuarioModificacion = int.Parse(idUsuario);
+                despacho.EstadoDespacho = "RECHAZADO";
+                _context.Add(despacho);
+                _context.SaveChanges();
+                Notificacion("Despacho rechazado con exito", NotificacionTipo.Success);
+                return View();
+            }
+            else
+            {
+                Notificacion("Despacho no econtrado!", NotificacionTipo.Warning);
+                return View();
+            }
+
         }
     }
 }

@@ -54,11 +54,22 @@
             <td>
                 @Html.DisplayFor(modelItem => item.IdUsuarioNavigation.IdPersonaNavigation.Nombre)
             </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.IdDespacho">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.IdDespacho">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdDespacho">Delete</a>
-            </td>
+                @if (item.IdSucursalDestino == ViewBag.SucursalId && item.EstadoDespacho=="PENDIENTE")
+                {
+                    <form asp-action="AceptarDespacho" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.IdDespacho" />
+                        <button type="submit" class=" btn btn-primary"><i class="fas fa-angle-double-right"></i>Aceptar Despacho</button>
+                    </form>
+                }
+                else
+                {
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.IdDespacho">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.IdDespacho">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.IdDespacho">Delete</a>
+                    </td>
+                }
+           
         </tr>
 }
     </tbody>

@@ -67,7 +67,12 @@ namespace ContaFacil.Controllers
             ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos.Where(c=>c.IdEmpresa==empresa.IdEmpresa), "IdCategoriaProducto", "Nombre");
             ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre");
             ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "Nombre");
-            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos, "IdImpuesto", "Porcentaje");
+            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Select(i => new
+            {
+                IdImpuesto = i.IdImpuesto,
+                NombrePorcentaje = i.Nombre + " " + i.Porcentaje.ToString("F2") + "%"
+            }), "IdImpuesto", "NombrePorcentaje");
+
             ViewData["IdProveedor"] = new SelectList(_context.Proveedors.Where(p => p.IdEmpresa == empresa.IdEmpresa), "IdProveedor", "Nombre");
             return View();
         }
@@ -114,6 +119,7 @@ namespace ContaFacil.Controllers
                 inventario.NumeroDespacho = "E-000001";
                 inventario.Stock=(int)producto.Stock;
                 inventario.EstadoBoolean=true;
+                inventario.Descripcion = "REGISTRO INICIAL DEL PRODUCTO";
                 _context.Inventarios.Add(inventario);
                 await _context.SaveChangesAsync();
                 SucursalInventario sucursalInventario = new SucursalInventario();

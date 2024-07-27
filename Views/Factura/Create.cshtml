@@ -18,6 +18,7 @@
     <table id="detallesTable" class="table">
         <thead>
             <tr>
+                <th>Código</th>
                 <th>Producto</th>
                 <th>Cantidad</th>
                 <th>Precio Unitario</th>
@@ -28,6 +29,7 @@
         <tbody>
         </tbody>
     </table>
+    <div id="stockError" style="color: red; display: none;"></div>
 
     <button type="button" id="addDetalle" class="btn btn-secondary">Agregar Detalle</button>
 
@@ -79,26 +81,30 @@
         $(document).ready(function () {
             let detalleCount = 0;
             let pagoCount = 0;
+            let timeoutId;
 
             $("#addDetalle").click(function () {
                 let newRow = `
-                            <tr>
-                                <td>
-                                    <select name="detalles[${detalleCount}].IdProducto" class="form-control producto-select">
-                                        <option value="">-- Seleccione un producto --</option>
+                                    <tr>
+                                        <td>
+                                            <input type="text" class="form-control producto-codigo" placeholder="Código">
+                                        </td>
+                                        <td>
+                                            <select name="detalles[${detalleCount}].IdProducto" class="form-control producto-select">
+                                                <option value="">-- Seleccione un producto --</option>
         @foreach (var producto in ViewBag.Productos)
         {
-                                                    <option value="@producto.IdProducto" data-descripcion="@producto.Nombre" data-porcentaje="@producto.Porcentaje">@producto.Nombre</option>
+                                                            <option value="@producto.IdProducto" data-codigo="@producto.Codigo" data-descripcion="@producto.Nombre" data-porcentaje="@producto.Porcentaje">@producto.Nombre</option>
         }
-                                    </select>
-                                    <input type="hidden" name="detalles[${detalleCount}].Descripcion" class="producto-descripcion">
-                                </td>
-                                <td><input type="number" name="detalles[${detalleCount}].Cantidad" class="form-control cantidad" value="1" min="1" /></td>
-                                <td><input type="number" name="detalles[${detalleCount}].PrecioUnitario" class="form-control precio" readonly /></td>
-                                <td><input type="number" class="form-control subtotal" readonly /></td>
-                                <td><button type="button" class="btn btn-danger removeDetalle">Eliminar</button></td>
-                            </tr>
-                        `;
+                                            </select>
+                                            <input type="hidden" name="detalles[${detalleCount}].Descripcion" class="producto-descripcion">
+                                        </td>
+                                        <td><input type="number" name="detalles[${detalleCount}].Cantidad" class="form-control cantidad" value="1" min="1" /></td>
+                                        <td><input type="number" name="detalles[${detalleCount}].PrecioUnitario" class="form-control precio" readonly /></td>
+                                        <td><input type="number" class="form-control subtotal" readonly /></td>
+                                        <td><button type="button" class="btn btn-danger removeDetalle">Eliminar</button></td>
+                                    </tr>
+                                `;
                 $("#detallesTable tbody").append(newRow);
                 detalleCount++;
             });
@@ -107,30 +113,50 @@
                 let newRow = `
                             <tr>
                                 <td>
-                                    <select name="pagos[${pagoCount}].IdTipoPago" class="form-control tipo-pago-select">
-                                        <option value="">-- Seleccione un tipo de pago --</option>
-        @foreach (var tipoPago in ViewBag.IdTipoPago)
+                                    <select name="pagos[${pagoCount}].IdTipoPago" class="form-control tipo-pago">
+                                        <option value="">-- Seleccione tipo de pago --</option>
+        @foreach (var item in (SelectList)ViewData["IdTipoPago"])
         {
-                                                    <option value="@tipoPago.Value">@tipoPago.Text</option>
+                                                <option value="@item.Value">@item.Text</option>
         }
                                     </select>
                                 </td>
-                                <td><input type="number" name="pagos[${pagoCount}].Monto" class="form-control valor-pago" step="0.01" min="0" /></td>
-                                <td><button type="button" class="btn btn-danger removePago">Eliminar</button></td>
+                                <td>
+                                    <input type="number" name="pagos[${pagoCount}].Valor" class="form-control valor-pago" step="0.01" min="0" />
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger removePago">Eliminar</button>
+                                </td>
                             </tr>
                         `;
                 $("#pagosTable tbody").append(newRow);
                 pagoCount++;
-            });
-
-            $(document).on("click", ".removeDetalle", function () {
-                $(this).closest("tr").remove();
-                calcularTotal();
-            });
-
-            $(document).on("click", ".removePago", function () {
-                $(this).closest("tr").remove();
                 calcularTotalPagado();
+            });
+
+            $(document).on("input", ".valor-pago", function () {
+                calcularTotalPagado();
+            });
+
+            $(document).on("change", ".cantidad", function () {
+                let row = $(this).closest("tr");
+                let productoId = row.find(".producto-select").val();
+                let cantidad = $(this).val();
+
+                if (productoId) {
+                    $.get(`/Factura/VerificarStock?idProducto=${productoId}&cantidad=${cantidad}`, function (data) {
+                        if (!data.disponible) {
+                            $("#stockError").text(data.mensaje).show();
+                            row.find(".cantidad").val(0);
+                        } else {
+                            $("#stockError").hide();
+                            row.find(".precio").val(data.precioUnitario);
+                            calcularSubtotal(row);
+                        }
+                    });
+                } else {
+                    calcularSubtotal(row);
+                }
             });
 
             $(document).on("change", ".producto-select", function () {
@@ -140,18 +166,20 @@
                 let row = $(this).closest("tr");
                 row.find(".producto-descripcion").val(descripcion);
                 row.data("porcentaje", porcentaje);
-                $.get(`/Factura/GetProductoDetails?idProducto=${productoId}`, function (data) {
-                    row.find(".precio").val(data.precioUnitario);
-                    calcularSubtotal(row);
+                $.get(`/Factura/VerificarStock?idProducto=${productoId}&cantidad=${row.find(".cantidad").val()}`, function (data) {
+                    if (!data.disponible) {
+                        $("#stockError").text(data.mensaje).show();
+                        row.find(".cantidad").val(0);
+                    } else {
+                        $("#stockError").hide();
+                        row.find(".precio").val(data.precioUnitario);
+                        calcularSubtotal(row);
+                    }
                 });
             });
 
             $(document).on("change", ".cantidad, .precio", function () {
                 calcularSubtotal($(this).closest("tr"));
-            });
-
-            $(document).on("change", ".valor-pago", function () {
-                calcularTotalPagado();
             });
 
             function calcularSubtotal(row) {
@@ -207,6 +235,46 @@
                     $("#crearFactura").show();
                 } else {
                     $("#crearFactura").hide();
+                }
+            }
+
+            $(document).on("click", ".removeDetalle", function () {
+                $(this).closest("tr").remove();
+                calcularTotal();
+            });
+
+            $(document).on("click", ".removePago", function () {
+                $(this).closest("tr").remove();
+                calcularTotalPagado();
+            });
+
+            $(document).on("keydown", ".producto-codigo", function (e) {
+                if (e.keyCode === 13) { // Enter key
+                    e.preventDefault();
+                    procesarCodigo($(this));
+                }
+            });
+
+            $(document).on("input", ".producto-codigo", function () {
+                clearTimeout(timeoutId);
+                let input = $(this);
+
+                timeoutId = setTimeout(() => {
+                    procesarCodigo(input);
+                }, 300); // Ajusta este valor según sea necesario
+            });
+
+            function procesarCodigo(input) {
+                let codigo = input.val();
+                let row = input.closest("tr");
+                let select = row.find(".producto-select");
+
+                let option = select.find(`option[data-codigo="${codigo}"]`);
+                if (option.length) {
+                    select.val(option.val()).trigger('change');
+                } else if (codigo !== '') {
+                    alert("Código de producto no encontrado");
+                    input.val(''); // Limpiar el input si el código no se encuentra
                 }
             }
         });

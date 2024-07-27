@@ -554,6 +554,7 @@ public partial class ContableContext : DbContext
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.IdCliente).HasColumnName("id_cliente");
             entity.Property(e => e.IdEmisor).HasColumnName("id_emisor");
+            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
             entity.Property(e => e.MontoTotal)
                 .HasPrecision(15, 2)
                 .HasColumnName("monto_total");
@@ -577,6 +578,10 @@ public partial class ContableContext : DbContext
             entity.HasOne(d => d.IdEmisorNavigation).WithMany(p => p.Facturas)
                 .HasForeignKey(d => d.IdEmisor)
                 .HasConstraintName("fk_emisor_factura");
+
+            entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.Facturas)
+                .HasForeignKey(d => d.IdSucursal)
+                .HasConstraintName("sucursal_factura_fk");
         });
 
         modelBuilder.Entity<Impuesto>(entity =>

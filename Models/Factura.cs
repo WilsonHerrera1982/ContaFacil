@@ -37,6 +37,8 @@ public partial class Factura
     public string? ClaveAcceso { get; set; }
 
     public string? NumeroFactura { get; set; }
+
+    public int? IdSucursal { get; set; }
     [NotMapped]
     public virtual int? idPago { get; set; }
 
@@ -45,6 +47,8 @@ public partial class Factura
     public virtual Cliente IdClienteNavigation { get; set; } = null!;
 
     public virtual Emisor? IdEmisorNavigation { get; set; }
+
+    public virtual Sucursal? IdSucursalNavigation { get; set; }
 
     public virtual ICollection<Pago> Pagos { get; set; } = new List<Pago>();
 

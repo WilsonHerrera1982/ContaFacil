@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Microsoft.AspNetCore.Components.Forms;
 using iTextSharp.text.pdf.codec.wmf;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 
 namespace ContaFacil.Controllers
 {
@@ -36,7 +37,9 @@ namespace ContaFacil.Controllers
             usuario=_context.Usuarios.Where(u=>u.IdUsuario==int.Parse(idUsuario)).Include(p=>p.IdPersonaNavigation).FirstOrDefault();
             Emisor emisor = new Emisor();   
             emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
-            var contableContext = _context.Facturas.Where(f=>f.IdEmisor==emisor.IdEmisor).Include(f => f.IdClienteNavigation);
+            UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
+            usuarioSucursal = _context.UsuarioSucursals.Where(u => u.IdUsuario == usuario.IdUsuario).FirstOrDefault();
+            var contableContext = _context.Facturas.Where(f=>f.IdEmisor==emisor.IdEmisor & f.IdSucursal==usuarioSucursal.IdSucursal).Include(f => f.IdClienteNavigation);
             return View(await contableContext.ToListAsync());
         }
 
@@ -67,8 +70,26 @@ namespace ContaFacil.Controllers
             emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
             Empresa empresa = new Empresa();
             empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
+            UsuarioSucursal usuarioSucursal= new UsuarioSucursal();
+            usuarioSucursal = _context.UsuarioSucursals.Where(e => e.IdUsuario==usuario.IdUsuario).FirstOrDefault();
+
+            List<SucursalInventario> sucursalInventario = _context.SucursalInventarios.Where(s => s.IdSucursal == usuarioSucursal.IdSucursal).
+                Include(i=>i.IdInventarioNavigation).Where(i=> (i.IdInventarioNavigation.TipoMovimiento == "S" || i.IdInventarioNavigation.TipoMovimiento == "E") & i.IdInventarioNavigation.Stock >= 0).ToList();
+            // Obtener la lista de IdProducto de sucursalInventario
+            // Obtener la lista de IdProducto de sucursalInventario, filtrando los valores nulos
+            List<int> idProductos = sucursalInventario
+                .Select(si => si.IdInventarioNavigation.IdProducto)
+                .Where(id => id.HasValue)  // Filtrar nulos
+                .Select(id => id.Value)  // Convertir de int? a int
+                .Distinct()
+                .ToList();
+
+            // Filtrar la lista de productos con los IdProducto obtenidos y la empresa específica
+            ViewBag.Productos = _context.Productos
+                .Where(p => p.IdEmpresa == empresa.IdEmpresa && idProductos.Contains(p.IdProducto))
+                .Include(p => p.IdImpuestoNavigation)
+                .ToList();
             ViewBag.Clientes = _context.Clientes.Include(p=>p.IdPersonaNavigation).Where(p=>p.IdEmpresa==empresa.IdEmpresa).ToList();
-            ViewBag.Productos = _context.Productos.Where(p=>p.IdEmpresa==empresa.IdEmpresa & p.Stock>0).Include(p => p.IdImpuestoNavigation).ToList();
             ViewData["IdTipoPago"] = new SelectList(_context.TipoPagos, "IdTipoPago", "Nombre");
             return View();
         }
@@ -94,6 +115,7 @@ namespace ContaFacil.Controllers
                   .OrderByDescending(i => i.FechaCreacion)
                   .FirstOrDefault();
                 var secuencialStr="";
+                Inventario inventario = new Inventario();
                 if (ultimoFactura != null && ultimoFactura.NumeroFactura!=null)
                 {
                     
@@ -120,14 +142,15 @@ namespace ContaFacil.Controllers
                 factura.UsuarioCreacion = int.Parse(idUsuario);
                 factura.Estado = "Pendiente";
                 factura.EstadoBoolean = true;
-                factura.IdEmisor = emisor.IdEmisor;                
+                factura.IdEmisor = emisor.IdEmisor;
+                factura.IdSucursal = sucursalInventario.IdSucursal;
                 _context.Facturas.Add(factura);
                 _context.SaveChanges();
                 
                     foreach (var detalle in detalles)
                 {
                     Inventario ultimoMovimiento = _context.Inventarios
-   .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E") & i.IdProducto==detalle.IdProducto)
+   .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto==detalle.IdProducto)
    .OrderByDescending(i => i.FechaCreacion)
    .FirstOrDefault();
                     if(ultimoMovimiento == null)
@@ -155,20 +178,32 @@ namespace ContaFacil.Controllers
                     detalle.UsuarioCreacion = int.Parse(idUsuario);
                     detalle.Estado = true;
                     _context.DetalleFacturas.Add(detalle);
-                    producto.Stock= ultimoMovimiento.Stock-detalle.Cantidad;
+
+                   // producto.Stock= ultimoMovimiento.Stock-detalle.Cantidad;
                     ultimoMovimiento.Stock= ultimoMovimiento.Stock - detalle.Cantidad;
-                    _context.Productos.Update(producto);
-                    Inventario inventario = new Inventario();
+
+                    // _context.Productos.Update(producto);
+                    int stock = ultimoMovimiento.Stock ?? 0; // Si Stock es null, usar 0 como valor por defecto
+                    int nuevoStock = stock - detalle.Cantidad;
+                    
                     inventario.Cantidad=detalle.Cantidad;
                     inventario.IdProducto= detalle.IdProducto;
                     inventario.TipoMovimiento = "S";
-                    inventario.Stock= ultimoMovimiento.Stock;
+                    inventario.Stock= nuevoStock;
                     inventario.FechaMovimiento = new DateTime();
                     inventario.UsuarioCreacion=int.Parse(idUsuario);
                     inventario.Descripcion = "EGRESO POR VENTA FACTURA "+factura.IdFactura;
                     _context.Inventarios.Add(inventario);
                 }
 
+                _context.SaveChanges();
+                SucursalInventario si = new SucursalInventario();
+                si.IdSucursal=sucursalInventario.IdSucursal;
+                si.IdInventario= inventario.IdInventario;
+                si.EstadoBoolean = true;
+                si.UsuarioCreacion = int.Parse(idUsuario);
+                si.FechaCreacion = new DateTime();
+                _context.Add(si);
                 _context.SaveChanges();
                  Cliente cliente = new Cliente();
                  cliente = _context.Clientes
@@ -195,7 +230,7 @@ namespace ContaFacil.Controllers
                 // Para obtener el XML como string:
                 string xmlString = xmlDocument.ToString();
                 string xmlFirmado=generator.FirmarXml(xmlString,emisor.CertificadoDigital,emisor.Clave);
-                var (estado, descripcion) = await generator.EnviarXmlFirmadoYProcesarRespuesta(emisor.TipoAmbiente, xmlFirmado, factura.IdFactura);
+                /*var (estado, descripcion) = await generator.EnviarXmlFirmadoYProcesarRespuesta(emisor.TipoAmbiente, xmlFirmado, factura.IdFactura);
                 factura.DescripcionSri = descripcion;
                 factura.Estado = estado;
                 factura.Xml = xmlFirmado;
@@ -206,6 +241,10 @@ namespace ContaFacil.Controllers
                                             .Element("infoTributaria")
                                             .Element("claveAcceso");
                 factura.ClaveAcceso = claveAcceso;
+                _context.Update(factura);
+                _context.SaveChanges();
+                */
+                factura.Xml = xmlFirmado;
                 _context.Update(factura);
                 _context.SaveChanges();
                 Notificacion("Registro guardado con exito", NotificacionTipo.Success);
@@ -269,6 +308,7 @@ namespace ContaFacil.Controllers
         public IActionResult GetProductoDetails(int idProducto)
         {
             var producto = _context.Productos.Include(p => p.IdImpuestoNavigation).FirstOrDefault(p => p.IdProducto == idProducto);
+
             if (producto == null)
             {
                 return NotFound();
@@ -371,6 +411,24 @@ namespace ContaFacil.Controllers
             ViewBag.Clientes = _context.Clientes.Include(p => p.IdPersonaNavigation).ToList();
             ViewBag.Productos = _context.Productos.ToList();
             return RedirectToAction("Index", "Factura");
-        } 
+        }
+        [HttpGet]
+        public IActionResult VerificarStock(int idProducto, int cantidad)
+        {
+            var producto = _context.Productos.Include(p => p.IdImpuestoNavigation).FirstOrDefault(p => p.IdProducto == idProducto);
+
+            Inventario ultimoMovimiento = _context.Inventarios
+                .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E") && i.IdProducto == idProducto)
+                .OrderByDescending(i => i.FechaCreacion)
+                .FirstOrDefault();
+
+            if (ultimoMovimiento == null || ultimoMovimiento.Stock < cantidad)
+            {
+                return Json(new { disponible = false, mensaje = "Stock no disponible o insuficiente " +producto.Nombre });
+            }
+
+            return Json(new { disponible = true, precioUnitario = producto.PrecioUnitario, porcentaje = producto.Porcentaje });
+        }
+
     }
 }
