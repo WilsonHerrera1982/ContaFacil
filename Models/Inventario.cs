@@ -33,6 +33,8 @@ public partial class Inventario
 
     public int? IdSucursal { get; set; }
 
+    public int? IdCuentaContable { get; set; }
+
     public virtual Producto? IdProductoNavigation { get; set; }
 
     public virtual Sucursal? IdSucursalNavigation { get; set; }

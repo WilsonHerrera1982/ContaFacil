@@ -26,6 +26,8 @@ public partial class Cuentum
     public int? UsuarioModificacion { get; set; }
 
     public int? IdEmpresa { get; set; }
+    public int? IdIdCuenta { get; set; }
+    public string? Codigo { get; set; }
 
     public virtual Empresa? IdEmpresaNavigation { get; set; }
 

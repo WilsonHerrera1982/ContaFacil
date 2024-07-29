@@ -243,6 +243,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdCuenta)
                 .HasDefaultValueSql("nextval('seq_cuenta'::regclass)")
                 .HasColumnName("id_cuenta");
+            entity.Property(e => e.Codigo)
+                .HasMaxLength(100)
+                .HasColumnName("codigo");
             entity.Property(e => e.Estado)
                 .HasDefaultValue(true)
                 .HasColumnName("estado");
@@ -255,6 +258,9 @@ public partial class ContableContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdIdCuenta)
+                .HasComment("id de la cuenta padre")
+                .HasColumnName("id_id_cuenta");
             entity.Property(e => e.IdTipoCuenta).HasColumnName("id_tipo_cuenta");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
@@ -650,6 +656,7 @@ public partial class ContableContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_movimiento");
+            entity.Property(e => e.IdCuentaContable).HasColumnName("id_cuenta_contable");
             entity.Property(e => e.IdProducto).HasColumnName("id_producto");
             entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
             entity.Property(e => e.NumeroDespacho)
@@ -864,9 +871,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(200)
                 .HasColumnName("descripcion");
-            entity.Property(e => e.Valor)
-               .HasMaxLength(200)
-               .HasColumnName("valor");
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
@@ -883,6 +887,9 @@ public partial class ContableContext : DbContext
                 .HasColumnName("nombre_parametro");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Valor)
+                .HasMaxLength(100)
+                .HasColumnName("valor");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Parametros)
                 .HasForeignKey(d => d.IdEmpresa)
