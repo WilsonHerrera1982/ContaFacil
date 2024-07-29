@@ -120,6 +120,7 @@ namespace ContaFacil.Controllers
                 inventario.Stock=(int)producto.Stock;
                 inventario.EstadoBoolean=true;
                 inventario.Descripcion = "REGISTRO INICIAL DEL PRODUCTO";
+                inventario.IdSucursal = usuarioSucursal.IdSucursal;
                 _context.Inventarios.Add(inventario);
                 await _context.SaveChangesAsync();
                 SucursalInventario sucursalInventario = new SucursalInventario();

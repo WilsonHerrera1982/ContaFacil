@@ -31,7 +31,11 @@ public partial class Inventario
 
     public int? Stock { get; set; }
 
-    public virtual Producto? IdProductoNavigation { get; set; }
-    public virtual ICollection<SucursalInventario> SucursalInventarios { get; set; } = new List<SucursalInventario>();
+    public int? IdSucursal { get; set; }
 
+    public virtual Producto? IdProductoNavigation { get; set; }
+
+    public virtual Sucursal? IdSucursalNavigation { get; set; }
+
+    public virtual ICollection<SucursalInventario> SucursalInventarios { get; set; } = new List<SucursalInventario>();
 }

@@ -1,6 +1,53 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Política de Privacidad | FINANSYS";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<div class="text-center">
+    <div class="head">
+        <h1 class="display-4">@ViewData["Title"]</h1>
+        <p>Protegiendo tu información con FINANSYS</p>
+    </div>
+
+    <section class="features" style="background-image: url('~/img/logo.png'), conic-gradient(from 0deg at 50% 50%, #1A3263, #64B5F6, #1A3263);">
+        <h2>Nuestra Política de Privacidad</h2>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <i class="fas fa-shield-alt fa-3x"></i>
+                <h3>Compromiso con su privacidad</h3>
+                <p>Valoramos y protegemos su información personal, garantizando la seguridad en todos nuestros servicios financieros.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-database fa-3x"></i>
+                <h3>Información que recopilamos</h3>
+                <p>Recopilamos datos personales, financieros y de uso para brindarle el mejor servicio posible.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-cogs fa-3x"></i>
+                <h3>Uso de su información</h3>
+                <p>Utilizamos su información para mejorar nuestros servicios, procesar transacciones y cumplir con las regulaciones.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-lock fa-3x"></i>
+                <h3>Protección de datos</h3>
+                <p>Implementamos medidas de seguridad avanzadas para proteger su información contra accesos no autorizados.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-user-shield fa-3x"></i>
+                <h3>Sus derechos</h3>
+                <p>Tiene derecho a acceder, corregir y solicitar la eliminación de sus datos personales.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-envelope fa-3x"></i>
+                <h3>Contacto</h3>
+                <p>Para cualquier consulta sobre privacidad, contáctenos en privacidad@financys.com o al +1 (555) 123-4567.</p>
+            </div>
+        </div>
+    </section>
+
+    <p class="text-muted mt-4">
+        Última actualización: @DateTime.Now.ToString("dd MMMM yyyy")
+    </p>
+</div>

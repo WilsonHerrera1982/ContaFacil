@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
 using ContaFacil.Logica;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ContaFacil.Controllers
 {
@@ -32,7 +33,7 @@ namespace ContaFacil.Controllers
             UsuarioSucursal usuarioSucursal = await _context.UsuarioSucursals
                 .Where(u => u.IdUsuario == usuario.IdUsuario)
                 .FirstOrDefaultAsync();
-
+            ContaFacil.Models.Sucursal sucursal = _context.Sucursals.Where(s=>s.IdSucursal==usuarioSucursal.IdSucursal).FirstOrDefault();
             Emisor emisor = await _context.Emisors
                 .Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion)
                 .FirstOrDefaultAsync();
@@ -54,7 +55,7 @@ namespace ContaFacil.Controllers
                 despacho.CargarNombreSucursalDestino(_context);
             }
             ViewBag.SucursalId = usuarioSucursal.IdSucursal;
-
+            ViewBag.NombreSucursal = sucursal.NombreSucursal;
             return View(despachos);
         }
 
@@ -212,10 +213,11 @@ namespace ContaFacil.Controllers
             if (despacho != null)
             {
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
+                UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.Where(s=>s.IdUsuario==int.Parse(idUsuario)).FirstOrDefault();
                 despacho.FechaModificacion = new DateTime();
                 despacho.UsuarioModificacion=int.Parse(idUsuario);
                 despacho.EstadoDespacho = "ACEPTADO";
-                _context.Add(despacho);
+                _context.Update(despacho);
                 _context.SaveChanges();
                 Inventario inventario = new Inventario();
                 inventario = _context.Inventarios
@@ -224,17 +226,53 @@ namespace ContaFacil.Controllers
                        .FirstOrDefault();
                 Inventario ultimoMovimiento = new Inventario();
                 ultimoMovimiento = _context.Inventarios
-                       .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.IdProducto)
+                       .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.IdProducto & i.IdSucursal==usuarioSucursal.IdSucursal)
                        .OrderByDescending(i => i.FechaCreacion)
                        .FirstOrDefault();
-
+               string numeroDespacho= ObtenerNumeroDespacho("E",usuarioSucursal.IdSucursal);
+                Inventario inv = new Inventario();
+                if (ultimoMovimiento != null)
+                {
+                    int stock = (ultimoMovimiento.Stock+(int)inventario.Cantidad)??0;
+                    inv.IdProducto = inventario.IdProducto;
+                    inv.NumeroDespacho = numeroDespacho;
+                    inv.TipoMovimiento = "E";
+                    inv.IdSucursal = usuarioSucursal.IdSucursal;
+                    inv.Cantidad=inventario.Cantidad;
+                    inv.Stock= stock;
+                    inv.Descripcion = "INGRESO POR TRANSFERENCIA #"+inventario.NumeroDespacho;
+                }
+                else
+                {
+                    int stock = (int)inventario.Cantidad;
+                    inv.IdProducto = inventario.IdProducto;
+                    inv.NumeroDespacho = numeroDespacho;
+                    inv.TipoMovimiento = "E";
+                    inv.IdSucursal = usuarioSucursal.IdSucursal;
+                    inv.Cantidad = inventario.Cantidad;
+                    inv.Stock = stock;
+                    inv.Descripcion = "INGRESO POR TRANSFERENCIA #" + inventario.NumeroDespacho;
+                }
+                inv.UsuarioCreacion = usuarioSucursal.IdUsuario;
+                inv.FechaCreacion = new DateTime();
+                inv.FechaMovimiento=new DateTime();
+                inv.EstadoBoolean = true;
+                _context.Add(inv);
+                _context.SaveChanges();
+                SucursalInventario sucursalInventario = new SucursalInventario();
+                sucursalInventario.IdInventario=inv.IdInventario;
+                sucursalInventario.IdSucursal = usuarioSucursal.IdSucursal;
+                sucursalInventario.UsuarioCreacion=inv.UsuarioCreacion;
+                sucursalInventario.FechaCreacion=inv.FechaCreacion;
+                _context.Add(sucursalInventario);
+                _context.SaveChanges();
                 Notificacion("Despacho aceptado con exito",NotificacionTipo.Success);
-                return View();
+                return RedirectToAction("Index");
             }
             else
             {
                 Notificacion("Despacho no econtrado!",NotificacionTipo.Warning);
-                return View();
+                return RedirectToAction("Index");
             }
            
         }
@@ -251,14 +289,35 @@ namespace ContaFacil.Controllers
                 _context.Add(despacho);
                 _context.SaveChanges();
                 Notificacion("Despacho rechazado con exito", NotificacionTipo.Success);
-                return View();
+                return RedirectToAction("Index");
             }
             else
             {
                 Notificacion("Despacho no econtrado!", NotificacionTipo.Warning);
-                return View();
+                return RedirectToAction("Index");
             }
 
+        }
+        public string ObtenerNumeroDespacho(string tipoMovimiento, int idSucursal)
+        {
+            var ultimoMovimiento = _context.Inventarios
+                .Where(i => i.TipoMovimiento == tipoMovimiento & i.IdSucursal==idSucursal)
+                .OrderByDescending(i => i.FechaCreacion)
+                .FirstOrDefault();
+
+            string nuevoNumeroDespacho;
+
+            if (ultimoMovimiento != null && !string.IsNullOrEmpty(ultimoMovimiento.NumeroDespacho))
+            {
+                int ultimoNumero = int.Parse(ultimoMovimiento.NumeroDespacho.Split('-')[1]);
+                nuevoNumeroDespacho = $"{tipoMovimiento}-{(ultimoNumero + 1).ToString("D6")}";
+            }
+            else
+            {
+                nuevoNumeroDespacho = $"{tipoMovimiento}-000001";
+            }
+
+            return  nuevoNumeroDespacho;
         }
     }
 }

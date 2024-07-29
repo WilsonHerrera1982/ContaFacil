@@ -649,6 +649,7 @@ public partial class ContableContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_movimiento");
             entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(50)
                 .HasColumnName("numero_despacho");
@@ -662,6 +663,10 @@ public partial class ContableContext : DbContext
             entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.Inventarios)
                 .HasForeignKey(d => d.IdProducto)
                 .HasConstraintName("inventario_id_producto_fkey");
+
+            entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.Inventarios)
+                .HasForeignKey(d => d.IdSucursal)
+                .HasConstraintName("sucursal_inventario_fk");
         });
 
         modelBuilder.Entity<Menu>(entity =>

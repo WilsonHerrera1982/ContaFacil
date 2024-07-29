@@ -1,0 +1,105 @@
+﻿@model ContaFacil.Models.ViewModel.InventarioReporteViewModel
+
+<h2>Reporte de Inventario</h2>
+
+<form asp-action="Reportes" method="get">
+    <div class="row">
+        <div class="col-md-3">
+            <label for="idSucursal">Sucursal:</label>
+            <select name="idSucursal" class="form-control" asp-items="@(new SelectList(Model.Sucursales, "IdSucursal", "NombreSucursal", Model.IdSucursalSeleccionada))">
+                <option value="">Todas las sucursales</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="tipoMovimiento">Tipo de Movimiento:</label>
+            <select name="tipoMovimiento" class="form-control">
+                <option value="">Todos los movimientos</option>
+                <option value="E" selected="@(Model.TipoMovimientoSeleccionado == "E")">Ingreso</option>
+                <option value="S" selected="@(Model.TipoMovimientoSeleccionado == "S")">Egreso</option>
+                <option value="T" selected="@(Model.TipoMovimientoSeleccionado == "T")">Transferencia entre bodegas</option>
+                <option value="A" selected="@(Model.TipoMovimientoSeleccionado == "A")">Ajuste de inventario</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="fechaInicio">Fecha Inicio:</label>
+            <input type="date" name="fechaInicio" class="form-control" value="@Model.FechaInicio?.ToString("yyyy-MM-dd")">
+        </div>
+        <div class="col-md-3">
+            <label for="fechaFin">Fecha Fin:</label>
+            <input type="date" name="fechaFin" class="form-control" value="@Model.FechaFin?.ToString("yyyy-MM-dd")">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Generar Reporte</button>
+</form>
+
+<hr />
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Sucursal</th>
+            <th>Tipo Movimiento</th>
+            <th>Cantidad</th>
+            <th>Fecha Movimiento</th>
+            <th>Stock Actual</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Inventarios)
+        {
+            <tr>
+                <td>@item.IdProductoNavigation?.Nombre</td>
+                <td>@item.IdSucursalNavigation?.NombreSucursal</td>
+                <td>
+                    @switch (item.TipoMovimiento)
+                    {
+                        case "E":
+                            <span>Ingreso</span>
+                            break;
+                        case "S":
+                            <span>Egreso</span>
+                            break;
+                        case "T":
+                            <span>Transferencia</span>
+                            break;
+                        case "A":
+                            <span>Ajuste</span>
+                            break;
+                    }
+                </td>
+                <td>@item.Cantidad</td>
+                <td>@item.FechaMovimiento.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@item.Stock</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h3>Resumen de Stock por Sucursal</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Sucursal</th>
+            <th>Producto</th>
+            <th>Stock Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sucursal in Model.Sucursales)
+        {
+            @foreach (var producto in Model.Inventarios.Where(i => i.IdSucursal == sucursal.IdSucursal).Select(i => i.IdProductoNavigation).Distinct())
+            {
+                var stockTotal = Model.Inventarios.Where(i => i.IdSucursal == sucursal.IdSucursal && i.IdProducto == producto.IdProducto).Sum(i => i.Stock ?? 0);
+                <tr>
+                    <td>@sucursal.NombreSucursal</td>
+                    <td>@producto.Nombre</td>
+                    <td>@stockTotal</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

@@ -26,9 +26,11 @@ namespace ContaFacil.Controllers
                 string idEmpresa = HttpContext.Session.GetString("_empresa");
                 Usuario usuario = _context.Usuarios.Include(u => u.IdEmpresaNavigation).FirstOrDefault((Usuario u) => u.IdUsuario == int.Parse(idUsuario));
                 ViewBag.Usuario = usuario.Nombre;
+                Persona persona = new Persona();
+                persona=_context.Personas.Where(p=>p.IdPersona==usuario.IdPersona).FirstOrDefault();
                 Emisor emisor = new Emisor();
-                emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdEmpresaNavigation.Identificacion).FirstOrDefault();
-                ViewBag.Empresa = usuario.IdEmpresaNavigation.Nombre;
+                emisor = _context.Emisors.Where(e => e.Ruc == persona.Identificacion).FirstOrDefault();
+                ViewBag.Empresa = emisor.RazonSocial;
                 return View();
             }
             catch (Exception e)
@@ -47,6 +49,20 @@ namespace ContaFacil.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error(int? statusCode = null)
+        {
+            var errorViewModel = new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                StatusCode = statusCode
+            };
+
+            // Aquí puedes añadir lógica adicional basada en el statusCode si lo deseas
+
+            return View(errorViewModel);
         }
     }
 }

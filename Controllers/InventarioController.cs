@@ -107,8 +107,10 @@ namespace ContaFacil.Controllers
         [HttpGet]
         public IActionResult ObtenerNumeroDespacho(string tipoMovimiento)
         {
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.Where(s => s.IdUsuario == int.Parse(idUsuario)).FirstOrDefault();
             var ultimoMovimiento = _context.Inventarios
-                .Where(i => i.TipoMovimiento == tipoMovimiento)
+                .Where(i => i.TipoMovimiento == tipoMovimiento & i.IdSucursal==usuarioSucursal.IdSucursal)
                 .OrderByDescending(i => i.FechaCreacion)
                 .FirstOrDefault();
 
@@ -148,21 +150,21 @@ namespace ContaFacil.Controllers
                 if (inventario.tipoMovimiento.Equals("T"))
                 {
                             ultimoMovimiento = _context.Inventarios
-                       .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.idProducto)
+                       .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.idProducto & i.IdSucursal == usuarioSucursal.IdSucursal)
                        .OrderByDescending(i => i.FechaCreacion)
                        .FirstOrDefault();
                 }
                 if (inventario.tipoMovimiento.Equals("S"))
                 {
                     ultimoMovimiento = _context.Inventarios
-                     .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.idProducto)
+                     .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.idProducto & i.IdSucursal == usuarioSucursal.IdSucursal)
                      .OrderByDescending(i => i.FechaCreacion)
                      .FirstOrDefault();
                 }
                 else if(inventario.tipoMovimiento.Equals("E"))
                 {
                     ultimoMovimiento = _context.Inventarios
-                     .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.idProducto)
+                     .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.idProducto & i.IdSucursal == usuarioSucursal.IdSucursal)
                      .OrderByDescending(i => i.FechaCreacion)
                      .FirstOrDefault();
                 }
@@ -177,6 +179,7 @@ namespace ContaFacil.Controllers
                     inv.FechaCreacion = new DateTime();
                     inv.Cantidad= inventario.cantidad;
                     inv.Descripcion = "ENTRADA";
+                    inv.IdSucursal=usuarioSucursal.IdSucursal;
                     if (ultimoMovimiento != null)
                     {
                         inv.Stock = ultimoMovimiento.Stock + inventario.cantidad;
@@ -207,6 +210,7 @@ namespace ContaFacil.Controllers
                     inv.Stock = ultimoMovimiento.Stock - inventario.cantidad;
                     inv.Cantidad = inventario.cantidad;
                     inv.Descripcion = "SALIDA";
+                    inv.IdSucursal = usuarioSucursal.IdSucursal;
                     _context.Add(inv);
                     await _context.SaveChangesAsync();
                     //producto.Stock = producto.Stock - inventario.cantidad;
@@ -228,6 +232,7 @@ namespace ContaFacil.Controllers
                     inv.FechaCreacion = new DateTime();
                     inv.Cantidad=inventario.cantidad;
                     inv.Descripcion = "TRANSFERENCIA";
+                    inv.IdSucursal = usuarioSucursal.IdSucursal;
                     if (ultimoMovimiento != null)
                     {
                         int nuevoStock = ultimoMovimiento.Stock - inventario.cantidad??0;
@@ -393,6 +398,48 @@ namespace ContaFacil.Controllers
           return (_context.Inventarios?.Any(e => e.IdInventario == id)).GetValueOrDefault();
         }
 
-        
+        public async Task<IActionResult> Reportes(int? idSucursal, string tipoMovimiento, DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            var query = _context.Inventarios
+                .Include(i => i.IdProductoNavigation)
+                .Include(i => i.IdSucursalNavigation)
+                .AsQueryable();
+
+            if (idSucursal.HasValue)
+            {
+                query = query.Where(i => i.IdSucursal == idSucursal);
+            }
+
+            if (!string.IsNullOrEmpty(tipoMovimiento))
+            {
+                query = query.Where(i => i.TipoMovimiento == tipoMovimiento);
+            }
+
+            if (fechaInicio.HasValue)
+            {
+                query = query.Where(i => i.FechaMovimiento >= fechaInicio.Value);
+            }
+
+            if (fechaFin.HasValue)
+            {
+                query = query.Where(i => i.FechaMovimiento <= fechaFin.Value);
+            }
+
+            var inventarios = await query.ToListAsync();
+
+            var sucursales = await _context.Sucursals.ToListAsync();
+
+            var viewModel = new InventarioReporteViewModel
+            {
+                Inventarios = inventarios,
+                Sucursales = sucursales,
+                IdSucursalSeleccionada = idSucursal,
+                TipoMovimientoSeleccionado = tipoMovimiento,
+                FechaInicio = fechaInicio,
+                FechaFin = fechaFin
+            };
+
+            return View(viewModel);
+        }
     }
 }

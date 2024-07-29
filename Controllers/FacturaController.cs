@@ -111,7 +111,7 @@ namespace ContaFacil.Controllers
                 SucursalInventario sucursalInventario = new SucursalInventario();
                 sucursalInventario=_context.SucursalInventarios.Where(s => s.IdSucursal==us.IdSucursal).FirstOrDefault();
                 Factura ultimoFactura = _context.Facturas
-                  .Where(f => f.IdEmisor == emisor.IdEmisor)
+                  .Where(f => f.IdEmisor == emisor.IdEmisor &f.IdSucursal==us.IdSucursal)
                   .OrderByDescending(i => i.FechaCreacion)
                   .FirstOrDefault();
                 var secuencialStr="";
@@ -150,7 +150,7 @@ namespace ContaFacil.Controllers
                     foreach (var detalle in detalles)
                 {
                     Inventario ultimoMovimiento = _context.Inventarios
-   .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto==detalle.IdProducto)
+   .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto==detalle.IdProducto & i.IdSucursal == us.IdSucursal)
    .OrderByDescending(i => i.FechaCreacion)
    .FirstOrDefault();
                     if(ultimoMovimiento == null)
@@ -179,20 +179,20 @@ namespace ContaFacil.Controllers
                     detalle.Estado = true;
                     _context.DetalleFacturas.Add(detalle);
 
-                   // producto.Stock= ultimoMovimiento.Stock-detalle.Cantidad;
-                    ultimoMovimiento.Stock= ultimoMovimiento.Stock - detalle.Cantidad;
+                    // producto.Stock= ultimoMovimiento.Stock-detalle.Cantidad;
+                    int stock = (ultimoMovimiento.Stock - detalle.Cantidad)??0;
 
                     // _context.Productos.Update(producto);
-                    int stock = ultimoMovimiento.Stock ?? 0; // Si Stock es null, usar 0 como valor por defecto
-                    int nuevoStock = stock - detalle.Cantidad;
-                    
+                    //int stock = ultimoMovimiento.Stock ?? 0; // Si Stock es null, usar 0 como valor por defecto
+                     
                     inventario.Cantidad=detalle.Cantidad;
                     inventario.IdProducto= detalle.IdProducto;
                     inventario.TipoMovimiento = "S";
-                    inventario.Stock= nuevoStock;
+                    inventario.Stock= stock;
                     inventario.FechaMovimiento = new DateTime();
                     inventario.UsuarioCreacion=int.Parse(idUsuario);
                     inventario.Descripcion = "EGRESO POR VENTA FACTURA "+factura.IdFactura;
+                    inventario.IdSucursal=factura.IdSucursal;
                     _context.Inventarios.Add(inventario);
                 }
 
@@ -416,15 +416,16 @@ namespace ContaFacil.Controllers
         public IActionResult VerificarStock(int idProducto, int cantidad)
         {
             var producto = _context.Productos.Include(p => p.IdImpuestoNavigation).FirstOrDefault(p => p.IdProducto == idProducto);
-
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.Where(s => s.IdUsuario == int.Parse(idUsuario)).FirstOrDefault();
             Inventario ultimoMovimiento = _context.Inventarios
-                .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E") && i.IdProducto == idProducto)
+                .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") && i.IdProducto == idProducto && i.IdSucursal==usuarioSucursal.IdSucursal)
                 .OrderByDescending(i => i.FechaCreacion)
                 .FirstOrDefault();
 
             if (ultimoMovimiento == null || ultimoMovimiento.Stock < cantidad)
             {
-                return Json(new { disponible = false, mensaje = "Stock no disponible o insuficiente " +producto.Nombre });
+                return Json(new { disponible = false, mensaje = "Stock no disponible o insuficiente " +producto.Nombre + ". Saldo actual " + ultimoMovimiento.Stock });
             }
 
             return Json(new { disponible = true, precioUnitario = producto.PrecioUnitario, porcentaje = producto.Porcentaje });
