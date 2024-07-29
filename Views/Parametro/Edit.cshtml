@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.Factura
+﻿@model ContaFacil.Models.Parametro
 
 @{
     ViewData["Title"] = "Edit";
@@ -6,37 +6,32 @@
 
 <h1>Edit</h1>
 
-<h4>Factura</h4>
+<h4>Parametro</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="IdFactura" />
+            <input type="hidden" asp-for="IdParametro" />
             <div class="form-group">
-                <label asp-for="IdCliente" class="control-label"></label>
-                <select asp-for="IdCliente" class="form-control" asp-items="ViewBag.IdCliente"></select>
-                <span asp-validation-for="IdCliente" class="text-danger"></span>
+                <label asp-for="IdEmpresa" class="control-label"></label>
+                <select asp-for="IdEmpresa" class="form-control" asp-items="ViewBag.IdEmpresa"></select>
+                <span asp-validation-for="IdEmpresa" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Fecha" class="control-label"></label>
-                <input asp-for="Fecha" class="form-control" />
-                <span asp-validation-for="Fecha" class="text-danger"></span>
+                <label asp-for="NombreParametro" class="control-label"></label>
+                <input asp-for="NombreParametro" class="form-control" />
+                <span asp-validation-for="NombreParametro" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="MontoTotal" class="control-label"></label>
-                <input asp-for="MontoTotal" class="form-control" />
-                <span asp-validation-for="MontoTotal" class="text-danger"></span>
+                <label asp-for="Descripcion" class="control-label"></label>
+                <input asp-for="Descripcion" class="form-control" />
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Estado" class="control-label"></label>
-                <input asp-for="Estado" class="form-control" />
-                <span asp-validation-for="Estado" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EstadoBoolean" class="control-label"></label>
-                <input asp-for="EstadoBoolean" class="form-control" />
-                <span asp-validation-for="EstadoBoolean" class="text-danger"></span>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="EstadoBoolean" /> @Html.DisplayNameFor(model => model.EstadoBoolean)
+                </label>
             </div>
             <div class="form-group">
                 <label asp-for="FechaCreacion" class="control-label"></label>
@@ -57,6 +52,11 @@
                 <label asp-for="UsuarioModificacion" class="control-label"></label>
                 <input asp-for="UsuarioModificacion" class="form-control" />
                 <span asp-validation-for="UsuarioModificacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Valor" class="control-label"></label>
+                <input asp-for="Valor" class="form-control" />
+                <span asp-validation-for="Valor" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

@@ -28,7 +28,14 @@ namespace ContaFacil.Controllers.Sucursal
             emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
             Empresa empresa = new Empresa();
             empresa = _context.Empresas.Where(empresa => empresa.Identificacion == emisor.Ruc).FirstOrDefault();
+            Parametro parametro = new Parametro();
+            parametro=_context.Parametros.Where(p=>p.IdEmpresa==empresa.IdEmpresa).FirstOrDefault();           
             var contableContext = _context.Sucursals.Where(s=>s.IdEmisor==emisor.IdEmisor).Include(s => s.IdEmisorNavigation).Include(s => s.IdUsuarioNavigation);
+            if(parametro!=null && contableContext.Count() == int.Parse(parametro.Valor))
+            {
+                Notificacion("Registro máximo de sucursales para su negocio alcanzado!",NotificacionTipo.Warning);
+                ViewBag.mensaje = "Registro máximo de sucursales para su negocio alcanzado!";
+            }
             return View(await contableContext.ToListAsync());
         }
 

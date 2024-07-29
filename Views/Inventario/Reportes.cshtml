@@ -11,6 +11,12 @@
             </select>
         </div>
         <div class="col-md-3">
+            <label for="idProducto">Producto:</label>
+            <select name="idProducto" class="form-control" asp-items="@(new SelectList(Model.Productos, "IdProducto", "Nombre", Model.IdProducto))">
+                <option value="">Todos las productos</option>
+            </select>
+        </div>
+        <div class="col-md-3">
             <label for="tipoMovimiento">Tipo de Movimiento:</label>
             <select name="tipoMovimiento" class="form-control">
                 <option value="">Todos los movimientos</option>

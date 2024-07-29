@@ -51,6 +51,8 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<PaqueteContador> PaqueteContadors { get; set; }
 
+    public virtual DbSet<Parametro> Parametros { get; set; }
+
     public virtual DbSet<Perfil> Perfils { get; set; }
 
     public virtual DbSet<Persona> Personas { get; set; }
@@ -850,6 +852,44 @@ public partial class ContableContext : DbContext
                 .HasConstraintName("paquete_contador_id_usuario_fkey");
         });
 
+        modelBuilder.Entity<Parametro>(entity =>
+        {
+            entity.HasKey(e => e.IdParametro).HasName("parametro_pkey");
+
+            entity.ToTable("parametro");
+
+            entity.Property(e => e.IdParametro)
+                .HasDefaultValueSql("nextval('seq_parametro'::regclass)")
+                .HasColumnName("id_parametro");
+            entity.Property(e => e.Descripcion)
+                .HasMaxLength(200)
+                .HasColumnName("descripcion");
+            entity.Property(e => e.Valor)
+               .HasMaxLength(200)
+               .HasColumnName("valor");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.NombreParametro)
+                .HasMaxLength(100)
+                .HasColumnName("nombre_parametro");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Parametros)
+                .HasForeignKey(d => d.IdEmpresa)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("parametro_id_empresa_fkey");
+        });
+
         modelBuilder.Entity<Perfil>(entity =>
         {
             entity.HasKey(e => e.IdPerfil).HasName("perfil_pkey");
@@ -1510,6 +1550,7 @@ public partial class ContableContext : DbContext
         modelBuilder.HasSequence("seq_pago");
         modelBuilder.HasSequence("seq_paquete");
         modelBuilder.HasSequence("seq_paquete_contador");
+        modelBuilder.HasSequence("seq_parametro");
         modelBuilder.HasSequence("seq_perfil");
         modelBuilder.HasSequence("seq_persona");
         modelBuilder.HasSequence("seq_producto_id");

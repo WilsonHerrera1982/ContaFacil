@@ -39,7 +39,7 @@ namespace ContaFacil.Controllers
             emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
             UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
             usuarioSucursal = _context.UsuarioSucursals.Where(u => u.IdUsuario == usuario.IdUsuario).FirstOrDefault();
-            var contableContext = _context.Facturas.Where(f=>f.IdEmisor==emisor.IdEmisor & f.IdSucursal==usuarioSucursal.IdSucursal).Include(f => f.IdClienteNavigation);
+            var contableContext = _context.Facturas.Where(f=>f.IdEmisor==emisor.IdEmisor & f.IdSucursal==usuarioSucursal.IdSucursal).Include(f => f.IdClienteNavigation).ThenInclude(c=>c.IdPersonaNavigation);
             return View(await contableContext.ToListAsync());
         }
 

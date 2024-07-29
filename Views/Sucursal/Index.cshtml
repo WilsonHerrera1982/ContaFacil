@@ -4,11 +4,19 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (ViewBag.mensaje == null)
+{
+    <p>
+        <a asp-action="Create">Crear Nuevo</a>
+    </p>
+}
+else
+{
+    <p>
+        <span style="color:blue">@ViewBag.mesaje</span>
+    </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -69,9 +77,14 @@
             </td>
           
             <td>
-                <a asp-action="Edit" asp-route-id="@item.IdSucursal">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.IdSucursal">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdSucursal">Delete</a>
+                    @if(!item.NombreSucursal.Equals("Sucursal Principal")){
+                        <a asp-action="Edit" asp-route-id="@item.IdSucursal">Editar</a> <span> | </span>
+                    }
+                <a asp-action="Details" asp-route-id="@item.IdSucursal">Detalles</a> |
+                    @if (!item.NombreSucursal.Equals("Sucursal Principal"))
+                    {
+                <a asp-action="Delete" asp-route-id="@item.IdSucursal">Borrar</a>
+                    }
             </td>
         </tr>
 }

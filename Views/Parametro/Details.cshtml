@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.VentaPaquete
+﻿@model ContaFacil.Models.Parametro
 
 @{
     ViewData["Title"] = "Details";
@@ -7,9 +7,21 @@
 <h1>Details</h1>
 
 <div>
-    <h4>VentaPaquete</h4>
+    <h4>Parametro</h4>
     <hr />
     <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NombreParametro)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NombreParametro)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Descripcion)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Descripcion)
+        </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.EstadoBoolean)
         </dt>
@@ -41,20 +53,20 @@
             @Html.DisplayFor(model => model.UsuarioModificacion)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdPaqueteNavigation)
+            @Html.DisplayNameFor(model => model.Valor)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdPaqueteNavigation.IdPaquete)
+            @Html.DisplayFor(model => model.Valor)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdUsuarioNavigation)
+            @Html.DisplayNameFor(model => model.IdEmpresaNavigation)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdUsuarioNavigation.IdUsuario)
+            @Html.DisplayFor(model => model.IdEmpresaNavigation.IdEmpresa)
         </dd>
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.IdVentaPaquete">Editar</a> |
-    <a asp-action="Index">Volver a la Lista</a>
+    <a asp-action="Edit" asp-route-id="@Model?.IdParametro">Editar</a> |
+    <a asp-action="Index">Regresar a la Lista</a>
 </div>

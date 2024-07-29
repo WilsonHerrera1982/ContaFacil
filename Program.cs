@@ -5,7 +5,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using ContaFacil.Utilities;
 using ContaFacil.Controllers;
-
+using Quartz;
 var builder = WebApplication.CreateBuilder(args);
 
 // Añadir servicios al contenedor...
@@ -32,6 +32,20 @@ builder.Services.AddDbContext<ContableContext>(options =>
 
 builder.Services.AddTransient<FacturaController>();
 builder.Services.AddTransient<FacturaXmlGenerator>();
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+
+    var jobKey = new JobKey("TareaEnviarFacturacionSRI");
+    q.AddJob<TareaEnviarFacturacionSRI>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("TareaEnviarFacturacionSRI-trigger")
+        .WithCronSchedule("0 0/5 * * * ?"));
+});
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 var app = builder.Build();
 

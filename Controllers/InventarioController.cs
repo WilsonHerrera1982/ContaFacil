@@ -398,37 +398,58 @@ namespace ContaFacil.Controllers
           return (_context.Inventarios?.Any(e => e.IdInventario == id)).GetValueOrDefault();
         }
 
-        public async Task<IActionResult> Reportes(int? idSucursal, string tipoMovimiento, DateTime? fechaInicio, DateTime? fechaFin)
+        public async Task<IActionResult> Reportes(int? idSucursal, string tipoMovimiento, DateTime? fechaInicio, DateTime? fechaFin, int? idProducto)
         {
-            var query = _context.Inventarios
-                .Include(i => i.IdProductoNavigation)
-                .Include(i => i.IdSucursalNavigation)
-                .AsQueryable();
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario=_context.Usuarios.Where(u=>u.IdUsuario==int.Parse(idUsuario)).FirstOrDefault(); 
+            // Crear una lista vacía de inventarios
+            List<Inventario> inventarios = new List<Inventario>();
 
-            if (idSucursal.HasValue)
+            // Verificar si al menos uno de los parámetros de búsqueda tiene un valor
+            if (idSucursal.HasValue || !string.IsNullOrEmpty(tipoMovimiento) || fechaInicio.HasValue || fechaFin.HasValue)
             {
-                query = query.Where(i => i.IdSucursal == idSucursal);
+                // Crear la consulta si hay al menos un parámetro de búsqueda
+                var query = _context.Inventarios
+                    .Include(i => i.IdProductoNavigation)
+                    .Include(i => i.IdSucursalNavigation)
+                    .AsQueryable();
+
+                if (idSucursal.HasValue)
+                {
+                    query = query.Where(i => i.IdSucursal == idSucursal);
+                }
+                if (idProducto.HasValue)
+                {
+                    query = query.Where(i => i.IdProducto == idProducto);
+                }
+                if (!string.IsNullOrEmpty(tipoMovimiento))
+                {
+                    query = query.Where(i => i.TipoMovimiento == tipoMovimiento);
+                }
+
+                if (fechaInicio.HasValue)
+                {
+                    query = query.Where(i => i.FechaMovimiento >= fechaInicio.Value);
+                }
+
+                if (fechaFin.HasValue)
+                {
+                    query = query.Where(i => i.FechaMovimiento <= fechaFin.Value);
+                }
+
+                // Ejecutar la consulta
+                inventarios = await query.ToListAsync();
             }
-
-            if (!string.IsNullOrEmpty(tipoMovimiento))
-            {
-                query = query.Where(i => i.TipoMovimiento == tipoMovimiento);
-            }
-
-            if (fechaInicio.HasValue)
-            {
-                query = query.Where(i => i.FechaMovimiento >= fechaInicio.Value);
-            }
-
-            if (fechaFin.HasValue)
-            {
-                query = query.Where(i => i.FechaMovimiento <= fechaFin.Value);
-            }
-
-            var inventarios = await query.ToListAsync();
-
-            var sucursales = await _context.Sucursals.ToListAsync();
-
+            Persona persona = new Persona();
+            persona = _context.Personas.Where(p => p.IdPersona == usuario.IdPersona).FirstOrDefault();
+            Emisor emisor = new Emisor();
+            emisor = _context.Emisors.Where(e => e.Ruc == persona.Identificacion).FirstOrDefault();       
+            Empresa empresa = new Empresa();
+            empresa = _context.Empresas.Where(e=>e.Identificacion==emisor.Ruc).FirstOrDefault();
+            var sucursales = await _context.Sucursals.Where(s=>s.IdEmisor==emisor.IdEmisor).ToListAsync();
+            var categoria = await _context.CategoriaProductos.Where(c=>c.IdEmpresa==empresa.IdEmpresa).ToListAsync();
+            var productos = await _context.Productos.Where(c => c.IdEmpresa == empresa.IdEmpresa).ToListAsync();
+            // Crear el ViewModel
             var viewModel = new InventarioReporteViewModel
             {
                 Inventarios = inventarios,
@@ -436,10 +457,14 @@ namespace ContaFacil.Controllers
                 IdSucursalSeleccionada = idSucursal,
                 TipoMovimientoSeleccionado = tipoMovimiento,
                 FechaInicio = fechaInicio,
-                FechaFin = fechaFin
+                FechaFin = fechaFin,
+                CategoriaProductos=categoria,
+                Productos=productos,
+                IdProducto=idProducto,
             };
 
             return View(viewModel);
         }
+
     }
 }

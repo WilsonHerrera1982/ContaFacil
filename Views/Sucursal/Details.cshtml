@@ -53,50 +53,25 @@
             @Html.DisplayFor(model => model.Secuencial)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EstadoBoolean)
+           Activo/Inactivo
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.EstadoBoolean)
         </dd>
+        
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaCreacion)
+           Empresa
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaCreacion)
+            @Html.DisplayFor(model => model.IdEmisorNavigation.RazonSocial)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaModificacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaModificacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UsuarioCreacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UsuarioCreacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UsuarioModificacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UsuarioModificacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdEmisorNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdEmisorNavigation.IdEmisor)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdUsuarioNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdUsuarioNavigation.IdUsuario)
-        </dd>
+       
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.IdSucursal">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    @if (!Model.NombreSucursal.Equals("Sucursal Principal"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.IdSucursal">Editar</a> <span> | </span>
+    }
+    <a asp-action="Index">Regresar a la Lista</a>
 </div>
