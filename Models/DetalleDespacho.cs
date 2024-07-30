@@ -23,6 +23,10 @@ public partial class DetalleDespacho
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? IdDespacho { get; set; }
+
+    public virtual Despacho? IdDespachoNavigation { get; set; }
+
     public virtual Producto IdProductoNavigation { get; set; } = null!;
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;

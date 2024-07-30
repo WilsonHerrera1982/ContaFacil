@@ -33,7 +33,6 @@ public partial class Despacho
     [NotMapped]
     public string? NombreSucursalDestino { get; set; }
 
-
     public virtual Empresa IdEmpresaNavigation { get; set; } = null!;
 
     public virtual Sucursal IdSucursalNavigation { get; set; } = null!;

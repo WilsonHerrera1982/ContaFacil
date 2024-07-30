@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<factura id="comprobante" version="1.0.0">
+  <infoTributaria>
+    <ambiente>1</ambiente>
+    <tipoEmision>1</tipoEmision>
+    <razonSocial>KAROL RIVADENEIRA</razonSocial>
+    <nombreComercial>KAROL RIVADENEIRA</nombreComercial>
+    <ruc>1003747415001</ruc>
+    <claveAcceso>3007202401100374741500110010010000000806759484711</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000010</secuencial>
+    <dirMatriz>MURIANTO Y VALDIVIESO</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>30/07/2024</fechaEmision>
+    <dirEstablecimiento>MURIANTO Y VALDIVIESO</dirEstablecimiento>
+    <obligadoContabilidad>NO</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>VERONICA TOLEDO</razonSocialComprador>
+    <identificacionComprador>1711316297</identificacionComprador>
+    <totalSinImpuestos>0.00</totalSinImpuestos>
+    <totalDescuento>0.00</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>4</codigoPorcentaje>
+        <baseImponible>5.42</baseImponible>
+        <valor>0.81</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0.00</propina>
+    <importeTotal>6.23</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>0.00</total>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal>6682775</codigoPrincipal>
+      <descripcion>CAMISETA</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>5.42</precioUnitario>
+      <descuento>0.00</descuento>
+      <precioTotalSinImpuesto>5.42</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15.00</tarifa>
+          <baseImponible>5.42</baseImponible>
+          <valor>0.81</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+  <infoAdicional>
+    <campoAdicional nombre="Direccion">LA DIRECCION DE PRUEBA</campoAdicional>
+    <campoAdicional nombre="Telefono">23565656</campoAdicional>
+    <campoAdicional nombre="Email">wherrera.web@gmail.com</campoAdicional>
+  </infoAdicional>
+  <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-1ab8563b-90be-4264-a8d1-1a4b10b7bf0d">
+    <ds:SignedInfo>
+      <ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+      <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+      <ds:Reference Id="Reference-e8c7c8c6-9445-4940-9a9c-d6adb6eb5362" URI="#comprobante">
+        <ds:Transforms>
+          <ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" />
+        </ds:Transforms>
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+        <ds:DigestValue>Yli6+P2liIoFQPDFownj8Ew3OXZkdG2IG+0Aac12UwY=</ds:DigestValue>
+      </ds:Reference>
+      <ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-Signature-1ab8563b-90be-4264-a8d1-1a4b10b7bf0d">
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+        <ds:DigestValue>B3d/PY9kHTp3ej1yBXJLcSI0WHYesKTtrVoxZyYUH4Q=</ds:DigestValue>
+      </ds:Reference>
+      <ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-Signature-1ab8563b-90be-4264-a8d1-1a4b10b7bf0d">
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+        <ds:DigestValue>B1MXGRJ160QYS6EWQ3pJTFNL1UE8sFB0O7wjxrS4bBY=</ds:DigestValue>
+      </ds:Reference>
+    </ds:SignedInfo>
+    <ds:SignatureValue Id="SignatureValue-1ab8563b-90be-4264-a8d1-1a4b10b7bf0d">Mkruz8qjk9vCSOYQ6NaK2v97lfBFVscPxkQmAZcKW1f1LY8IYxram4HM8jlbjK9Q1flsi2X691dc1EQ5Hfdro9Y9UfKGvvWG6MtQar8pj+CktVrHG7nh31J3zcpgtLN7UAuBS4JAWi2d7QtBnLyHsAjbFMOPKRdhE5K5vMhJjDOzpWmgoNoZ5l6Y8+uNTvjKunA1bc9XoZDk0ucvp39zFqfNJR7qMBVb+OaIfGFxPPl9RHD8rk8LikzU6mrhXBfFjgo1RCkvL4Nns8Fe6O2xOmTrgri19WsaNXbSOQbAjEI7qJFexp7VBl7r3aSoPCbX6ensvA8y9HYCXpqdxtOfKQ==</ds:SignatureValue>
+    <ds:KeyInfo Id="KeyInfoId-Signature-1ab8563b-90be-4264-a8d1-1a4b10b7bf0d">
+      <ds:X509Data>
+        <ds:X509Certificate>MIIL3jCCCcagAwIBAgIEK0DSjDANBgkqhkiG9w0BAQsFADCBmTELMAkGA1UEBhMCRUMxHTAbBgNVBAoMFFNFQ1VSSVRZIERBVEEgUy5BLiAyMTAwLgYDVQQLDCdFTlRJREFEIERFIENFUlRJRklDQUNJT04gREUgSU5GT1JNQUNJT04xOTA3BgNVBAMMMEFVVE9SSURBRCBERSBDRVJUSUZJQ0FDSU9OIFNVQkNBLTIgU0VDVVJJVFkgREFUQTAeFw0yMjExMjIxNDA0MDdaFw0yNDExMjExNDA0MDdaMIGdMSYwJAYDVQQDDB1XSUxTT04gRU5SSVFVRSBIRVJSRVJBIENIQU5ESTEVMBMGA1UEBRMMMjIxMTIyMDkxMzQ5MTAwLgYDVQQLDCdFTlRJREFEIERFIENFUlRJRklDQUNJT04gREUgSU5GT1JNQUNJT04xHTAbBgNVBAoMFFNFQ1VSSVRZIERBVEEgUy5BLiAyMQswCQYDVQQGEwJFQzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMyDutA3Shx7d5LNW2nyr8nr6Ez/djr4aL/X1dPkiqry1etkB3hi5Dl2TI5yqQ332GlfzXaI0+592e9HZSJIwdZak3eFaERA2OLSVGRUO6u8U11s9EcY7cRsUt7jzlUHaxaG5i17f5lc48epfwW2uEcTefMrxjoHvCizsgb4CyAWdy699GUz53D+54MV5VexAlfiH15G0Sa86WheI0hFlg8KYaWXDVYDFHhgDuyZVLI9DRNowGPEMJR5wmIUM6vvNdaxVL61UBEGugifgDl99a6pKDTVotFPtFRdUOzbuKDAi9mWHXRHCXYXi5TX1YwUrNbDY4UcD4lZ8IKOLQquG/kCAwEAAaOCByYwggciMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUjLrKEVd4JYAdawpLVb+NrmLdvY8wWQYIKwYBBQUHAQEETTBLMEkGCCsGAQUFBzABhj1odHRwOi8vb2NzcGd3LnNlY3VyaXR5ZGF0YS5uZXQuZWMvZWpiY2EvcHVibGljd2ViL3N0YXR1cy9vY3NwMIHPBgNVHS4EgccwgcQwgcGggb6ggbuGgbhsZGFwOi8vbGRhcHNkY2EyLnNlY3VyaXR5ZGF0YS5uZXQuZWMvQ049QVVUT1JJREFEIERFIENFUlRJRklDQUNJT04gU1VCQ0EtMiBTRUNVUklUWSBEQVRBLE9VPUVOVElEQUQgREUgQ0VSVElGSUNBQ0lPTiBERSBJTkZPUk1BQ0lPTixPPVNFQ1VSSVRZIERBVEEgUy5BLiAyLEM9RUM/ZGVsdGFSZXZvY2F0aW9uTGlzdD9iYXNlMCQGA1UdEQQdMBuBGXNhbG9tZXRvbGVkb2FAb3V0bG9vay5jb20wggEGBgNVHSAEgf4wgfswWgYKKwYBBAGCpnICBzBMMEoGCCsGAQUFBwICMD4ePABDAGUAcgB0AGkAZgBpAGMAYQBkAG8AIABkAGUAIABQAGUAcgBzAG8AbgBhACAATgBhAHQAdQByAGEAbDCBnAYKKwYBBAGCpnICATCBjTCBigYIKwYBBQUHAgEWfmh0dHBzOi8vd3d3LnNlY3VyaXR5ZGF0YS5uZXQuZWMvd3AtY29udGVudC9kb3dubG9hZHMvTm9ybWF0aXZhcy9QX2RlX0NlcnRpZmljYWRvcy9Qb2xpdGljYXMgZGUgQ2VydGlmaWNhZG8gUGVyc29uYSBOYXR1cmFsLnBkZjCCAqIGA1UdHwSCApkwggKVMIHloEGgP4Y9aHR0cDovL29jc3Bndy5zZWN1cml0eWRhdGEubmV0LmVjL2VqYmNhL3B1YmxpY3dlYi9zdGF0dXMvb2NzcKKBn6SBnDCBmTE5MDcGA1UEAwwwQVVUT1JJREFEIERFIENFUlRJRklDQUNJT04gU1VCQ0EtMiBTRUNVUklUWSBEQVRBMTAwLgYDVQQLDCdFTlRJREFEIERFIENFUlRJRklDQUNJT04gREUgSU5GT1JNQUNJT04xHTAbBgNVBAoMFFNFQ1VSSVRZIERBVEEgUy5BLiAyMQswCQYDVQQGEwJFQzCBx6CBxKCBwYaBvmxkYXA6Ly9sZGFwc2RjYTIuc2VjdXJpdHlkYXRhLm5ldC5lYy9DTj1BVVRPUklEQUQgREUgQ0VSVElGSUNBQ0lPTiBTVUJDQS0yIFNFQ1VSSVRZIERBVEEsT1U9RU5USURBRCBERSBDRVJUSUZJQ0FDSU9OIERFIElORk9STUFDSU9OLE89U0VDVVJJVFkgREFUQSBTLkEuIDIsQz1FQz9jZXJ0aWZpY2F0ZVJldm9jYXRpb25MaXN0P2Jhc2UwgeCggd2ggdqGgddodHRwczovL3BvcnRhbC1vcGVyYWRvcjIuc2VjdXJpdHlkYXRhLm5ldC5lYy9lamJjYS9wdWJsaWN3ZWIvd2ViZGlzdC9jZXJ0ZGlzdD9jbWQ9Y3JsJmlzc3Vlcj1DTj1BVVRPUklEQUQgREUgQ0VSVElGSUNBQ0lPTiBTVUJDQS0yIFNFQ1VSSVRZIERBVEEsT1U9RU5USURBRCBERSBDRVJUSUZJQ0FDSU9OIERFIElORk9STUFDSU9OLE89U0VDVVJJVFkgREFUQSBTLkEuIDIsQz1FQzAdBgNVHQ4EFgQU8pVjJnHsPcqqNwJAmhKv4ayIpR8wKwYDVR0QBCQwIoAPMjAyMjExMjIxNDA0MDdagQ8yMDI0MTEyMTE0MDQwN1owCwYDVR0PBAQDAgXgMBoGCisGAQQBgqZyAwEEDAwKMDQwMTI1Mzk1MDAVBgorBgEEAYKmcgMJBAcMBVFVSVRPMBEGCisGAQQBgqZyAyIEAwwBLjA7BgorBgEEAYKmcgMHBC0MK09CLiBDVUVSTyBZIENBSUNFRE8gQTAxIFkgTUFOVUVMQSBDQU5JWkFSRVMwHgYKKwYBBAGCpnIDAgQQDA5XSUxTT04gRU5SSVFVRTAfBgorBgEEAYKmcgMgBBEMDzAwMjAwMTAwMDQ2MjA0MjARBgorBgEEAYKmcgMjBAMMAS4wEwYKKwYBBAGCpnIDIQQFDANQRlgwFwYKKwYBBAGCpnIDDAQJDAdFQ1VBRE9SMBcGCisGAQQBgqZyAwMECQwHSEVSUkVSQTARBgorBgEEAYKmcgMeBAMMAS4wHQYKKwYBBAGCpnIDCwQPDA0wNDAxMjUzOTUwMDAxMBEGCisGAQQBgqZyAx0EAwwBLjAWBgorBgEEAYKmcgMEBAgMBkNIQU5ESTAaBgorBgEEAYKmcgMIBAwMCjA5NjE5OTY2NDQwDQYJKoZIhvcNAQELBQADggIBAGiva0jEAgnJ+IpU7Ce//5R+d7V3pTdUW0g4qMMLufm1Gnp1HRpMZNMcHHZa1gGCeAR7vvq5RCgHbuAX3Yc/KcqFXUBVE91Gl98PdMQpGm4/jafpBL+BTfBU9apdjFmxUQc4AE0nf6Da4O2RMX0cuuCrJ+1j0zjWkRBSLVQs8eQTy2snie30KY4aFR1S9z1NHjaJohnpWqI0Xdlf6+yxPM+8C8Bnf/0k7JPbRZaEnf6jDOa230y2FOUZ6ZyCefyZJMK047wccSVqcOygwpPK5O/NGMove49bI8EWv9gkkXWKOVpibEVOCCclaGnKub+89MF2oxFfsnA2p5FlvoeUrz2N4rjt4BJfzYw670oOZWVuz282d7URbZwP8hSMWVS2ZrtrLtl8lTxwNlQtyGFcBHHZx/RoPEqdp0RJahVMjvgMZew0VVcy7h5y8bkeOhTNCr9gZmzetwBE+9TXoNIT0MWMHbBn2fT6VYEpwvtdc9HBJdbEb7IyxY7gnHZVcoMsy40u/5omkmzzNaXWZjyyetDLetPkipvZrYZFoUQ+YqyiIhp1NiB+J7gAz38zFe4aLgCWOz4AtOwX6cIE2ivEWdO54axUeRrIpw4K/4Kcyo1G8cKdv/TVarPdcKVxRQYvS18JEgLfA2qoh4BEAnuNs7iGNTCI5fQV1MAwRAW1UHcD</ds:X509Certificate>
+      </ds:X509Data>
+      <ds:KeyValue>
+        <ds:RSAKeyValue>
+          <ds:Modulus>zIO60DdKHHt3ks1bafKvyevoTP92Ovhov9fV0+SKqvLV62QHeGLkOXZMjnKpDffYaV/NdojT7n3Z70dlIkjB1lqTd4VoREDY4tJUZFQ7q7xTXWz0RxjtxGxS3uPOVQdrFobmLXt/mVzjx6l/Bba4RxN58yvGOge8KLOyBvgLIBZ3Lr30ZTPncP7ngxXlV7ECV+IfXkbRJrzpaF4jSEWWDwphpZcNVgMUeGAO7JlUsj0NE2jAY8QwlHnCYhQzq+811rFUvrVQEQa6CJ+AOX31rqkoNNWi0U+0VF1Q7Nu4oMCL2ZYddEcJdheLlNfVjBSs1sNjhRwPiVnwgo4tCq4b+Q==</ds:Modulus>
+          <ds:Exponent>AQAB</ds:Exponent>
+        </ds:RSAKeyValue>
+      </ds:KeyValue>
+    </ds:KeyInfo>
+    <ds:Object Id="XadesObjectId-a5e3eb05-740a-4e84-bd02-8ed6065bc654">
+      <xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="QualifyingProperties-cc2fd124-0eaf-4205-82ac-426164086c33" Target="#Signature-1ab8563b-90be-4264-a8d1-1a4b10b7bf0d">
+        <xades:SignedProperties Id="SignedProperties-Signature-1ab8563b-90be-4264-a8d1-1a4b10b7bf0d">
+          <xades:SignedSignatureProperties>
+            <xades:SigningTime>2024-07-30T11:42:09-05:00</xades:SigningTime>
+            <xades:SigningCertificate>
+              <xades:Cert>
+                <xades:CertDigest>
+                  <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+                  <ds:DigestValue>Js9bvgHZgC5dBnkp0G9JdQoXidtIrk7MeGRCY4ix2Wg=</ds:DigestValue>
+                </xades:CertDigest>
+                <xades:IssuerSerial>
+                  <ds:X509IssuerName>CN=AUTORIDAD DE CERTIFICACION SUBCA-2 SECURITY DATA, OU=ENTIDAD DE CERTIFICACION DE INFORMACION, O=SECURITY DATA S.A. 2, C=EC</ds:X509IssuerName>
+                  <ds:X509SerialNumber>725668492</ds:X509SerialNumber>
+                </xades:IssuerSerial>
+              </xades:Cert>
+            </xades:SigningCertificate>
+          </xades:SignedSignatureProperties>
+          <xades:SignedDataObjectProperties>
+            <xades:DataObjectFormat ObjectReference="#Reference-e8c7c8c6-9445-4940-9a9c-d6adb6eb5362">
+              <xades:MimeType>text/xml</xades:MimeType>
+              <xades:Encoding>UTF-8</xades:Encoding>
+            </xades:DataObjectFormat>
+          </xades:SignedDataObjectProperties>
+        </xades:SignedProperties>
+      </xades:QualifyingProperties>
+    </ds:Object>
+  </ds:Signature>
+</factura>

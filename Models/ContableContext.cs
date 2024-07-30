@@ -338,6 +338,8 @@ public partial class ContableContext : DbContext
 
             entity.ToTable("detalle_despacho");
 
+            entity.HasIndex(e => e.IdDespacho, "fki_despacho_detalle_fk");
+
             entity.Property(e => e.IdDetalleDespacho)
                 .HasDefaultValueSql("nextval('seq_detalle_despacho'::regclass)")
                 .HasColumnName("id_detalle_despacho");
@@ -352,10 +354,15 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.FechaModificacion)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdDespacho).HasColumnName("id_despacho");
             entity.Property(e => e.IdProducto).HasColumnName("id_producto");
             entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdDespachoNavigation).WithMany(p => p.DetalleDespachos)
+                .HasForeignKey(d => d.IdDespacho)
+                .HasConstraintName("despacho_detalle_fk");
 
             entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.DetalleDespachos)
                 .HasForeignKey(d => d.IdProducto)
@@ -539,12 +546,12 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdFactura)
                 .HasDefaultValueSql("nextval('seq_factura'::regclass)")
                 .HasColumnName("id_factura");
+            entity.Property(e => e.AutorizacionSri)
+                .HasMaxLength(100)
+                .HasColumnName("autorizacion_sri");
             entity.Property(e => e.ClaveAcceso)
                 .HasMaxLength(200)
                 .HasColumnName("clave_acceso");
-            entity.Property(e => e.AutorizacionSri)
-               .HasMaxLength(200)
-               .HasColumnName("autorizacion_sri");
             entity.Property(e => e.DescripcionSri)
                 .HasMaxLength(200)
                 .HasColumnName("descripcion_sri");
@@ -555,14 +562,13 @@ public partial class ContableContext : DbContext
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.Property(e => e.FechaAutorizacionSri)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_autorizacion_sri");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_creacion");
-            entity.Property(e => e.FechaAutorizacionSri)
-               .HasDefaultValueSql("CURRENT_TIMESTAMP")
-               .HasColumnType("timestamp without time zone")
-               .HasColumnName("fecha_autorizacion_sri");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
@@ -648,9 +654,15 @@ public partial class ContableContext : DbContext
                 .HasPrecision(10, 2)
                 .HasColumnName("cantidad");
             entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasColumnName("descuento");
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
+            entity.Property(e => e.FacturaNumero)
+                .HasMaxLength(100)
+                .HasColumnName("factura_numero");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
@@ -669,9 +681,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Iva)
                 .HasPrecision(10, 2)
                 .HasColumnName("iva");
-            entity.Property(e => e.Descuento)
-                .HasPrecision(10, 2)
-                .HasColumnName("descuento");
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(50)
                 .HasColumnName("numero_despacho");
@@ -685,9 +694,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Total)
                 .HasPrecision(10, 2)
                 .HasColumnName("total");
-            entity.Property(e => e.NumeroFactura)
-                .HasMaxLength(100)
-                .HasColumnName("factura_numero");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 
