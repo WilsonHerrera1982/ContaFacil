@@ -11,6 +11,9 @@ using FirmaXadesNet.Signature.Parameters;
 using System.Text;
 using System.Security.Cryptography;
 using System.Xml;
+using System.Net.Http;
+using System.Security.Policy;
+using static System.Net.WebRequestMethods;
 
 namespace ContaFacil.Utilities
 {
@@ -366,6 +369,54 @@ namespace ContaFacil.Utilities
             }
         }
 
+        public async Task<(string Estado, DateTime FechaAutorizacion)> ConsultarAutorizacionAsync(string claveAcceso, string ambiente)
+        {
+            string url = "";
+            // URL del servicio web
+            if (ambiente.Equals("2"))
+            {
+                url = "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline";
+            }
+            else
+            {
+                url = "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline";
+
+            }
+            var soapEnvelope =
+                $@"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ec=""http://ec.gob.sri.ws.autorizacion"">
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <ec:autorizacionComprobante>
+                        <claveAccesoComprobante>{claveAcceso}</claveAccesoComprobante>
+                    </ec:autorizacionComprobante>
+                </soapenv:Body>
+            </soapenv:Envelope>";
+            using (var client = new HttpClient())
+            {
+
+                var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
+
+                var response = await client.PostAsync(url, content);
+                response.EnsureSuccessStatusCode();
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var xDoc = XDocument.Parse(responseString);
+
+                var autorizacionElement = xDoc.Descendants("autorizacion").FirstOrDefault();
+                if (autorizacionElement != null)
+                {
+                    var est = autorizacionElement.Element("estado")?.Value;
+                    var fechaAutorizacionStr = autorizacionElement.Element("fechaAutorizacion")?.Value;
+
+                    if (DateTime.TryParse(fechaAutorizacionStr, out DateTime fechaAutorizacion))
+                    {
+                        return (est, fechaAutorizacion);
+                    }
+                }
+
+                throw new Exception("No se pudo obtener la información de autorización");
+            }
+        }
     }
 
 }

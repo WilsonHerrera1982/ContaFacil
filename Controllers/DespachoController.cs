@@ -219,6 +219,9 @@ namespace ContaFacil.Controllers
                 despacho.EstadoDespacho = "ACEPTADO";
                 _context.Update(despacho);
                 _context.SaveChanges();
+                Cuentum cuentum = new Cuentum();
+                cuentum = _context.Cuenta.Where(c => c.Nombre.Equals("Inventario")).FirstOrDefault();
+
                 Inventario inventario = new Inventario();
                 inventario = _context.Inventarios
                        .Where(i=>i.NumeroDespacho == despacho.NumeroDespacho)
@@ -231,6 +234,7 @@ namespace ContaFacil.Controllers
                        .FirstOrDefault();
                string numeroDespacho= ObtenerNumeroDespacho("E",usuarioSucursal.IdSucursal);
                 Inventario inv = new Inventario();
+                inv.IdCuentaContable = cuentum.IdCuenta;
                 if (ultimoMovimiento != null)
                 {
                     int stock = (ultimoMovimiento.Stock+(int)inventario.Cantidad)??0;

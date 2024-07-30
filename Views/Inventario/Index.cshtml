@@ -12,99 +12,40 @@
         justify-content: left;
     }
 </style>
-<p>
-    <a asp-action="Create">Crear Igreso/Egreso</a>
-</p>
-<p>
-    <a asp-action="Reportes">Reporte</a>
-</p>
-<form asp-action="Index" method="get">
-    <div class="row">
-        <select class="form-control" id="idSucursal" name="idSucursal" asp-items="ViewBag.IdSucursal">
-            <option value="">-- Seleccione una sucursal --</option>
-        </select>
-        <div class="form-group">
-            <label class="control-label">Desde:</label>
-            <input class="form-control" type="date" id="startDate" name="startDate" value="@ViewData["StartDate"]" />
-            <span class="text-danger"></span>
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-plus-circle fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Crear Ingreso/Egreso</h5>
+                    <p class="card-text">Registra nuevos movimientos de inventario.</p>
+                    <a asp-action="Create" class="btn btn-primary mt-auto">Crear</a>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label class="control-label">Hasta:</label>
-            <input class="form-control" type="date" id="endDate" name="endDate" value="@ViewData["EndDate"]" />
-            <span class="text-danger"></span>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Reporte</h5>
+                    <p class="card-text">Genera informes detallados del inventario.</p>
+                    <a asp-action="Reportes" class="btn btn-success mt-auto">Ver Reporte</a>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <button class="button" type="submit">Filtrar</button>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-excel fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">Cargar Excel</h5>
+                    <p class="card-text">Importa datos desde un archivo Excel.</p>
+                    <a asp-action="CargarExcel" class="btn btn-info mt-auto">Cargar Excel</a>
+                </div>
+            </div>
         </div>
     </div>
-</form>
-
-<table class="table" id="tblInventario">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FechaMovimiento)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TipoMovimiento)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Cantidad)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Stock)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NumeroDespacho)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Descripcion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EstadoBoolean)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdProductoNavigation.Nombre)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaMovimiento)
-            </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TipoMovimiento)
-                </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Cantidad)
-            </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Stock)
-                </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NumeroDespacho)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Descripcion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EstadoBoolean)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdProductoNavigation.Nombre)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.IdInventario">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.IdInventario">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdInventario">Eliminar</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+</div>
 
 @section Scripts {
     <script src="~/js/jquery-3.6.0.js"></script>

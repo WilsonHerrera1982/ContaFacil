@@ -23,6 +23,7 @@ public partial class Parametro
 
     public int? UsuarioModificacion { get; set; }
 
-    public string Valor {  get; set; }
+    public string? Valor { get; set; }
+
     public virtual Empresa IdEmpresaNavigation { get; set; } = null!;
 }

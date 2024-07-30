@@ -28,11 +28,23 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Estado)
         </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ClaveAcceso)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ClaveAcceso)
+        </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EstadoBoolean)
+            @Html.DisplayNameFor(model => model.AutorizacionSri)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EstadoBoolean)
+            @Html.DisplayFor(model => model.AutorizacionSri)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.FechaAutorizacionSri)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.FechaAutorizacionSri)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.FechaCreacion)
@@ -40,33 +52,25 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.FechaCreacion)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaModificacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaModificacion)
-        </dd>
+       
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.UsuarioCreacion)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.UsuarioCreacion)
         </dd>
+       
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UsuarioModificacion)
+            Cliente
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UsuarioModificacion)
+            @Html.DisplayFor(model => model.IdClienteNavigation.IdPersonaNavigation.Identificacion)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdClienteNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdClienteNavigation.IdCliente)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IdClienteNavigation.IdPersonaNavigation.Nombre)
         </dd>
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.IdFactura">Editar</a> |
-    <a asp-action="Index">Volver a la Lista</a>
+     <a asp-action="Index">Volver a la Lista</a>
 </div>

@@ -6,13 +6,19 @@ using Microsoft.AspNetCore.Localization;
 using ContaFacil.Utilities;
 using ContaFacil.Controllers;
 using Quartz;
+using OfficeOpenXml;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Establecer el contexto de licencia de EPPlus
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 // Añadir servicios al contenedor...
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddMvc()
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -20,6 +26,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
@@ -32,19 +39,18 @@ builder.Services.AddDbContext<ContableContext>(options =>
 
 builder.Services.AddTransient<FacturaController>();
 builder.Services.AddTransient<FacturaXmlGenerator>();
+
 builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
-
     var jobKey = new JobKey("TareaEnviarFacturacionSRI");
     q.AddJob<TareaEnviarFacturacionSRI>(opts => opts.WithIdentity(jobKey));
-
     q.AddTrigger(opts => opts
-        .ForJob(jobKey)
-        .WithIdentity("TareaEnviarFacturacionSRI-trigger")
-        .WithCronSchedule("0 0/5 * * * ?"));
-});
+    .ForJob(jobKey)
+    .WithIdentity("TareaEnviarFacturacionSRI-trigger")
+    .WithCronSchedule("0 0/5 * * * ?"));
 
+});
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 var app = builder.Build();

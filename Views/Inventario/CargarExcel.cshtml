@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Cargar Excel";
+}
+
+<h2>Cargar archivo Excel</h2>
+
+<form asp-action="CargarExcel" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <input type="file" name="file" class="form-control-file" />
+    </div>
+    <button type="submit" class="btn btn-primary">Cargar</button>
+</form>
+<div>
+    <a asp-action="Index">Regresar a opciones</a>
+</div>

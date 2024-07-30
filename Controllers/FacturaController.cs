@@ -14,7 +14,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using Microsoft.AspNetCore.Components.Forms;
 using iTextSharp.text.pdf.codec.wmf;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
-
+using System.Net;
+using System.Net.Mail;
 namespace ContaFacil.Controllers
 {
     public class FacturaController : NotificacionClass
@@ -52,7 +53,7 @@ namespace ContaFacil.Controllers
             }
 
             var factura = await _context.Facturas
-                .Include(f => f.IdClienteNavigation)
+                .Include(f => f.IdClienteNavigation).ThenInclude(f=>f.IdPersonaNavigation)
                 .FirstOrDefaultAsync(m => m.IdFactura == id);
             if (factura == null)
             {
@@ -179,6 +180,8 @@ namespace ContaFacil.Controllers
                     detalle.Estado = true;
                     _context.DetalleFacturas.Add(detalle);
 
+                    Cuentum cuentum = new Cuentum();
+                    cuentum = _context.Cuenta.Where(c => c.Nombre.Equals("Inventario")).FirstOrDefault();
                     // producto.Stock= ultimoMovimiento.Stock-detalle.Cantidad;
                     int stock = (ultimoMovimiento.Stock - detalle.Cantidad)??0;
 
@@ -193,6 +196,7 @@ namespace ContaFacil.Controllers
                     inventario.UsuarioCreacion=int.Parse(idUsuario);
                     inventario.Descripcion = "EGRESO POR VENTA FACTURA "+factura.IdFactura;
                     inventario.IdSucursal=factura.IdSucursal;
+                    inventario.IdCuentaContable = cuentum.IdCuenta;
                     _context.Inventarios.Add(inventario);
                 }
 
@@ -244,9 +248,17 @@ namespace ContaFacil.Controllers
                 _context.Update(factura);
                 _context.SaveChanges();
                 */
+                XDocument xdoc = XDocument.Parse(xmlString);
+
+                // Extraer la clave de acceso
+                string claveAcceso = (string)xdoc.Root
+                                            .Element("infoTributaria")
+                                            .Element("claveAcceso");
+                factura.ClaveAcceso = claveAcceso;
                 factura.Xml = xmlFirmado;
                 _context.Update(factura);
                 _context.SaveChanges();
+                EnviarRIDEPorEmail(factura.IdFactura);
                 Notificacion("Registro guardado con exito", NotificacionTipo.Success);
                 ViewBag.Clientes = _context.Clientes.Include(p => p.IdPersonaNavigation).ToList();
                 ViewBag.Productos = _context.Productos.ToList();
@@ -407,6 +419,15 @@ namespace ContaFacil.Controllers
             factura.Estado = estado;            
             _context.Update(factura);
             _context.SaveChanges();
+            var result = await generator.ConsultarAutorizacionAsync(factura.ClaveAcceso, factura.IdEmisorNavigation.TipoAmbiente);
+
+            var (est, fechaAutorizacion) = result;
+
+            factura.AutorizacionSri = est;
+            factura.FechaAutorizacionSri = fechaAutorizacion;
+            _context.Update(factura);
+            await _context.SaveChangesAsync();
+
             Notificacion("Registro guardado con exito", NotificacionTipo.Success);
             ViewBag.Clientes = _context.Clientes.Include(p => p.IdPersonaNavigation).ToList();
             ViewBag.Productos = _context.Productos.ToList();
@@ -431,5 +452,64 @@ namespace ContaFacil.Controllers
             return Json(new { disponible = true, precioUnitario = producto.PrecioUnitario, porcentaje = producto.Porcentaje });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> EnviarRIDEPorEmail(int id)
+        {
+            var factura = await _context.Facturas
+                .Include(f => f.IdClienteNavigation)
+                .ThenInclude(c => c.IdPersonaNavigation)
+                .FirstOrDefaultAsync(f => f.IdFactura == id);
+
+            if (factura == null)
+            {
+                return NotFound();
+            }
+
+            // Generar el PDF
+            GeneradorRIDE generador = new GeneradorRIDE();
+            var pdfBytes = generador.GenerarRIDE(factura.Xml);
+
+            // Configurar el cliente de correo electrónico
+            var smtpClient = new SmtpClient("smtp.gmail.com")
+            {
+                Port = 587,
+                Credentials = new NetworkCredential("wherrera.web@gmail.com", "eysx ogkx abxj uaoy"),
+                EnableSsl = true,
+            };
+
+            // Crear el mensaje de correo
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress("wherrea.web@gmail.com", "FINANSYS"),
+                Subject = $"Factura RIDE - {factura.NumeroFactura}",
+                Body = $"Estimado cliente,\n\nAdjunto encontrará la factura RIDE número {factura.NumeroFactura}.\n\nGracias por su preferencia.",
+                IsBodyHtml = false,
+            };
+
+            // Agregar el destinatario (asumiendo que el email del cliente está en la propiedad Email)
+            mailMessage.To.Add(factura.IdClienteNavigation.IdPersonaNavigation.Email);
+
+            // Adjuntar el PDF
+            var attachment = new Attachment(new MemoryStream(pdfBytes), "Factura.pdf", "application/pdf");
+            mailMessage.Attachments.Add(attachment);
+
+            try
+            {
+                // Enviar el correo
+                await smtpClient.SendMailAsync(mailMessage);
+                return Ok("Correo enviado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                // Manejar cualquier error en el envío
+                return StatusCode(500, $"Error al enviar el correo: {ex.Message}");
+            }
+            finally
+            {
+                // Limpiar recursos
+                attachment.Dispose();
+                mailMessage.Dispose();
+            }
+        }
     }
 }

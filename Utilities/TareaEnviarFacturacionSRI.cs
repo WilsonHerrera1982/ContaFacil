@@ -28,7 +28,13 @@
             {
                 await ReenviarSri(factura.IdFactura);
             }
-
+            var facturasAutorizacion = await _context.Facturas
+                .Where(factura => factura.ClaveAcceso!=null || factura.AutorizacionSri.Equals("NO AUTORIZADO") || factura.AutorizacionSri==null || factura.FechaAutorizacionSri==null)
+                .ToListAsync();
+            foreach (Factura factura in facturasAutorizacion)
+            {
+                await AutorizarSri(factura.IdFactura);
+            }
             _logger.LogInformation("Tarea ejecutada en: {DateTime}", DateTime.Now);
         }
 
@@ -51,6 +57,27 @@
 
                 factura.DescripcionSri = descripcion;
                 factura.Estado = estado;
+                _context.Update(factura);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task AutorizarSri(int id)
+        {
+            var generator = new FacturaXmlGenerator(_configuration);
+            Factura factura = await _context.Facturas
+                .Where(f => f.IdFactura == id)
+                .Include(f => f.IdEmisorNavigation)
+                .FirstOrDefaultAsync();
+
+            if (factura != null && factura.ClaveAcceso!=null)
+            {
+                var result = await generator.ConsultarAutorizacionAsync(factura.ClaveAcceso, factura.IdEmisorNavigation.TipoAmbiente);
+
+                var (estado, fechaAutorizacion) = result;
+
+                factura.AutorizacionSri = estado;
+                factura.FechaAutorizacionSri = fechaAutorizacion;
                 _context.Update(factura);
                 await _context.SaveChangesAsync();
             }

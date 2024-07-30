@@ -35,6 +35,14 @@ public partial class Inventario
 
     public int? IdCuentaContable { get; set; }
 
+    public decimal? SubTotal { get; set; }
+
+    public decimal? Iva { get; set; }
+
+    public decimal? Total { get; set; }
+
+    public string? NumeroFactura {  get; set; }
+    public decimal? Descuento { get; set; }
     public virtual Producto? IdProductoNavigation { get; set; }
 
     public virtual Sucursal? IdSucursalNavigation { get; set; }

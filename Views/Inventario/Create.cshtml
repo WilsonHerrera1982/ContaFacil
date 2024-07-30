@@ -45,8 +45,26 @@
             <label asp-for="sucursalDestino" class="control-label">Sucursal Destino</label>
             <select asp-for="sucursalDestino" class="form-control" asp-items="ViewBag.IdSucursal"></select>
         </div>
-
-        
+                    <div class="form-group">
+                        <label asp-for="numeroFactura" class="control-label">Número Factura</label>
+                        <input asp-for="numeroFactura" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="subtotal" class="control-label">Subtotal</label>
+                        <input asp-for="subtotal" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="iva" class="control-label">IVA</label>
+                        <input asp-for="iva" class="form-control" />
+                    </div>
+                     <div class="form-group">
+                        <label asp-for="descuento" class="control-label">Descuento</label>
+                        <input asp-for="descuento" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="total" class="control-label">Total</label>
+                        <input asp-for="total" class="form-control" />
+                    </div>
 
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Guardar</button>

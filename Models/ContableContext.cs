@@ -542,6 +542,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.ClaveAcceso)
                 .HasMaxLength(200)
                 .HasColumnName("clave_acceso");
+            entity.Property(e => e.AutorizacionSri)
+               .HasMaxLength(200)
+               .HasColumnName("autorizacion_sri");
             entity.Property(e => e.DescripcionSri)
                 .HasMaxLength(200)
                 .HasColumnName("descripcion_sri");
@@ -556,6 +559,10 @@ public partial class ContableContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaAutorizacionSri)
+               .HasDefaultValueSql("CURRENT_TIMESTAMP")
+               .HasColumnType("timestamp without time zone")
+               .HasColumnName("fecha_autorizacion_sri");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
@@ -659,13 +666,28 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdCuentaContable).HasColumnName("id_cuenta_contable");
             entity.Property(e => e.IdProducto).HasColumnName("id_producto");
             entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
+            entity.Property(e => e.Iva)
+                .HasPrecision(10, 2)
+                .HasColumnName("iva");
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasColumnName("descuento");
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(50)
                 .HasColumnName("numero_despacho");
             entity.Property(e => e.Stock).HasColumnName("stock");
+            entity.Property(e => e.SubTotal)
+                .HasPrecision(10, 2)
+                .HasColumnName("sub_total");
             entity.Property(e => e.TipoMovimiento)
                 .HasMaxLength(1)
                 .HasColumnName("tipo_movimiento");
+            entity.Property(e => e.Total)
+                .HasPrecision(10, 2)
+                .HasColumnName("total");
+            entity.Property(e => e.NumeroFactura)
+                .HasMaxLength(100)
+                .HasColumnName("factura_numero");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 

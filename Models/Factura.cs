@@ -39,6 +39,9 @@ public partial class Factura
     public string? NumeroFactura { get; set; }
 
     public int? IdSucursal { get; set; }
+
+    public string? AutorizacionSri { get; set; }
+    public DateTime? FechaAutorizacionSri { get; set; }
     [NotMapped]
     public virtual int? idPago { get; set; }
 

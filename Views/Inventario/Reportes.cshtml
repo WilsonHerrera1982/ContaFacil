@@ -46,6 +46,7 @@
             <th>Producto</th>
             <th>Sucursal</th>
             <th>Tipo Movimiento</th>
+            <th>Descripcion</th>
             <th>Cantidad</th>
             <th>Fecha Movimiento</th>
             <th>Stock Actual</th>
@@ -74,6 +75,7 @@
                             break;
                     }
                 </td>
+                <td>@item.Descripcion</td>
                 <td>@item.Cantidad</td>
                 <td>@item.FechaMovimiento.ToString("dd/MM/yyyy HH:mm")</td>
                 <td>@item.Stock</td>
@@ -109,3 +111,21 @@
         }
     </tbody>
 </table>
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="col">
+        <a asp-action="Index">Regresar a opciones</a>
+    </div>
+    <div>
+        <form asp-action="ExportarExcel" method="get" class="d-inline">
+            <input type="hidden" name="idSucursal" value="@Model.IdSucursalSeleccionada" />
+            <input type="hidden" name="idProducto" value="@Model.IdProducto" />
+            <input type="hidden" name="tipoMovimiento" value="@Model.TipoMovimientoSeleccionado" />
+            <input type="hidden" name="fechaInicio" value="@Model.FechaInicio?.ToString("yyyy-MM-dd")" />
+            <input type="hidden" name="fechaFin" value="@Model.FechaFin?.ToString("yyyy-MM-dd")" />
+            <button type="submit" class="btn btn-success mt-3 ml-2">Exportar a Excel</button>
+        </form>
+    </div>
+   
+</div>
+</div>
