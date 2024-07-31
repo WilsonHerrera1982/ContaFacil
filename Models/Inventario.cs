@@ -43,6 +43,9 @@ public partial class Inventario
 
     public string? NumeroFactura {  get; set; }
     public decimal? Descuento { get; set; }
+    public decimal? PrecioUnitario { get; set; }
+    public decimal? PrecioUnitarioFinal { get; set; }
+    public decimal? Subtotal15 { get; set; }
     public virtual Producto? IdProductoNavigation { get; set; }
 
     public virtual Sucursal? IdSucursalNavigation { get; set; }

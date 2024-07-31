@@ -10,13 +10,14 @@
 <hr />
 <div class="form-container">
     <div class="row">
-        <div class="col-md-4">        
+        <div class="col">        
 
 <form asp-action="Create" id="inventarioForm">
     <div class="form-group">
         <label asp-for="tipoMovimiento" class="control-label">Tipo de Movimiento</label>
         <select asp-for="tipoMovimiento" class="form-control" id="tipoMovimiento">
             <option value="">Seleccione un tipo de movimiento</option>
+            <option value="C">Compra</option>
             <option value="E">Ingreso</option>
             <option value="S">Egreso</option>
             <option value="T">Transferencia entre bodegas</option>
@@ -24,52 +25,79 @@
         </select>
     </div>
 
-    <div id="detallesMovimiento" style="display: none;">
-        <!-- Estos campos se mostrarán después de seleccionar el tipo de movimiento -->
-        <div class="form-group">
-            <label asp-for="idProducto" class="control-label">Producto</label>
-            <select asp-for="idProducto" class="form-control" asp-items="ViewBag.IdProducto"></select>
-        </div>
+                <div id="detallesMovimiento" style="display: none;">
+                    <div class="row">
+                        <div class="form-group">
+                            <label asp-for="numeroDespacho" class="control-label">Número de Despacho</label>
+                            <input asp-for="numeroDespacho" id="NumeroDespacho" class="form-control" readonly />
+                        </div>
+                        <div class="col">
+                            
+                           
+                            <div class="form-group">
+                                <label asp-for="idProducto" class="control-label">Producto</label>
+                                <select asp-for="idProducto" class="form-control" asp-items="ViewBag.IdProducto"></select>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="cantidad" class="control-label"></label>
+                                <input asp-for="cantidad" class="form-control" onchange="calcularTotales()" />
+                            </div>
+                               <div class="form-group" id="precioUnitarioDiv">
+                                <label asp-for="precioUnitario" class="control-label">Precio Unitario</label>
+                                <input readonly asp-for="precioUnitario" class="form-control" />
+                            </div>
+                            <div class="form-group" id="descuentoDiv">
+                                <label asp-for="descuento" class="control-label">Descuento</label>
+                                <input asp-for="descuento" class="form-control" onchange="calcularTotales()" />
+                            </div>
 
-        <div class="form-group">
-            <label asp-for="cantidad" class="control-label"></label>
-            <input asp-for="cantidad" class="form-control" />
-        </div>
-
-        <div class="form-group">
-            <label asp-for="numeroDespacho" class="control-label">Número de Despacho</label>
-                        <input asp-for="numeroDespacho" id="NumeroDespacho" class="form-control" readonly />
-        </div>
-
-        <div class="form-group" id="sucursalDestinoDiv" style="display: none;">
-            <label asp-for="sucursalDestino" class="control-label">Sucursal Destino</label>
-            <select asp-for="sucursalDestino" class="form-control" asp-items="ViewBag.IdSucursal"></select>
-        </div>
-                    <div class="form-group">
-                        <label asp-for="numeroFactura" class="control-label">Número Factura</label>
-                        <input asp-for="numeroFactura" class="form-control" />
+                            <div class="form-group" id="subtotalDiv">
+                                <label asp-for="subtotal" class="control-label">Subtotal</label>
+                                <input asp-for="subtotal" class="form-control" onchange="calcularTotales()" />
+                            </div>
+                           
+                           
+                           
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group" id="sucursalDestinoDiv" style="display: none;">
+                                <label asp-for="sucursalDestino" class="control-label">Sucursal Destino</label>
+                                <select asp-for="sucursalDestino" class="form-control" asp-items="ViewBag.IdSucursal"></select>
+                            </div>
+                            <div class="form-group" id="numeroFacturaDiv">
+                                <label asp-for="numeroFactura" class="control-label">Número Factura</label>
+                                <input asp-for="numeroFactura" class="form-control" />
+                            </div>
+                         
+                           
+                            <div class="form-group" id="precioUnitarioFinalDiv">
+                                <label asp-for="precioUnitarioFinal" class="control-label">Precio Unitario Final</label>
+                                <input readonly asp-for="precioUnitarioFinal" class="form-control" />
+                            </div>
+                          
+                            <div class="form-group" id="subtotal15Div">
+                                <label asp-for="subtotal15" class="control-label">Subtotal 15%</label>
+                                <input readonly asp-for="subtotal15" class="form-control" />
+                            </div>
+                          
+                            <div class="form-group" id="ivaDiv">
+                                <label asp-for="iva" class="control-label">IVA</label>
+                                <input readonly asp-for="iva" class="form-control" />
+                            </div>
+                            <div class="form-group" id="totalDiv">
+                                <label asp-for="total" class="control-label">Total</label>
+                                <input readonly asp-for="total" class="form-control" />
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label asp-for="subtotal" class="control-label">Subtotal</label>
-                        <input asp-for="subtotal" class="form-control" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Guardar</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label asp-for="iva" class="control-label">IVA</label>
-                        <input asp-for="iva" class="form-control" />
-                    </div>
-                     <div class="form-group">
-                        <label asp-for="descuento" class="control-label">Descuento</label>
-                        <input asp-for="descuento" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="total" class="control-label">Total</label>
-                        <input asp-for="total" class="form-control" />
-                    </div>
-
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Guardar</button>
-        </div>
-    </div>
+                </div>
 </form>
 
 
@@ -86,6 +114,31 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
+        function calcularTotales() {
+            var cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+            var subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
+            var descuento = parseFloat(document.getElementById('descuento').value) || 0;
+
+            // Calcular precio unitario final
+            var precioUnitarioFinal = cantidad !== 0 ? (subtotal - descuento) / cantidad : 0;
+            document.getElementById('precioUnitarioFinal').value = precioUnitarioFinal.toFixed(2);
+
+            var precioUnitario = cantidad !== 0 ? (subtotal/ cantidad) : 0;
+            document.getElementById('precioUnitario').value = precioUnitario.toFixed(2);
+
+            // Calcular subtotal15 (asumimos que es igual al subtotal - descuento)
+            var subtotal15 = subtotal - descuento;
+            document.getElementById('subtotal15').value = subtotal15.toFixed(2);
+
+            // Calcular IVA
+            var iva = subtotal15 * 0.15;
+            document.getElementById('iva').value = iva.toFixed(2);
+
+            // Calcular total
+            var total = subtotal15 + iva;
+            document.getElementById('total').value = total.toFixed(2);
+        }
+
         $(document).ready(function () {
             $('#tipoMovimiento').change(function () {
                 var tipoMovimiento = $(this).val();
@@ -101,6 +154,25 @@
                                 $('#sucursalDestinoDiv').show();
                             } else {
                                 $('#sucursalDestinoDiv').hide();
+                            }
+                            if (tipoMovimiento === 'E' || tipoMovimiento === 'C') {
+                                $('#precioUnitarioDiv').show();
+                                $('#precioUnitarioFinalDiv').show();
+                                $('#subtotal15Div').show();
+                                $('#numeroFacturaDiv').show();
+                                $('#ivaDiv').show();
+                                $('#totalDiv').show();
+                                $('#subtotalDiv').show();
+                                $('#descuentoDiv').show();
+                            } else {
+                                $('#precioUnitarioDiv').hide();
+                                $('#precioUnitarioFinalDiv').hide();
+                                $('#subtotal15Div').hide();
+                                $('#numeroFacturaDiv').hide();
+                                $('#ivaDiv').hide();
+                                $('#totalDiv').hide();
+                                $('#subtotalDiv').hide();
+                                $('#descuentoDiv').hide();
                             }
                         }
                     });

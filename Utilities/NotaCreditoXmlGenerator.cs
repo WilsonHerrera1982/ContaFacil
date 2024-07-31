@@ -165,5 +165,216 @@ namespace ContaFacil.Utilities
 
             return verifierDigit;
         }
+
+        public string FirmarXml(string xmlString, string ruta, string clave)
+        {
+            // Cargar el certificado
+            var rutaCertificado = ruta;
+            var claveCertificado = clave;
+            try
+            {
+                string certificadoPath = rutaCertificado;
+                string certificadoPassword = claveCertificado;
+
+                // Logging de la ruta del certificado y longitud de la clave para debugging
+                Console.WriteLine($"Ruta del certificado: {certificadoPath}");
+                Console.WriteLine($"Longitud de la clave del certificado: {certificadoPassword.Length}");
+
+                // Cargar el certificado
+                X509Certificate2 cert = new X509Certificate2(certificadoPath, certificadoPassword, X509KeyStorageFlags.Exportable);
+
+                // Logging para verificar que el certificado se ha cargado correctamente
+                Console.WriteLine($"Certificado cargado: {cert.Subject}");
+
+                // Crear el servicio de firma XAdES
+                XadesService xadesService = new XadesService();
+
+                SignatureParameters parametros = new SignatureParameters
+                {
+                    SignaturePackaging = SignaturePackaging.ENVELOPED,
+                    SignatureMethod = SignatureMethod.RSAwithSHA256, // Cambiado a SHA256
+                    DigestMethod = DigestMethod.SHA256 // Cambiado a SHA256
+                };
+
+                // Configurar el certificado de firma
+                parametros.Signer = new Signer(cert);
+
+                // Convertir el XML a un MemoryStream
+                using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(xmlString)))
+                {
+                    // Logging para verificar el contenido del XML
+                    Console.WriteLine($"Contenido del XML: {xmlString.Substring(0, Math.Min(xmlString.Length, 100))}...");
+
+                    // Firmar el documento
+                    var documentoFirmado = xadesService.Sign(ms, parametros);
+
+                    XmlDocument xmlDoc = new XmlDocument();
+                    // Obtener el XML firmado
+                    using (MemoryStream outputMs = new MemoryStream())
+                    {
+                        documentoFirmado.Save(outputMs);
+                        outputMs.Position = 0;
+                        xmlDoc.Load(outputMs);
+                        xmlDoc.Save("factura_firmada.xml");
+                        return Encoding.UTF8.GetString(outputMs.ToArray());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Logging detallado de la excepción
+                Console.WriteLine($"Error al firmar el XML: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"InnerException: {ex.InnerException.Message}");
+                    Console.WriteLine($"InnerException StackTrace: {ex.InnerException.StackTrace}");
+                }
+
+                throw new Exception($"Error al firmar el XML: {ex.Message}", ex);
+            }
+        }
+
+
+        public async Task<(string Estado, string Descripcion)> EnviarXmlFirmadoYProcesarRespuesta(string ambiente, string xmlFirmado, int facturaId)
+        {
+            string url = "";
+            // URL del servicio web
+            if (ambiente.Equals("2"))
+            {
+                url = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline";
+            }
+            else
+            {
+                url = "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline";
+
+            }
+
+
+            // Validar el XML antes de enviarlo
+            XmlDocument xmlDoc = new XmlDocument();
+            try
+            {
+                xmlDoc.LoadXml(xmlFirmado); // Esto validará el XML
+            }
+            catch (XmlException ex)
+            {
+                Console.WriteLine($"El XML proporcionado no es válido: {ex.Message}");
+                return ("ERROR", $"El XML proporcionado no es válido: {ex.Message}");
+            }
+
+            // Codificar el XML en base64
+            string xmlBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(xmlFirmado));
+
+            // Crear la solicitud SOAP con el XML codificado en base64
+            string soapEnvelope = $@"
+    <soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:ec='http://ec.gob.sri.ws.recepcion'>
+       <soapenv:Header/>
+       <soapenv:Body>
+          <ec:validarComprobante>
+             <xml>{xmlBase64}</xml>
+          </ec:validarComprobante>
+       </soapenv:Body>
+    </soapenv:Envelope>";
+
+            // Crear el cliente HTTP
+            using (var client = new HttpClient())
+            {
+                // Configurar el contenido de la solicitud
+                var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
+
+                try
+                {
+                    // Enviar la solicitud POST
+                    var response = await client.PostAsync(url, content);
+
+                    // Leer la respuesta
+                    string responseString = await response.Content.ReadAsStringAsync();
+
+                    // Verificar el estado de la respuesta
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"Error en la respuesta del servidor: {response.StatusCode} {response.ReasonPhrase}");
+                        return ("ERROR", $"Error en la respuesta del servidor: {response.StatusCode} {response.ReasonPhrase}");
+                    }
+
+                    // Procesar la respuesta XML
+                    XmlDocument responseXmlDoc = new XmlDocument();
+                    responseXmlDoc.LoadXml(responseString);
+
+                    // Extraer el estado y el mensaje
+                    XmlNamespaceManager nsManager = new XmlNamespaceManager(responseXmlDoc.NameTable);
+                    nsManager.AddNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
+                    nsManager.AddNamespace("ns2", "http://ec.gob.sri.ws.recepcion");
+                    string estado = responseXmlDoc.SelectSingleNode("//ns2:validarComprobanteResponse//estado", nsManager)?.InnerText;
+                    string mensaje = responseXmlDoc.SelectSingleNode("//ns2:validarComprobanteResponse//mensaje", nsManager)?.InnerText;
+                    string informacionAdicional = responseXmlDoc.SelectSingleNode("//ns2:validarComprobanteResponse//informacionAdicional", nsManager)?.InnerText;
+                    string descripcion = $"{mensaje} {informacionAdicional}".Trim();
+
+                    return (estado, descripcion);
+                }
+                catch (HttpRequestException httpEx)
+                {
+                    // Manejar cualquier excepción relacionada con la solicitud HTTP
+                    Console.WriteLine($"Error en la solicitud HTTP: {httpEx.Message}");
+                    return ("ERROR", $"Error en la solicitud HTTP: {httpEx.Message}");
+                }
+                catch (Exception ex)
+                {
+                    // Manejar cualquier otra excepción
+                    Console.WriteLine($"Error al enviar XML o procesar respuesta: {ex.Message}");
+                    return ("ERROR", $"Error al procesar: {ex.Message}");
+                }
+            }
+        }
+
+        public async Task<(string Estado, DateTime FechaAutorizacion)> ConsultarAutorizacionAsync(string claveAcceso, string ambiente)
+        {
+            string url = "";
+            // URL del servicio web
+            if (ambiente.Equals("2"))
+            {
+                url = "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline";
+            }
+            else
+            {
+                url = "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline";
+
+            }
+            var soapEnvelope =
+                $@"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ec=""http://ec.gob.sri.ws.autorizacion"">
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <ec:autorizacionComprobante>
+                        <claveAccesoComprobante>{claveAcceso}</claveAccesoComprobante>
+                    </ec:autorizacionComprobante>
+                </soapenv:Body>
+            </soapenv:Envelope>";
+            using (var client = new HttpClient())
+            {
+
+                var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
+
+                var response = await client.PostAsync(url, content);
+                response.EnsureSuccessStatusCode();
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var xDoc = XDocument.Parse(responseString);
+
+                var autorizacionElement = xDoc.Descendants("autorizacion").FirstOrDefault();
+                if (autorizacionElement != null)
+                {
+                    var est = autorizacionElement.Element("estado")?.Value;
+                    var fechaAutorizacionStr = autorizacionElement.Element("fechaAutorizacion")?.Value;
+
+                    if (DateTime.TryParse(fechaAutorizacionStr, out DateTime fechaAutorizacion))
+                    {
+                        return (est, fechaAutorizacion);
+                    }
+                }
+
+                throw new Exception("No se pudo obtener la información de autorización");
+            }
+        }
     }
 }

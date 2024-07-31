@@ -60,7 +60,10 @@
             </td>
             <td>
                 <a asp-action="Details" asp-route-id="@item.IdFactura">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdFactura">Nota Credito</a>
+                    <form asp-action="NotaCredito" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.IdFactura" />
+                        <button type="submit" class=" btn btn-primary"><i class='fas fa-money-bill-alt'></i> NOTA CREDITO</button>
+                    </form>
                     <form asp-action="GenerarRIDE" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@item.IdFactura" />
                         <button type="submit" class=" btn btn-primary"><i class='fas fa-file-pdf'></i> RIDE</button>

@@ -657,10 +657,19 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Descuento)
                 .HasPrecision(10, 2)
                 .HasColumnName("descuento");
+            entity.Property(e => e.PrecioUnitario)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_unitario");
+            entity.Property(e => e.PrecioUnitarioFinal)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_unitario_final");
+            entity.Property(e => e.Subtotal15)
+                .HasPrecision(10, 2)
+                .HasColumnName("subtotal15");
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
-            entity.Property(e => e.FacturaNumero)
+            entity.Property(e => e.NumeroFactura)
                 .HasMaxLength(100)
                 .HasColumnName("factura_numero");
             entity.Property(e => e.FechaCreacion)

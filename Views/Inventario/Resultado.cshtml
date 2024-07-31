@@ -11,11 +11,8 @@
             <th>Código de producto</th>
             <th>Nombre del producto</th>
             <th>Descripción del producto</th>
-            <th>Cuenta contable</th>
-            <th>Usuario de Creación</th>
             <th>Unidad de Medida</th>
             <th>Factura Nro.</th>
-            <th>Id Proveedor</th>
             <th>Proveedor</th>
             <th>Fecha de creación</th>
             <th>Cantidad</th>
@@ -34,11 +31,8 @@
                 <td>@producto.CodigoProducto</td>
                 <td>@producto.NombreProducto</td>
                 <td>@producto.DescripcionProducto</td>
-                <td>@producto.CuentaContable</td>
-                <td>@producto.UsuarioCreacion</td>
                 <td>@producto.UnidadMedida</td>
                 <td>@producto.FacturaNro</td>
-                <td>@producto.IdProveedor</td>
                 <td>@producto.Proveedor</td>
                 <td>@producto.FechaCreacion.ToString("dd/MM/yyyy")</td>
                 <td>@producto.Cantidad.ToString("N2")</td>
@@ -47,7 +41,7 @@
                 <td>@producto.Subtotal.ToString("C2")</td>
                 <td>@producto.IVA.ToString("C2")</td>
                 <td>@producto.Total.ToString("C2")</td>
-                <td>@(producto.CargaInicial ? "Sí" : "No")</td>
+                    <td>@(producto.CargaInicial ? "Sí" : "Sí")</td>
             </tr>
         }
     </tbody>
@@ -66,11 +60,8 @@
                 <th>Código de producto</th>
                 <th>Nombre del producto</th>
                 <th>Descripción del producto</th>
-                <th>Cuenta contable</th>
-                <th>Usuario de Creación</th>
                 <th>Unidad de Medida</th>
                 <th>Factura Nro.</th>
-                <th>Id Proveedor</th>
                 <th>Proveedor</th>
                 <th>Fecha de creación</th>
                 <th>Cantidad</th>
@@ -89,11 +80,8 @@
                     <td>@producto.CodigoProducto</td>
                     <td>@producto.NombreProducto</td>
                     <td>@producto.DescripcionProducto</td>
-                    <td>@producto.CuentaContable</td>
-                    <td>@producto.UsuarioCreacion</td>
                     <td>@producto.UnidadMedida</td>
                     <td>@producto.FacturaNro</td>
-                    <td>@producto.IdProveedor</td>
                     <td>@producto.Proveedor</td>
                     <td>@producto.FechaCreacion.ToString("dd/MM/yyyy")</td>
                     <td>@producto.Cantidad.ToString("N2")</td>
@@ -102,7 +90,7 @@
                     <td>@producto.Subtotal.ToString("C2")</td>
                     <td>@producto.IVA.ToString("C2")</td>
                     <td>@producto.Total.ToString("C2")</td>
-                    <td>@(producto.CargaInicial ? "Sí" : "No")</td>
+                    <td>@(producto.CargaInicial ? "Sí" : "Sí")</td>
                 </tr>
             }
         </tbody>

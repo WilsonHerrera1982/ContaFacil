@@ -153,7 +153,7 @@ namespace ContaFacil.Controllers.Contador
                 foreach (var detalle in detalles)
                 {
                     Inventario ultimoMovimiento = _context.Inventarios
-   .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E") & i.IdInventario == sucursalInventario.IdInventario & i.IdProducto == detalle.IdProducto)
+   .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T" || i.TipoMovimiento == "C" || i.TipoMovimiento == "V") & i.IdProducto == detalle.IdProducto & i.IdSucursal == us.IdSucursal)
    .OrderByDescending(i => i.FechaCreacion)
    .FirstOrDefault();
                     if (ultimoMovimiento == null)

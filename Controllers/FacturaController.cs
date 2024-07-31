@@ -87,9 +87,17 @@ namespace ContaFacil.Controllers
 
             // Filtrar la lista de productos con los IdProducto obtenidos y la empresa específica
             ViewBag.Productos = _context.Productos
-                .Where(p => p.IdEmpresa == empresa.IdEmpresa && idProductos.Contains(p.IdProducto))
-                .Include(p => p.IdImpuestoNavigation)
-                .ToList();
+             .Where(p => p.IdEmpresa == empresa.IdEmpresa && idProductos.Contains(p.IdProducto))
+             .Include(p => p.IdImpuestoNavigation)
+             .Select(p => new
+             {
+                 p.IdProducto,
+                 p.Codigo,
+                 NombreCompleto = $"{p.Nombre} - {p.Descripcion}",
+                 p.Porcentaje
+             })
+             .ToList();
+
             ViewBag.Clientes = _context.Clientes.Include(p=>p.IdPersonaNavigation).Where(p=>p.IdEmpresa==empresa.IdEmpresa).ToList();
             ViewData["IdTipoPago"] = new SelectList(_context.TipoPagos, "IdTipoPago", "Nombre");
             return View();
@@ -151,7 +159,7 @@ namespace ContaFacil.Controllers
                     foreach (var detalle in detalles)
                 {
                     Inventario ultimoMovimiento = _context.Inventarios
-   .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto==detalle.IdProducto & i.IdSucursal == us.IdSucursal)
+   .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T" || i.TipoMovimiento == "C" || i.TipoMovimiento == "V") & i.IdProducto==detalle.IdProducto & i.IdSucursal == us.IdSucursal)
    .OrderByDescending(i => i.FechaCreacion)
    .FirstOrDefault();
                     if(ultimoMovimiento == null)
@@ -190,13 +198,14 @@ namespace ContaFacil.Controllers
                      
                     inventario.Cantidad=detalle.Cantidad;
                     inventario.IdProducto= detalle.IdProducto;
-                    inventario.TipoMovimiento = "S";
+                    inventario.TipoMovimiento = "V";
                     inventario.Stock= stock;
                     inventario.FechaMovimiento = new DateTime();
                     inventario.UsuarioCreacion=int.Parse(idUsuario);
-                    inventario.Descripcion = "EGRESO POR VENTA FACTURA "+factura.IdFactura;
+                    inventario.Descripcion = "EGRESO POR VENTA FACTURA "+factura.NumeroFactura;
                     inventario.IdSucursal=factura.IdSucursal;
                     inventario.IdCuentaContable = cuentum.IdCuenta;
+                    inventario.NumeroDespacho = ObtenerNumeroDespacho(inventario.TipoMovimiento);
                     _context.Inventarios.Add(inventario);
                 }
 
@@ -440,7 +449,7 @@ namespace ContaFacil.Controllers
             string idUsuario = HttpContext.Session.GetString("_idUsuario");
             UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.Where(s => s.IdUsuario == int.Parse(idUsuario)).FirstOrDefault();
             Inventario ultimoMovimiento = _context.Inventarios
-                .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") && i.IdProducto == idProducto && i.IdSucursal==usuarioSucursal.IdSucursal)
+                .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T" || i.TipoMovimiento == "V" || i.TipoMovimiento == "C") && i.IdProducto == idProducto && i.IdSucursal==usuarioSucursal.IdSucursal)
                 .OrderByDescending(i => i.FechaCreacion)
                 .FirstOrDefault();
 
@@ -510,6 +519,60 @@ namespace ContaFacil.Controllers
                 attachment.Dispose();
                 mailMessage.Dispose();
             }
+        }
+        // GET: Factura/Details/5
+        public async Task<IActionResult> NotaCredito(int? id)
+        {
+            if (id == null || _context.Facturas == null)
+            {
+                return NotFound();
+            }
+
+            var factura = await _context.Facturas
+                .Include(f => f.IdClienteNavigation).ThenInclude(f => f.IdPersonaNavigation)
+                .FirstOrDefaultAsync(m => m.IdFactura == id);
+            if (factura == null)
+            {
+                return NotFound();
+            }
+
+            return View(factura);
+        }
+        // POST: Factura/Delete/5
+        [HttpPost]
+        public IActionResult NotaConfirmed(int id,string motivo)
+        {
+            var generator = new NotaCreditoXmlGenerator(_configuration);
+            Factura factura=new Factura();
+            factura=_context.Facturas.Include(f=>f.DetalleFacturas).ThenInclude(f=>f.IdProductoNavigation).ThenInclude(f=>f.IdImpuestoNavigation).Include(f=>f.IdEmisorNavigation). FirstOrDefault(f => f.IdFactura == id);
+            Cliente cliente = new Cliente();
+            cliente=_context.Clientes.Include(c=>c.IdPersonaNavigation).ThenInclude(c => c.IdTipoIdentificacionNavigation).FirstOrDefault(f => f.IdCliente == factura.IdCliente);
+            var xmlDocument= generator.GenerateXml(factura,cliente.IdPersonaNavigation,factura.IdEmisorNavigation,motivo);
+            xmlDocument.Save("notaCredito.xml");
+            return RedirectToAction(nameof(Index));
+        }
+        public string ObtenerNumeroDespacho(string tipoMovimiento)
+        {
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.Where(s => s.IdUsuario == int.Parse(idUsuario)).FirstOrDefault();
+            var ultimoMovimiento = _context.Inventarios
+                .Where(i => i.TipoMovimiento == tipoMovimiento & i.IdSucursal == usuarioSucursal.IdSucursal)
+                .OrderByDescending(i => i.FechaCreacion)
+                .FirstOrDefault();
+
+            string nuevoNumeroDespacho;
+
+            if (ultimoMovimiento != null && !string.IsNullOrEmpty(ultimoMovimiento.NumeroDespacho))
+            {
+                int ultimoNumero = int.Parse(ultimoMovimiento.NumeroDespacho.Split('-')[1]);
+                nuevoNumeroDespacho = $"{tipoMovimiento}-{(ultimoNumero + 1).ToString("D6")}";
+            }
+            else
+            {
+                nuevoNumeroDespacho = $"{tipoMovimiento}-000001";
+            }
+
+            return nuevoNumeroDespacho;
         }
     }
 }

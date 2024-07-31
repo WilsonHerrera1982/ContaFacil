@@ -9,18 +9,19 @@
             <select name="idSucursal" class="form-control" asp-items="@(new SelectList(Model.Sucursales, "IdSucursal", "NombreSucursal", Model.IdSucursalSeleccionada))">
                 <option value="">Todas las sucursales</option>
             </select>
+            <div class="form-group">
+                <label asp-for="IdProducto" class="control-label">Producto</label>
+                <select asp-for="IdProducto" class="form-control" asp-items="ViewBag.IdProducto"></select>
+            </div>
         </div>
-        <div class="col-md-3">
-            <label for="idProducto">Producto:</label>
-            <select name="idProducto" class="form-control" asp-items="@(new SelectList(Model.Productos, "IdProducto", "Nombre", Model.IdProducto))">
-                <option value="">Todos las productos</option>
-            </select>
-        </div>
+       
         <div class="col-md-3">
             <label for="tipoMovimiento">Tipo de Movimiento:</label>
             <select name="tipoMovimiento" class="form-control">
                 <option value="">Todos los movimientos</option>
                 <option value="E" selected="@(Model.TipoMovimientoSeleccionado == "E")">Ingreso</option>
+                    <option value="E" selected="@(Model.TipoMovimientoSeleccionado == "C")">Compra</option>
+                <option value="E" selected="@(Model.TipoMovimientoSeleccionado == "V")">Venta</option>
                 <option value="S" selected="@(Model.TipoMovimientoSeleccionado == "S")">Egreso</option>
                 <option value="T" selected="@(Model.TipoMovimientoSeleccionado == "T")">Transferencia entre bodegas</option>
                 <option value="A" selected="@(Model.TipoMovimientoSeleccionado == "A")">Ajuste de inventario</option>
@@ -73,6 +74,12 @@
                         case "A":
                             <span>Ajuste</span>
                             break;
+                        case "V":
+                            <span>Venta</span>
+                            break;
+                        case "C":
+                            <span>Compra</span>
+                            break;
                     }
                 </td>
                 <td>@item.Descripcion</td>
@@ -99,9 +106,16 @@
     <tbody>
         @foreach (var sucursal in Model.Sucursales)
         {
-            @foreach (var producto in Model.Inventarios.Where(i => i.IdSucursal == sucursal.IdSucursal).Select(i => i.IdProductoNavigation).Distinct())
+            var productosPorSucursal = Model.Inventarios
+            .Where(i => i.IdSucursal == sucursal.IdSucursal)
+            .GroupBy(i => i.IdProducto)
+            .Select(g => g.OrderByDescending(i => i.FechaMovimiento).First());
+
+            foreach (var inventario in productosPorSucursal)
             {
-                var stockTotal = Model.Inventarios.Where(i => i.IdSucursal == sucursal.IdSucursal && i.IdProducto == producto.IdProducto).Sum(i => i.Stock ?? 0);
+                var producto = inventario.IdProductoNavigation;
+                var stockTotal = inventario.Stock ?? 0;
+
                 <tr>
                     <td>@sucursal.NombreSucursal</td>
                     <td>@producto.Nombre</td>
@@ -111,6 +125,7 @@
         }
     </tbody>
 </table>
+
 <div class="container mt-4">
     <div class="row row-cols-1 row-cols-md-3 g-4">
     <div class="col">
@@ -126,6 +141,15 @@
             <button type="submit" class="btn btn-success mt-3 ml-2">Exportar a Excel</button>
         </form>
     </div>
-   
+        <div>
+            <form asp-action="ExportarKardexExcel" method="get" class="d-inline">
+                <input type="hidden" name="idSucursal" value="@Model.IdSucursalSeleccionada" />
+                <input type="hidden" name="idProducto" value="@Model.IdProducto" />
+                <input type="hidden" name="tipoMovimiento" value="@Model.TipoMovimientoSeleccionado" />
+                <input type="hidden" name="fechaInicio" value="@Model.FechaInicio?.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="fechaFin" value="@Model.FechaFin?.ToString("yyyy-MM-dd")" />
+                <button type="submit" class="btn btn-info mt-3 ml-2">Generar Kardex</button>
+            </form>
+        </div>
 </div>
 </div>

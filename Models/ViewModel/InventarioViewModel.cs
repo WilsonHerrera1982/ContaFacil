@@ -12,6 +12,9 @@ namespace ContaFacil.Models.ViewModel
         public string descripcion {  get; set; }
         public int sucursalDestino {  get; set; }
         public string numeroFactura {  get; set; }
+        public decimal precioUnitario { get; set; }
+        public decimal precioUnitarioFinal { get; set; }
+        public decimal subtotal15 { get; set; }
         public decimal subtotal {  get; set; }
         public decimal iva {  get; set; }
         public decimal descuento {  get; set; }

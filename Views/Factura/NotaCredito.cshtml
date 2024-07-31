@@ -3,8 +3,7 @@
 @{
     ViewData["Title"] = "Details";
 }
-
-Detalles
+Nota de Crédito
 
 <div>
     <h4>Factura</h4>
@@ -15,6 +14,12 @@ Detalles
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Fecha)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NumeroFactura)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NumeroFactura)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.MontoTotal)
@@ -71,6 +76,29 @@ Detalles
         </dd>
     </dl>
 </div>
-<div>
-     <a asp-action="Index">Volver a la Lista</a>
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100">
+                
+                <div class="card-body text-center">
+                    <i class="fas fa-plus-circle fa-3x mb-3 text-warning"></i>
+                    <h5 class="card-title">Nota de Credito</h5>
+                    <p class="card-text">Registra y envia la nota de crédito al SRI.</p>
+                    <form asp-action="NotaConfirmed" method="post" style="display:inline;">
+                        <div >
+                            <input name="motivo" />
+                        </div>
+                        <input type="hidden" name="id" value="@Model.IdFactura" />
+                        <button type="submit" class=" btn btn-primary">Crear</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col">
+                <a asp-action="Index">Volver a la Lista</a>
+            </div>
+        </div>
+    </div>
 </div>
+
+

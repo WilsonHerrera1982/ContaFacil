@@ -90,12 +90,17 @@
                                             <input type="text" class="form-control producto-codigo" placeholder="Código">
                                         </td>
                                         <td>
-                                            <select name="detalles[${detalleCount}].IdProducto" class="form-control producto-select">
+                                                    <select name="detalles[${detalleCount}].IdProducto" class="form-control producto-select">
                                                 <option value="">-- Seleccione un producto --</option>
-        @foreach (var producto in ViewBag.Productos)
-        {
-                                                            <option value="@producto.IdProducto" data-codigo="@producto.Codigo" data-descripcion="@producto.Nombre" data-porcentaje="@producto.Porcentaje">@producto.Nombre</option>
-        }
+                                            @foreach (var producto in ViewBag.Productos)
+                                            {
+                                                        <option value="@producto.IdProducto"
+                                                                data-codigo="@producto.Codigo"
+                                                                data-descripcion="@producto.NombreCompleto"
+                                                                data-porcentaje="@producto.Porcentaje">
+                                                    @producto.NombreCompleto
+                                                        </option>
+                                            }
                                             </select>
                                             <input type="hidden" name="detalles[${detalleCount}].Descripcion" class="producto-descripcion">
                                         </td>

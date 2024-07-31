@@ -4,77 +4,74 @@
     ViewData["Title"] = "Index";
 }
 
-
-
 <p>
     <a asp-action="Create">Crear Nuevo</a>
 </p>
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.NumeroDespacho)
-            </th>            
-            <th>
-                @Html.DisplayNameFor(model => model.FechaCreacion)
-            </th>   
-            <th>
-                @Html.DisplayNameFor(model => model.EstadoDespacho)
-            </th>
-            <th>
-               Sucursal de Destino
-            </th>
-            <th>
-               Sucursal de Origen
-            </th>
-            <th>
-                Usuario
-            </th>
+            <th>@Html.DisplayNameFor(model => model.NumeroDespacho)</th>
+            <th>@Html.DisplayNameFor(model => model.FechaCreacion)</th>
+            <th>@Html.DisplayNameFor(model => model.EstadoDespacho)</th>
+            <th>Sucursal de Destino</th>
+            <th>Sucursal de Origen</th>
+            <th>Usuario</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+    @foreach (var item in Model) {
         <tr>
+            <td>@Html.DisplayFor(modelItem => item.NumeroDespacho)</td>
+            <td>@Html.DisplayFor(modelItem => item.FechaCreacion)</td>
+            <td>@Html.DisplayFor(modelItem => item.EstadoDespacho)</td>
+            <td>@Html.DisplayFor(modelItem => item.NombreSucursalDestino)</td>
+            <td>@Html.DisplayFor(modelItem => item.IdSucursalNavigation.NombreSucursal)</td>
+            <td>@Html.DisplayFor(modelItem => item.IdUsuarioNavigation.IdPersonaNavigation.Nombre)</td>
             <td>
-                @Html.DisplayFor(modelItem => item.NumeroDespacho)
-            </td>
-              <td>
-                @Html.DisplayFor(modelItem => item.FechaCreacion)
-            </td>           
-            <td>
-                @Html.DisplayFor(modelItem => item.EstadoDespacho)
-            </td>
-            <td>
-                    @Html.DisplayFor(modelItem => item.NombreSucursalDestino)
-            </td>
-             <td>
-                @Html.DisplayFor(modelItem => item.IdSucursalNavigation.NombreSucursal)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdUsuarioNavigation.IdPersonaNavigation.Nombre)
-            </td>
-                <td>
-                    @if (item.IdSucursalDestino == ViewBag.SucursalId && item.EstadoDespacho == "PENDIENTE")
-                    {
-                        <form asp-action="AceptarDespacho" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="@item.IdDespacho" />
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-angle-double-right"></i>Aceptar Despacho</button>
-                        </form>
+                @if (item.IdSucursalDestino == ViewBag.SucursalId && item.EstadoDespacho == "PENDIENTE")
+                {
+                    <form asp-action="AceptarDespacho" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.IdDespacho" />
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-angle-double-right"></i>Aceptar Despacho</button>
+                    </form>
+                }
+                else
+                {
+                    @if (ViewBag.NombreSucursal.Equals("Sucursal Principal")) { 
+                    <a asp-action="Edit" asp-route-id="@item.IdDespacho">Editar</a> <span>|</span>
                     }
-                    else
+                    <a asp-action="Details" asp-route-id="@item.IdDespacho">Detalles</a> <span>|</span>
+                    @if (ViewBag.NombreSucursal.Equals("Sucursal Principal"))
                     {
-                        @if (ViewBag.NombreSucursal.Equals("Sucursal Principal")) { 
-                        <a asp-action="Edit" asp-route-id="@item.IdDespacho">Editar</a> <span>|</span>
-                        }
-                        <a asp-action="Details" asp-route-id="@item.IdDespacho">Detalles</a> <span>|</span>
-                        @if (ViewBag.NombreSucursal.Equals("Sucursal Principal"))
-                        {
-                            <a asp-action="Delete" asp-route-id="@item.IdDespacho">Borrar</a>
-                        }
+                        <a asp-action="Delete" asp-route-id="@item.IdDespacho">Borrar</a>
                     }
-                </td>
+                }
+            </td>
         </tr>
-}
+        <tr>
+            <td colspan="7">
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var detalle in item.DetalleDespachos)
+                    {
+                        <tr>
+                                    <td>@detalle.IdProductoNavigation.Nombre @detalle.IdProductoNavigation.Descripcion</td>
+                            <td>@detalle.Cantidad</td>
+                            <td>@(detalle.EstadoBoolean ? "Activo" : "Inactivo")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    }
     </tbody>
 </table>

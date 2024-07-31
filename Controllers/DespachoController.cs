@@ -43,11 +43,13 @@ namespace ContaFacil.Controllers
                 .FirstOrDefaultAsync();
 
             var despachos = await _context.Despachos
-                .Where(d => d.IdSucursal == usuarioSucursal.IdSucursal || d.IdSucursalDestino==usuarioSucursal.IdSucursal)
-                .Include(d => d.IdEmpresaNavigation)
-                .Include(d => d.IdSucursalNavigation)
-                .Include(d => d.IdUsuarioNavigation)
-                .ToListAsync();
+    .Where(d => d.IdSucursal == usuarioSucursal.IdSucursal || d.IdSucursalDestino == usuarioSucursal.IdSucursal)
+    .Include(d => d.IdEmpresaNavigation)
+    .Include(d => d.IdSucursalNavigation)
+    .Include(d => d.IdUsuarioNavigation)
+    .Include(d => d.DetalleDespachos)
+        .ThenInclude(dd => dd.IdProductoNavigation)
+    .ToListAsync();
 
             // Cargar los nombres de las sucursales de destino
             foreach (var despacho in despachos)
@@ -229,7 +231,7 @@ namespace ContaFacil.Controllers
                        .FirstOrDefault();
                 Inventario ultimoMovimiento = new Inventario();
                 ultimoMovimiento = _context.Inventarios
-                       .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T") & i.IdProducto == inventario.IdProducto & i.IdSucursal==usuarioSucursal.IdSucursal)
+                       .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T" || i.TipoMovimiento == "C" || i.TipoMovimiento == "V") & i.IdProducto == inventario.IdProducto & i.IdSucursal==usuarioSucursal.IdSucursal)
                        .OrderByDescending(i => i.FechaCreacion)
                        .FirstOrDefault();
                string numeroDespacho= ObtenerNumeroDespacho("E",usuarioSucursal.IdSucursal);

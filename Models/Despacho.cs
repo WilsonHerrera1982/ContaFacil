@@ -39,6 +39,7 @@ public partial class Despacho
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
 
+    public virtual ICollection<DetalleDespacho> DetalleDespachos { get; set; }
     public void CargarNombreSucursalDestino(DbContext context)
     {
         if (IdSucursalDestino == null)
