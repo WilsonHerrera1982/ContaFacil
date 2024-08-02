@@ -201,8 +201,12 @@ namespace ContaFacil.Controllers
                     producto.Stock= ultimoMovimiento.Stock+inventario.cantidad;
                     if (producto.PrecioUnitario != inv.PrecioUnitarioFinal)
                     {
+
                         decimal precioProducto = (inv.PrecioUnitarioFinal + movimientoIngreso.PrecioUnitarioFinal) / 2??0;
-                        producto.PrecioUnitario = precioProducto;
+                        int cantidadTotal = ultimoMovimiento.Stock +(int)inv.Cantidad??0;
+                        decimal total = precioProducto * cantidadTotal;
+                        decimal precioVenta = (total / cantidadTotal) * (1 + inventario.utilidad / 100);
+                        producto.PrecioUnitario = precioVenta;
                         _context.Update(producto);
                         _context.SaveChanges();
                     }
@@ -911,7 +915,7 @@ namespace ContaFacil.Controllers
                 worksheet.Cell("C6").Value = $"Código de producto: {producto.Codigo}";
                 worksheet.Cell("C7").Value = $"Descripción del producto: {producto.Nombre}";
                 worksheet.Cell("C8").Value = $"Unidad de medida: {producto.IdUnidadMedidaNavigation.Abreviatura}";
-                worksheet.Cell("C9").Value = $"Código de barra: [Agregar campo de código de barra]";
+                //worksheet.Cell("C9").Value = $"Código de barra: [Agregar campo de código de barra]";
 
                 // Estilos para el encabezado
                 var rangeC1C9 = worksheet.Range("C1:C9");
@@ -980,7 +984,7 @@ namespace ContaFacil.Controllers
                     {
                         worksheet.Cell(currentRow, 5).Value = mov.Cantidad;
                         worksheet.Cell(currentRow, 6).Value = mov.PrecioUnitarioFinal;
-                        worksheet.Cell(currentRow, 7).Value = mov.Total;
+                        worksheet.Cell(currentRow, 7).Value = mov.Cantidad* mov.PrecioUnitarioFinal;
 
                         // Actualizar saldo
                         if (saldoCantidad == 0)

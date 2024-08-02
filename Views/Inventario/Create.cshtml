@@ -18,10 +18,10 @@
         <select asp-for="tipoMovimiento" class="form-control" id="tipoMovimiento">
             <option value="">Seleccione un tipo de movimiento</option>
             <option value="C">Compra</option>
-            <option value="E">Ingreso</option>
+           <!-- <option value="E">Ingreso</option>-->
             <option value="S">Egreso</option>
             <option value="T">Transferencia entre bodegas</option>
-            <option value="A">Ajuste de inventario</option>
+          <!--  <option value="A">Ajuste de inventario</option>-->
         </select>
     </div>
 
@@ -55,9 +55,11 @@
                                 <label asp-for="subtotal" class="control-label">Subtotal</label>
                                 <input asp-for="subtotal" class="form-control" onchange="calcularTotales()" />
                             </div>
-                           
-                           
-                           
+                            <div class="form-group" id="utilidadDiv">
+                                <label asp-for="utilidad" class="control-label">Utilidad</label>
+                                <input asp-for="utilidad" class="form-control" onchange="calcularTotales()" />
+                            </div>
+
                         </div>
                         <div class="col-md-6">
                             <div class="form-group" id="sucursalDestinoDiv" style="display: none;">
@@ -88,6 +90,7 @@
                                 <label asp-for="total" class="control-label">Total</label>
                                 <input readonly asp-for="total" class="form-control" />
                             </div>
+
                         </div>
                     </div>
                     <div class="row">
@@ -118,7 +121,7 @@
             var cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
             var subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
             var descuento = parseFloat(document.getElementById('descuento').value) || 0;
-
+            var utilidad = parseFloat(document.getElementById('utilidad').value) || 0;
             // Calcular precio unitario final
             var precioUnitarioFinal = cantidad !== 0 ? (subtotal - descuento) / cantidad : 0;
             document.getElementById('precioUnitarioFinal').value = precioUnitarioFinal.toFixed(2);
@@ -137,6 +140,9 @@
             // Calcular total
             var total = subtotal15 + iva;
             document.getElementById('total').value = total.toFixed(2);
+
+            var precioVenta = (total / cantidad) * (1 + utilidad / 100);
+            document.getElementById('precioVenta').value = precioVenta.toFixed(2);
         }
 
         $(document).ready(function () {
@@ -164,6 +170,8 @@
                                 $('#totalDiv').show();
                                 $('#subtotalDiv').show();
                                 $('#descuentoDiv').show();
+                                $('#utilidadDiv').show();
+                                $('#pvpDiv').show();
                             } else {
                                 $('#precioUnitarioDiv').hide();
                                 $('#precioUnitarioFinalDiv').hide();
@@ -173,6 +181,8 @@
                                 $('#totalDiv').hide();
                                 $('#subtotalDiv').hide();
                                 $('#descuentoDiv').hide();
+                                $('#utilidadDiv').hide();
+                                $('#pvpDiv').hide();
                             }
                         }
                     });

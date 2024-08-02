@@ -65,7 +65,7 @@ namespace ContaFacil.Utilities
     celdaInfoEmpresa.AddElement(new Paragraph(ObtenerValorXML(xmlDoc, "//razonSocial"), FontFactory.GetFont(FontFactory.HELVETICA, 10)));
     celdaInfoEmpresa.AddElement(new Paragraph("Dirección Matriz: " + ObtenerValorXML(xmlDoc, "//dirMatriz"), FontFactory.GetFont(FontFactory.HELVETICA, 8)));
     celdaInfoEmpresa.AddElement(new Paragraph("Dirección Sucursal: " + ObtenerValorXML(xmlDoc, "//dirEstablecimiento"), FontFactory.GetFont(FontFactory.HELVETICA, 8)));
-    celdaInfoEmpresa.AddElement(new Paragraph("Contribuyente Especial Nro: " + ObtenerValorXML(xmlDoc, "//contribuyenteEspecial"), FontFactory.GetFont(FontFactory.HELVETICA, 8)));
+    //celdaInfoEmpresa.AddElement(new Paragraph("Contribuyente Especial Nro: " + ObtenerValorXML(xmlDoc, "//contribuyenteEspecial"), FontFactory.GetFont(FontFactory.HELVETICA, 8)));
     celdaInfoEmpresa.AddElement(new Paragraph("OBLIGADO A LLEVAR CONTABILIDAD: " + ObtenerValorXML(xmlDoc, "//obligadoContabilidad"), FontFactory.GetFont(FontFactory.HELVETICA, 8)));
     tabla.AddCell(celdaInfoEmpresa);
 
@@ -284,7 +284,7 @@ namespace ContaFacil.Utilities
             AgregarCelda(tablaValores, "TOTAL DESCUENTO:", ObtenerValorXML(xmlDoc, "//totalDescuento"));
             AgregarCelda(tablaValores, "ICE:", "0.00");
             AgregarCelda(tablaValores, "IVA 15%:", ObtenerValorXML(xmlDoc, "//totalConImpuestos/totalImpuesto[codigo='2']/valor"));
-            AgregarCelda(tablaValores, "IRBPNR:", "0.00");
+            //AgregarCelda(tablaValores, "IRBPNR:", "0.00");
             AgregarCelda(tablaValores, "PROPINA:", ObtenerValorXML(xmlDoc, "//propina"));
             AgregarCelda(tablaValores, "VALOR TOTAL:", ObtenerValorXML(xmlDoc, "//importeTotal"));
 

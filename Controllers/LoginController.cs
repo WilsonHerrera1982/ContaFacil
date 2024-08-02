@@ -34,7 +34,7 @@ namespace ContaFacil.Controllers
         public IActionResult Login(LoginViewModel viewModel)
         {
             LoginViewModel viewModel2 = viewModel;
-            Usuario usuario = _context.Usuarios.Include(u =>u.UsuarioPerfils).FirstOrDefault((Usuario u) => u.Nombre == viewModel2.Username && u.Clave == viewModel2.Password);
+            Usuario usuario = _context.Usuarios.Include(u =>u.UsuarioPerfils).FirstOrDefault((Usuario u) => u.Nombre == viewModel2.Username && u.Clave == viewModel2.Password );
           
             if (usuario != null)
             {
@@ -44,6 +44,11 @@ namespace ContaFacil.Controllers
                     MaxDepth = 256 // Aumenta la profundidad máxima si es necesario
                 };
 
+                if (!usuario.Estado)
+                {
+                    Notificacion("Usuario desactivado.", NotificacionTipo.Warning);
+                    return View();
+                }
                UsuarioPerfil perfil= usuario.UsuarioPerfils.FirstOrDefault();
 
                 List<Menu> menus = ObtenerMenusPorPerfil(perfil.IdPerfil);

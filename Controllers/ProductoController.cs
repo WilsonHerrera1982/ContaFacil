@@ -30,7 +30,7 @@ namespace ContaFacil.Controllers
             emisor=_context.Emisors.Where(e=>e.Ruc==usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
             Empresa empresa=new Empresa();
             empresa = _context.Empresas.Where(e=>e.Identificacion==emisor.Ruc).FirstOrDefault();
-            var contableContext = _context.Productos.Where(p=>p.IdEmpresa==empresa.IdEmpresa).Include(p => p.IdCategoriaProductoNavigation).Include(p => p.IdEmpresaNavigation).Include(p => p.IdUnidadMedidaNavigation);
+            var contableContext = _context.Productos.Where(p=>p.IdEmpresa==empresa.IdEmpresa).Include(p => p.IdCategoriaProductoNavigation).Include(p => p.IdEmpresaNavigation).Include(p => p.IdUnidadMedidaNavigation).Include(p=>p.Inventarios);
             return View(await contableContext.ToListAsync());
         }
 

@@ -19,6 +19,8 @@ namespace ContaFacil.Models.ViewModel
         public decimal iva {  get; set; }
         public decimal descuento {  get; set; }
         public decimal total { get; set; }
+        public int utilidad {  get; set; }
+        public decimal precioVenta { get; set; }
 
     }
 }

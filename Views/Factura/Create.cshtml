@@ -43,7 +43,7 @@
         <input type="text" id="subtotal15" name="Subtotal15" class="form-control" readonly />
     </div>
     <div class="form-group">
-        <label>Subtotal Sin Impuestos</label>
+        <label>IVA</label>
         <input type="text" id="subtotalSinImpuestos" name="SubtotalSinImpuestos" class="form-control" readonly />
     </div>
     <div class="form-group">
@@ -168,9 +168,11 @@
                 let productoId = $(this).val();
                 let descripcion = $(this).find("option:selected").data("descripcion");
                 let porcentaje = $(this).find("option:selected").data("porcentaje");
+                let codigo = $(this).find("option:selected").data("codigo");  // Obtén el código
                 let row = $(this).closest("tr");
                 row.find(".producto-descripcion").val(descripcion);
                 row.data("porcentaje", porcentaje);
+                row.find(".producto-codigo").val(codigo);  // Actualiza el campo de código
                 $.get(`/Factura/VerificarStock?idProducto=${productoId}&cantidad=${row.find(".cantidad").val()}`, function (data) {
                     if (!data.disponible) {
                         $("#stockError").text(data.mensaje).show();
@@ -219,8 +221,8 @@
                 let totalConImpuestos = subtotal0 + subtotal15 + impuesto15;
 
                 $("#subtotal0").val(subtotal0.toFixed(2));
-                $("#subtotal15").val((subtotal15 + impuesto15).toFixed(2));
-                $("#subtotalSinImpuestos").val(subtotalSinImpuestos.toFixed(2));
+                $("#subtotal15").val(subtotalSinImpuestos.toFixed(2));
+                $("#subtotalSinImpuestos").val(impuesto15.toFixed(2));
                 $("#montoTotal").val(totalConImpuestos.toFixed(2));
 
                 calcularTotalPagado();
@@ -280,6 +282,7 @@
                 } else if (codigo !== '') {
                     alert("Código de producto no encontrado");
                     input.val(''); // Limpiar el input si el código no se encuentra
+                    select.val('').trigger('change'); // Resetear el select si el código no se encuentra
                 }
             }
         });
