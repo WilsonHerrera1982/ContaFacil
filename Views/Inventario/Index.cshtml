@@ -18,8 +18,8 @@
             <div class="card h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-plus-circle fa-3x mb-3 text-primary"></i>
-                    <h5 class="card-title">Crear Ingreso/Egreso</h5>
-                    <p class="card-text">Registra nuevos movimientos de inventario.</p>
+                    <h5 class="card-title">Crear</h5>
+                    <p class="card-text">Registra nuevos movimientos de compra / venta / transferencia.</p>
                     <a asp-action="Create" class="btn btn-primary mt-auto">Crear</a>
                 </div>
             </div>
@@ -38,9 +38,19 @@
             <div class="card h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-file-excel fa-3x mb-3 text-info"></i>
-                    <h5 class="card-title">Cargar Excel</h5>
+                    <h5 class="card-title">Carga Inicial</h5>
                     <p class="card-text">Importa datos desde un archivo Excel.</p>
                     <a asp-action="CargarExcel" class="btn btn-info mt-auto">Cargar Excel</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-truck fa-3x mb-3 text-secondary "></i>
+                    <h5 class="card-title">Transferencias Sucursal</h5>
+                    <p class="card-text">Revisar el estado de despachos realizados a sucursales.</p>
+                    <a asp-action="Index" asp-controller="Despacho" class="btn btn-secondary  mt-auto">Despachos</a>
                 </div>
             </div>
         </div>

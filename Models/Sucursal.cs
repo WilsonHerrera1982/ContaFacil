@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-
+using System.Collections.Generic;  using System.ComponentModel;
+using System.ComponentModel;
 namespace ContaFacil.Models;
 
 public partial class Sucursal
@@ -10,24 +10,24 @@ public partial class Sucursal
     public int IdUsuario { get; set; }
 
     public int IdEmisor { get; set; }
-
+    [DisplayName("Nombre Sucursal")]
     public string NombreSucursal { get; set; } = null!;
 
     public string Usuario { get; set; } = null!;
 
     public string Clave { get; set; } = null!;
-
+    [DisplayName("Dirección Sucursal")]
     public string DireccionSucursal { get; set; } = null!;
 
     public string Telefono { get; set; } = null!;
-
+    [DisplayName("Punto Emisión")]
     public string PuntoEmision { get; set; } = null!;
 
     public string Secuencial { get; set; } = null!;
 
-    public bool EstadoBoolean { get; set; }
+    [DisplayName("Activo/Inactivo")]  public bool EstadoBoolean { get; set; }
 
-    public DateTime FechaCreacion { get; set; }
+    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 

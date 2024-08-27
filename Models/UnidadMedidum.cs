@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Generic;  using System.ComponentModel;
 
 namespace ContaFacil.Models;
 
@@ -11,11 +11,11 @@ public partial class UnidadMedidum
 
     public string Abreviatura { get; set; } = null!;
 
-    public bool EstadoBoolean { get; set; }
+    [DisplayName("Activo/Inactivo")]  public bool EstadoBoolean { get; set; }
 
-    public DateTime FechaCreacion { get; set; }
+    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 
-    public DateTime FechaModificacion { get; set; }
+    [DisplayName("Fecha Modificación")]  public DateTime FechaModificacion { get; set; }
 
     public int UsuarioCreacion { get; set; }
 

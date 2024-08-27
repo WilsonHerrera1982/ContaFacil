@@ -4,94 +4,107 @@
     ViewData["Title"] = "Index";
 }
 
-
 <p>
     <a asp-action="Create">Crear Nueva</a>
 </p>
+
 <table id="tblFactura" class="table">
     <thead>
         <tr>
-            <th>
-                Número Factura
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MontoTotal)
-            </th>
-            <th>
-               Estado SRI
-            </th>
-         
-            <th>
-                @Html.DisplayNameFor(model => model.FechaCreacion)
-            </th>           
-            <th>
-                @Html.DisplayNameFor(model => model.DescripcionSri)
-            </th>
-          
-            <th>
-                Cliente
-            </th>
+            <th>Número Factura</th>
+            <th>@Html.DisplayNameFor(model => model.MontoTotal)</th>
+            <th>Estado SRI</th>
+            <th>@Html.DisplayNameFor(model => model.FechaCreacion)</th>
+            <th>@Html.DisplayNameFor(model => model.DescripcionSri)</th>
+            <th>Cliente</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.NumeroFactura)</td>
+                <td>@Html.DisplayFor(modelItem => item.MontoTotal)</td>
+                <td>@Html.DisplayFor(modelItem => item.Estado)</td>
+                <td>@Html.DisplayFor(modelItem => item.FechaCreacion)</td>
+                <td>@Html.DisplayFor(modelItem => item.DescripcionSri)</td>
+                <td>@Html.DisplayFor(modelItem => item.IdClienteNavigation.IdPersonaNavigation.Nombre)</td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.NumeroFactura)
-                </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MontoTotal)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Estado)
-            </td>
-           
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaCreacion)
-            </td>
-            
-            <td>
-                @Html.DisplayFor(modelItem => item.DescripcionSri)
-            </td>
-           
-            <td>
-                @Html.DisplayFor(modelItem => item.IdClienteNavigation.IdPersonaNavigation.Nombre)
-            </td>
-            <td>
-                <a asp-action="Details" asp-route-id="@item.IdFactura">Detalles</a> |
+                    <a asp-action="Details" asp-route-id="@item.IdFactura">Detalles</a> |
                     <form asp-action="NotaCredito" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@item.IdFactura" />
-                        <button type="submit" class=" btn btn-primary"><i class='fas fa-money-bill-alt'></i> NOTA CREDITO</button>
+                        <button type="submit" class="btn btn-primary"><i class='fas fa-money-bill-alt'></i> NOTA CREDITO</button>
                     </form>
                     <form asp-action="GenerarRIDE" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@item.IdFactura" />
-                        <button type="submit" class=" btn btn-primary"><i class='fas fa-file-pdf'></i> RIDE</button>
+                        <button type="submit" class="btn btn-primary"><i class='fas fa-file-pdf'></i> RIDE</button>
                     </form>
                     <form asp-action="GenerarXml" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@item.IdFactura" />
-                        <button type="submit" class=" btn btn-primary"><i class="fas fa-arrow-alt-circle-down"></i> XML</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-arrow-alt-circle-down"></i> XML</button>
                     </form>
-                    @if(!item.Estado.Equals("RECIBIDA")){
-                    <form asp-action="ReenviarSri" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@item.IdFactura" />
-                            <button type="submit" class=" btn btn-primary"><i class="fas fa-angle-double-right"></i>Reenviar SRI</button>
-                    </form>
+                    @if (!item.Estado.Equals("RECIBIDA"))
+                    {
+                        <form asp-action="ReenviarSri" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@item.IdFactura" />
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-angle-double-right"></i>Reenviar SRI</button>
+                        </form>
                     }
-            </td>
-        </tr>
-}
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<!-- Gráfico estadístico -->
+<div class="mt-5">
+    <h3>Facturas por Estado</h3>
+    <canvas id="facturaEstadoChart"></canvas>
+</div>
+
 @section Scripts {
     <script src="~/js/jquery-3.6.0.js"></script>
     <script src="~/js/jquery-3.6.0.min.js"></script>
     <script src="~/js/DataTables/datatables.min.js"></script>
-    <script type="text/javascript" src="~/js/bootstrap.js"></script>
     <script src="~/js/factura.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
 
+    <script>
+        $(document).ready(function () {
+            var ctx = document.getElementById('facturaEstadoChart').getContext('2d');
+            var facturaEstadoChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Emitida', 'Anulada', 'Recibida'],
+                    datasets: [{
+                        label: 'Facturas por Estado',
+                        data: [
+        @Model.Count(f => f.Estado == "Emitida"),
+        @Model.Count(f => f.Estado == "Anulada"),
+        @Model.Count(f => f.Estado == "Recibida")
+                                ],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        });
+    </script>
 }

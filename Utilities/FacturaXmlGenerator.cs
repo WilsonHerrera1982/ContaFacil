@@ -68,7 +68,7 @@ namespace ContaFacil.Utilities
                 new XElement("razonSocialComprador", cliente.Nombre),
                 new XElement("identificacionComprador", cliente.Identificacion),
                 new XElement("totalSinImpuestos", factura.Subtotal?.ToString("F2") ?? "0.00"),
-                new XElement("totalDescuento", "0.00"),
+                new XElement("totalDescuento", factura.DetalleFacturas.Sum(d => d.Descuento ?? 0)),
                new XElement("totalConImpuestos",
     factura.DetalleFacturas.GroupBy(df => df.IdProductoNavigation.IdImpuestoNavigation)
         .Select(group =>
@@ -76,7 +76,7 @@ namespace ContaFacil.Utilities
                 new XElement("codigo", group.Key.CodigoSri),
                 new XElement("codigoPorcentaje", group.Key.CodigoPorcentajeSri),
                 new XElement("baseImponible", group.Sum(df => df.Cantidad * df.PrecioUnitario).ToString("F2")),
-                new XElement("valor", group.Sum(df => df.Cantidad * df.PrecioUnitario * (group.Key.Porcentaje / 100m)).ToString("F2"))
+                new XElement("valor", string.Format("{0:F2}", group.Sum(df => ((df.Cantidad * df.PrecioUnitario) - df.Descuento) * (group.Key.Porcentaje / 100m))))
             )
         )
 ),
@@ -107,7 +107,7 @@ namespace ContaFacil.Utilities
              new XElement("descripcion", detalle.Descripcion),
              new XElement("cantidad", detalle.Cantidad.ToString()),
              new XElement("precioUnitario", detalle.PrecioUnitario.ToString("F2")),
-             new XElement("descuento", "0.00"),
+             new XElement("descuento", detalle.Descuento),
              new XElement("precioTotalSinImpuesto", (detalle.Cantidad * detalle.PrecioUnitario).ToString("F2")),
              new XElement("impuestos",
                  new XElement("impuesto",

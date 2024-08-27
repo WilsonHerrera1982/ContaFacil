@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Generic;  using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -66,6 +66,7 @@ namespace ContaFacil.Controllers
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
                 menuPerfil.FechaCreacion = new DateTime();
                 menuPerfil.UsuarioCreacion=int.Parse(idUsuario);
+                menuPerfil.Estado = true;
                 _context.Add(menuPerfil);
                 await _context.SaveChangesAsync();
                 Notificacion("Registro guardardo con exito", NotificacionTipo.Success);
@@ -93,8 +94,8 @@ namespace ContaFacil.Controllers
             {
                 return NotFound();
             }
-            ViewData["IdMenu"] = new SelectList(_context.Menus, "IdMenu", "IdMenu", menuPerfil.IdMenu);
-            ViewData["IdPerfil"] = new SelectList(_context.Perfils, "IdPerfil", "IdPerfil", menuPerfil.IdPerfil);
+            ViewData["IdMenu"] = new SelectList(_context.Menus, "IdMenu", "Descripcion", menuPerfil.IdMenu);
+            ViewData["IdPerfil"] = new SelectList(_context.Perfils, "IdPerfil", "Descripcion", menuPerfil.IdPerfil);
             return View(menuPerfil);
         }
 
@@ -103,36 +104,23 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdMenuPerfil,IdMenu,IdPerfil,Estado,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] MenuPerfil menuPerfil)
+        public async Task<IActionResult> Edit(int id,MenuPerfil menuPerfil)
         {
-            if (id != menuPerfil.IdMenuPerfil)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+               try
                 {
                     _context.Update(menuPerfil);
                     await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!MenuPerfilExists(menuPerfil.IdMenuPerfil))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                Notificacion("Registro guardado con exito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdMenu"] = new SelectList(_context.Menus, "IdMenu", "IdMenu", menuPerfil.IdMenu);
-            ViewData["IdPerfil"] = new SelectList(_context.Perfils, "IdPerfil", "IdPerfil", menuPerfil.IdPerfil);
-            return View(menuPerfil);
+                catch (DbUpdateConcurrencyException)
+                {
+                ViewData["IdMenu"] = new SelectList(_context.Menus, "IdMenu", "Descripcion", menuPerfil.IdMenu);
+                ViewData["IdPerfil"] = new SelectList(_context.Perfils, "IdPerfil", "Descripcion", menuPerfil.IdPerfil);
+                Notificacion("Error al actualizar el registro",NotificacionTipo.Error);
+                return View(menuPerfil);
+            }
+           
         }
 
         // GET: MenuPerfil/Delete/5

@@ -1,0 +1,48 @@
+﻿@using ContaFacil.Models.ViewModel
+@model SubCuentasPartialViewModel
+
+<style>
+    .subcuentas-table th,
+    .subcuentas-table td {
+        vertical-align: middle;
+    }
+
+    .subcuentas-table .nombre-column {
+        width: 40%;
+    }
+
+    .subcuentas-table .acciones-column {
+        width: 30%;
+        text-align: center;
+    }
+</style>
+
+<table class="table table-bordered subcuentas-table">
+    <thead>
+        <tr>
+            <th style="width: 30%;">Código</th>
+            <th class="nombre-column">Nombre</th>
+            <th class="acciones-column">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var subcuenta in Model.Cuentas.Where(c => c.IdIdCuenta == Model.ParentId))
+        {
+            <tr>
+                <td>@subcuenta.Codigo</td>
+                <td class="nombre-column">@subcuenta.Nombre</td>
+                <td class="acciones-column">
+                    <button onclick="showAddDialog('@subcuenta.IdCuenta', '@subcuenta.Codigo', '@subcuenta.Nombre')" class="btn btn-sm btn-success">Agregar subcuenta</button>
+                </td>
+            </tr>
+            @if (Model.Cuentas.Any(c => c.IdIdCuenta == subcuenta.IdCuenta))
+            {
+                <tr>
+                    <td colspan="3" style="padding: 0;">
+                        @await Html.PartialAsync("_SubCuentasPartial", new SubCuentasPartialViewModel { Cuentas = Model.Cuentas, ParentId = subcuenta.IdCuenta })
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

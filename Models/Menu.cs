@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-
+using System.Collections.Generic;  using System.ComponentModel;
+using System.ComponentModel;
 namespace ContaFacil.Models
 {
     public partial class Menu
@@ -13,7 +13,7 @@ namespace ContaFacil.Models
         public int IdMenu { get; set; }
         public string Descripcion { get; set; } = null!;
         public bool? Estado { get; set; }
-        public DateTime FechaCreacion { get; set; }
+        [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int UsuarioCreacion { get; set; }
         public int? UsuarioModificacion { get; set; }

@@ -1,0 +1,254 @@
+﻿@using ContaFacil.Models.ViewModel
+@model ReportesViewModel
+
+<h2 class="mb-4">Reportes de Ventas</h2>
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px; /* Altura fija para todos los gráficos */
+    }
+</style>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form asp-action="GenerarReporte" method="post" class="form-inline">
+            <div class="form-group mr-2">
+                <label for="fechaInicio" class="mr-2">Fecha de Inicio:</label>
+                <input type="date" id="fechaInicio" name="fechaInicio" class="form-control" required>
+            </div>
+            <div class="form-group mr-2">
+                <label for="fechaFin" class="mr-2">Fecha de Fin:</label>
+                <input type="date" id="fechaFin" name="fechaFin" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Generar Reporte</button>
+        </form>
+    </div>
+    <div class="col-md-6 text-right">
+        @if (Model != null)
+        {
+            <form asp-action="ExportarExcel" method="post" class="d-inline">
+                <input type="hidden" name="fechaInicio" value="@ViewBag.FechaInicio" />
+                <input type="hidden" name="fechaFin" value="@ViewBag.FechaFin" />
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-file-excel mr-2"></i>Exportar a Excel
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (Model != null)
+{
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ventas por Día</h5>
+                    <div class="chart-container">
+                    <canvas id="ventasPorDiaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ventas por Sucursal</h5>
+                    <div class="chart-container">
+                    <canvas id="ventasPorSucursalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Top 10 Productos más Vendidos</h5>
+                    <div class="chart-container">
+                    <canvas id="ventasPorProductoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ventas por Tipo de Pago</h5>
+                    <div class="chart-container">
+                    <canvas id="ventasPorTipoPagoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ventas por Promociones</h5>
+                    <div class="chart-container">
+                        <canvas id="ventasPromocionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                var ventasPorDia = @Html.Raw(Json.Serialize(Model.VentasPorDia));
+                var ventasPorSucursal = @Html.Raw(Json.Serialize(Model.VentasPorSucursal));
+                var ventasPorProducto = @Html.Raw(Json.Serialize(Model.VentasPorProducto));
+                var ventasPorTipoPago = @Html.Raw(Json.Serialize(Model.VentasPorTipoPago));
+                var ventasPromocion = @Html.Raw(Json.Serialize(Model.VentasPromocion));  // Datos para promociones
+
+                console.log('ventasPromocion:', ventasPromocion);
+
+                function extractData(data, labelKey, valueKey) {
+                    if (data && data.$values) {
+                        return {
+                            labels: data.$values.map(item => item[labelKey.toLowerCase()]),
+                            values: data.$values.map(item => item[valueKey.toLowerCase()])
+                        };
+                    }
+                    console.error('Formato de datos no soportado:', data);
+                    return { labels: [], values: [] };
+                }
+
+                var ventasDiaData = extractData(ventasPorDia, 'fecha', 'total');
+                console.log('ventasDiaData:', ventasDiaData);
+                new Chart('ventasPorDiaChart', {
+                    type: 'line',
+                    data: {
+                        labels: ventasDiaData.labels,
+                        datasets: [{
+                            label: 'Ventas por Día',
+                            data: ventasDiaData.values,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    parser: 'YYYY-MM-DD',
+                                    unit: 'day',
+                                    displayFormats: {
+                                        day: 'DD/MM/YYYY'
+                                    }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                var ventasSucursalData = extractData(ventasPorSucursal, 'sucursal', 'total');
+                new Chart('ventasPorSucursalChart', {
+                    type: 'bar',
+                    data: {
+                        labels: ventasSucursalData.labels,
+                        datasets: [{
+                            label: 'Ventas por Sucursal',
+                            data: ventasSucursalData.values,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                var ventasProductoData = extractData(ventasPorProducto, 'producto', 'total');
+                new Chart('ventasPorProductoChart', {
+                    type: 'pie',
+                    data: {
+                        labels: ventasProductoData.labels,
+                        datasets: [{
+                            data: ventasProductoData.values,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                                'rgba(255, 159, 64, 0.6)',
+                                'rgba(199, 199, 199, 0.6)',
+                                'rgba(83, 102, 255, 0.6)',
+                                'rgba(40, 159, 64, 0.6)',
+                                'rgba(210, 199, 199, 0.6)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+
+                var ventasTipoPagoLabels = ventasPorTipoPago.$values.map(item => item.tipoPago);
+                var ventasTipoPagoValues = ventasPorTipoPago.$values.map(item => item.total);
+
+                console.log('labels ', ventasTipoPagoLabels);
+                new Chart('ventasPorTipoPagoChart', {
+                    type: 'doughnut',
+                    data: {
+                        labels: ventasTipoPagoLabels,
+                        datasets: [{
+                            data: ventasTipoPagoValues,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(153, 102, 255, 0.6)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+                var ventasPromocionData = extractData(ventasPromocion, 'producto', 'total');  // Datos para promociones
+                new Chart('ventasPromocionChart', {
+                    type: 'bar',
+                    data: {
+                        labels: ventasPromocionData.labels,
+                        datasets: [{
+                            label: 'Ventas por Promociones',
+                            data: ventasPromocionData.values,
+                            backgroundColor: 'rgba(255, 159, 64, 0.6)'  // Color para las barras
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error al crear los gráficos:', error);
+            }
+        });
+    </script>
+}

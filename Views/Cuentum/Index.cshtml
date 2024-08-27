@@ -1,89 +1,118 @@
-﻿@model IEnumerable<ContaFacil.Models.Cuentum>
+﻿@model ContaFacil.Models.ViewModel.CuentumIndexViewModel
+@using ContaFacil.Models.ViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Plan de Cuentas";
 }
 
+<h1>Plan de Cuentas</h1>
 
+@Html.ActionLink("Exportar a Excel", "ExportToExcel", "Cuentum", null, new { @class = "btn btn-primary mb-3" })
 
-<p>
-    <a asp-action="Create">Crear Nuevo</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Nombre)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SaldoInicial)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SaldoActual)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Estado)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FechaCreacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FechaModificacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UsuarioCreacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UsuarioModificacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdEmpresaNavigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdTipoCuentaNavigation)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Nombre)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SaldoInicial)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SaldoActual)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Estado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaCreacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaModificacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UsuarioCreacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UsuarioModificacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdEmpresaNavigation.IdEmpresa)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdTipoCuentaNavigation.IdTipoCuenta)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.IdCuenta">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.IdCuenta">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdCuenta">Eliminar</a>
-            </td>
-        </tr>
+@foreach (var cuenta in Model.Cuentas.Where(c => c.IdIdCuenta == null))
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5>@cuenta.Codigo - @cuenta.Nombre</h5>
+            <button onclick="showAddDialog('@cuenta.IdCuenta', '@cuenta.Codigo', '@cuenta.Nombre')" class="btn btn-sm btn-success">Agregar subcuenta</button>
+        </div>
+        <div class="card-body">
+            @await Html.PartialAsync("_SubCuentasPartial", new SubCuentasPartialViewModel { Cuentas = Model.Cuentas, ParentId = cuenta.IdCuenta })
+        </div>
+    </div>
 }
-    </tbody>
-</table>
+<div id="addAccountDialog" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar nueva cuenta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAccountForm">
+                    <input type="hidden" id="parentId" name="IdIdCuenta" />
+                    <div class="mb-3">
+                        <label for="parentAccount" class="form-label">Cuenta padre</label>
+                        <input type="text" class="form-control" id="parentAccount" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigo" class="form-label">Código</label>
+                        <input type="text" class="form-control" id="codigo" name="Codigo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="Nombre" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="addAccount()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script>
+        function showAddDialog(parentId, parentCodigo, parentNombre) {
+            document.getElementById('parentId').value = parentId;
+            document.getElementById('parentAccount').value = parentCodigo + ' - ' + parentNombre;
+            new bootstrap.Modal(document.getElementById('addAccountDialog')).show();
+        }
+
+        function addAccount() {
+            const form = document.getElementById('addAccountForm');
+            const formData = new FormData(form);
+
+            fetch('/Cuentum/Create', {
+                method: 'POST',
+                body: formData
+                // Eliminado el encabezado RequestVerificationToken
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addAccountDialog'));
+                        modal.hide();
+                    } else {
+                        alert('Error al agregar la cuenta: ' + data.message);
+                    }
+                });
+        }
+
+
+        function exportToExcel() {
+            const cuentasData = JSON.parse(document.querySelector('button[onclick="exportToExcel()"]').getAttribute('data-cuentas'));
+
+            // Función para obtener el nivel de indentación basado en el código
+            function getIndentLevel(codigo) {
+                return codigo.split('.').length - 1;
+            }
+
+            // Crear una estructura de datos plana con indentación
+            const flatData = cuentasData.map(cuenta => ({
+                'Código': cuenta.codigo,
+                'Cuenta': '  '.repeat(getIndentLevel(cuenta.codigo)) + cuenta.nombre
+            }));
+
+            // Crear la hoja de cálculo
+            const ws = XLSX.utils.json_to_sheet(flatData, { header: ['Código', 'Cuenta'] });
+
+            // Ajustar el ancho de las columnas
+            ws['!cols'] = [
+                { wch: 15 }, // Ancho para la columna Código
+                { wch: 50 }  // Ancho para la columna Cuenta
+            ];
+
+            // Crear el libro y añadir la hoja
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Plan de Cuentas");
+
+            // Escribir el archivo y descargarlo
+            XLSX.writeFile(wb, "plan_de_cuentas.xlsx");
+        }
+    </script>
+}

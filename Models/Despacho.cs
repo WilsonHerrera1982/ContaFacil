@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
+using System.Collections.Generic;  
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ContaFacil.Models;
@@ -14,23 +15,24 @@ public partial class Despacho
     public int IdEmpresa { get; set; }
 
     public int IdSucursal { get; set; }
-
+    [DisplayName("Número Despacho")]
     public string NumeroDespacho { get; set; } = null!;
 
-    public bool EstadoBoolean { get; set; }
+    [DisplayName("Activo/Inactivo")]  public bool EstadoBoolean { get; set; }
 
-    public DateTime FechaCreacion { get; set; }
+    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 
     public int UsuarioCreacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
-
+    [DisplayName("Estado Despacho")]
     public string? EstadoDespacho { get; set; }
 
     public int? IdSucursalDestino { get; set; }
     [NotMapped]
+    [DisplayName("Nombre Sucursal Destino")]
     public string? NombreSucursalDestino { get; set; }
 
     public virtual Empresa IdEmpresaNavigation { get; set; } = null!;

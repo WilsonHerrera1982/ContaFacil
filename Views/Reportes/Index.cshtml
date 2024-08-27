@@ -1,0 +1,123 @@
+﻿@{
+    ViewData["Title"] = "Reportes Contables";
+}
+
+<style>
+    .card {
+        height: 100%;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .btn {
+        align-self: center;
+    }
+
+    .icon-size {
+        font-size: 2.5rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Reportes Contables</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-book icon-size mb-3 text-primary"></i>
+                    <h5 class="card-title">Plan de Cuentas</h5>
+                    <p class="card-text">Genera el reporte del Plan de Cuentas.</p>
+                    <a asp-action="Index" asp-controller="Cuentum" class="btn  btn-primary mt-3 ">Generar Plan de Cuentas</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-journal-whills icon-size mb-3 text-primary"></i>
+                    <h5 class="card-title">Libro Diario</h5>
+                    <p class="card-text">Genera el reporte del Libro Diario.</p>
+                    <form asp-action="ExportarLibroDiarioExcel" method="post">
+                        <div class="form-group">
+                            <label for="fechaInicio">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicio" name="fechaInicio" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin">Fecha Fin:</label>
+                            <input type="date" id="fechaFin" name="fechaFin" class="form-control" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Generar Libro Diario</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-calculator icon-size mb-3 text-primary"></i>
+                    <h5 class="card-title">Mayorización</h5>
+                    <p class="card-text">Genera el reporte de Mayorización.</p>
+                    <form asp-action="ExportarMayorizacionExcel" method="post">
+                        <div class="form-group">
+                            <label for="fechaInicioMay">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicioMay" name="fechaInicio" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFinMay">Fecha Fin:</label>
+                            <input type="date" id="fechaFinMay" name="fechaFin" class="form-control" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Generar Mayorización</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-balance-scale icon-size mb-3 text-primary"></i>
+                    <h5 class="card-title">Estado de Situación Financiera</h5>
+                    <p class="card-text">Genera el reporte de Estado Situación Financiera.</p>
+                    <form asp-action="ExportarBalanceExcel" method="post">
+                        <div class="form-group">
+                            <label for="fechaInicioBal">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicioBal" name="fechaInicio" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFinBal">Fecha Fin:</label>
+                            <input type="date" id="fechaFinBal" name="fechaFin" class="form-control" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Generar Estado de Situación Financiera</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line icon-size mb-3 text-primary"></i>
+                    <h5 class="card-title">Estado de Resultados</h5>
+                    <p class="card-text">Genera el reporte de Estado de Resultados.</p>
+                    <form asp-action="ExportEstadoExcel" method="post">
+                        <div class="form-group">
+                            <label for="fechaInicioBal">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicioBal" name="fechaInicio" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFinBal">Fecha Fin:</label>
+                            <input type="date" id="fechaFinBal" name="fechaFin" class="form-control" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Generar Estado de Resultados</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

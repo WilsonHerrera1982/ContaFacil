@@ -13,46 +13,77 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="IdProducto" />
-            <div class="form-group">
-                <label asp-for="Codigo" class="control-label">Código</label>
-                <input asp-for="Codigo" class="form-control" />
-                <span asp-validation-for="Codigo" class="text-danger"></span>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Codigo" class="control-label">Código</label>
+                        <input asp-for="Codigo" class="form-control" />
+                        <span asp-validation-for="Codigo" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Nombre" class="control-label"></label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Descripcion" class="control-label">Descripción</label>
+                        <input asp-for="Descripcion" class="form-control" />
+                        <span asp-validation-for="Descripcion" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PrecioUnitario" class="control-label"></label>
+                        <input asp-for="PrecioUnitario" class="form-control" />
+                        <span asp-validation-for="PrecioUnitario" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="IdCategoriaProducto" class="control-label">ID Categoría de Producto</label>
+                        <select asp-for="IdCategoriaProducto" class="form-control" asp-items="ViewBag.IdCategoriaProducto"></select>
+                        <span asp-validation-for="IdCategoriaProducto" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="IdUnidadMedida" class="control-label">ID Unidad de Medida</label>
+                        <select asp-for="IdUnidadMedida" class="form-control" asp-items="ViewBag.IdUnidadMedida"></select>
+                        <span asp-validation-for="IdUnidadMedida" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Stock" class="control-label"></label>
+                        <input asp-for="Stock" class="form-control" />
+                        <span asp-validation-for="Stock" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Utilidad" class="control-label"></label>
+                        <input asp-for="Utilidad" class="form-control" />
+                        <span asp-validation-for="Utilidad" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Descuento" class="control-label"></label>
+                        <input asp-for="Descuento" class="form-control" />
+                        <span asp-validation-for="Descuento" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PrecioVenta" class="control-label"></label>
+                        <input readonly asp-for="PrecioVenta" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="IdEmpresa" class="control-label"></label>
+                        <input readonly asp-for="IdEmpresaNavigation.Nombre" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="IdEmpresa" class="control-label"></label>
+                        <input readonly asp-for="IdImpuestoNavigation.Porcentaje" class="form-control" />
+                    </div>
+                    <div class="form-group form-check">
+                        <label class="form-check-label">
+                            <input class="form-check-input" asp-for="EstadoBoolean" /> Activo/Inactivo
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Nombre" class="control-label"></label>
-                <input asp-for="Nombre" class="form-control" />
-                <span asp-validation-for="Nombre" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Descripcion" class="control-label">Descripción</label>
-                <input asp-for="Descripcion" class="form-control" />
-                <span asp-validation-for="Descripcion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PrecioUnitario" class="control-label"></label>
-                <input asp-for="PrecioUnitario" class="form-control" />
-                <span asp-validation-for="PrecioUnitario" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="IdCategoriaProducto" class="control-label">ID Categoría de Producto</label>
-                <select asp-for="IdCategoriaProducto" class="form-control" asp-items="ViewBag.IdCategoriaProducto"></select>
-                <span asp-validation-for="IdCategoriaProducto" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="IdUnidadMedida" class="control-label">ID Unidad de Medida</label>
-                <select asp-for="IdUnidadMedida" class="form-control" asp-items="ViewBag.IdUnidadMedida"></select>
-                <span asp-validation-for="IdUnidadMedida" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Stock" class="control-label"></label>
-                <input asp-for="Stock" class="form-control" />
-                <span asp-validation-for="Stock" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EstadoBoolean" class="control-label">Estado</label>
-                <input asp-for="EstadoBoolean" class="form-control" />
-                <span asp-validation-for="EstadoBoolean" class="text-danger"></span>
-            </div>
+
             <div class="form-group">
                 <center><button class="button" type="submit">Editar</button></center>
             </div>

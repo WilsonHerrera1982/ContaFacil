@@ -31,13 +31,16 @@
                             <label asp-for="numeroDespacho" class="control-label">Número de Despacho</label>
                             <input asp-for="numeroDespacho" id="NumeroDespacho" class="form-control" readonly />
                         </div>
-                        <div class="col">
-                            
+                        <div class="form-group">
+                            <label asp-for="idProducto" class="control-label">Producto</label>
+                            <select asp-for="idProducto" id="productoSelect" class="form-control" asp-items="ViewBag.IdProducto"></select>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="idProveedor" class="control-label">Proveedor</label>
+                            <select asp-for="idProveedor" id="proveedorSelect" class="form-control" asp-items="ViewBag.IdProveedor"></select>
+                        </div>
+                        <div class="col-md-6">
                            
-                            <div class="form-group">
-                                <label asp-for="idProducto" class="control-label">Producto</label>
-                                <select asp-for="idProducto" class="form-control" asp-items="ViewBag.IdProducto"></select>
-                            </div>
                             <div class="form-group">
                                 <label asp-for="cantidad" class="control-label"></label>
                                 <input asp-for="cantidad" class="form-control" onchange="calcularTotales()" />
@@ -54,12 +57,7 @@
                             <div class="form-group" id="subtotalDiv">
                                 <label asp-for="subtotal" class="control-label">Subtotal</label>
                                 <input asp-for="subtotal" class="form-control" onchange="calcularTotales()" />
-                            </div>
-                            <div class="form-group" id="utilidadDiv">
-                                <label asp-for="utilidad" class="control-label">Utilidad</label>
-                                <input asp-for="utilidad" class="form-control" onchange="calcularTotales()" />
-                            </div>
-
+                            </div>                           
                         </div>
                         <div class="col-md-6">
                             <div class="form-group" id="sucursalDestinoDiv" style="display: none;">
@@ -115,13 +113,15 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     }
     <script>
         function calcularTotales() {
             var cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
             var subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
             var descuento = parseFloat(document.getElementById('descuento').value) || 0;
-            var utilidad = parseFloat(document.getElementById('utilidad').value) || 0;
             // Calcular precio unitario final
             var precioUnitarioFinal = cantidad !== 0 ? (subtotal - descuento) / cantidad : 0;
             document.getElementById('precioUnitarioFinal').value = precioUnitarioFinal.toFixed(2);
@@ -140,9 +140,7 @@
             // Calcular total
             var total = subtotal15 + iva;
             document.getElementById('total').value = total.toFixed(2);
-
-            var precioVenta = (total / cantidad) * (1 + utilidad / 100);
-            document.getElementById('precioVenta').value = precioVenta.toFixed(2);
+            
         }
 
         $(document).ready(function () {
@@ -170,8 +168,7 @@
                                 $('#totalDiv').show();
                                 $('#subtotalDiv').show();
                                 $('#descuentoDiv').show();
-                                $('#utilidadDiv').show();
-                                $('#pvpDiv').show();
+                               
                             } else {
                                 $('#precioUnitarioDiv').hide();
                                 $('#precioUnitarioFinalDiv').hide();
@@ -180,15 +177,27 @@
                                 $('#ivaDiv').hide();
                                 $('#totalDiv').hide();
                                 $('#subtotalDiv').hide();
-                                $('#descuentoDiv').hide();
-                                $('#utilidadDiv').hide();
-                                $('#pvpDiv').hide();
+                                $('#descuentoDiv').hide();                               
                             }
                         }
                     });
                 } else {
                     $('#detallesMovimiento').hide();
                 }
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#productoSelect').select2({
+                placeholder: 'Buscar producto...',
+                allowClear: true
+            });
+        });
+        $(document).ready(function () {
+            $('#proveedorSelect').select2({
+                placeholder: 'Buscar producto...',
+                allowClear: true
             });
         });
     </script>

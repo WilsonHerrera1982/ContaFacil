@@ -2,30 +2,34 @@
 @{
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>@ViewBag.Title - ContaFacil</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="~/lib/li"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link href="~/lib/limonte-sweetalert2/sweetalert2.min.css" rel="stylesheet" />
     <script src="~/lib/limonte-sweetalert2/sweetalert2.min.js"></script>
     <style>
         body {
             background-color: #F5F7FA;
             font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
 
         .login-container {
-            width: 500px;
-            margin: 0 auto;
-            margin-top: 100px;
-            padding: 20px;
-            background-color: #1A3263;
+            width: 400px;
+            padding: 30px;
+            background-color: #FFFFFF;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .login-header {
@@ -33,16 +37,14 @@
             color: #1A3263;
             font-size: 24px;
             margin-bottom: 20px;
+            font-weight: bold;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .form-control {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #CED4DA;
             border-radius: 5px;
         }
 
@@ -53,43 +55,217 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            width: 100%;
+            font-weight: bold;
         }
+
+            .login-btn:hover {
+                background-color: #142652;
+            }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+            .forgot-password a {
+                color: #1A3263;
+                text-decoration: none;
+                font-size: 14px;
+            }
+
+        .change-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+            .change-password a {
+                color: #1A3263;
+                text-decoration: none;
+                font-size: 14px;
+            }
     </style>
 </head>
 <body>
-    <div class="login-container offset-1  offset-md-3 col-10 col-md-6">
-        <div class="card br-30 border-0 bg-light bg-opacity-50 px-4">
-            <div class="card-body">
-                <div class="login-header">Acceso al sistema</div>
-                <img src="~/img/logo1.JPG" class="img-fluid max-w-400 mx-auto d-block my-5" />
-                @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
-                {
-                    <div class="error-message">@ViewBag.ErrorMessage</div>
-                }
-                <form asp-action="Login" method="post">
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            </div>
-                            <input class="form-control" asp-for="Username" placeholder="Nombre de Usuario">
-                        </div>
+    <div class="login-container">
+        <div class="login-header">Acceso al sistema</div>
+        <img src="~/img/logo1.JPG" class="img-fluid max-w-300 mx-auto d-block my-4" alt="Logo" />
+        @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+        {
+            <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+        }
+        <form asp-action="Login" method="post">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
                     </div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            </div>
-                            <input class="form-control" type="password" asp-for="Password" placeholder="Contraseña">
-                        </div>
+                    <input class="form-control" asp-for="Username" placeholder="Nombre de Usuario">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
                     </div>
-                    <center>
-                        <button class="login-btn" type="submit"><i class="fas fa-solid fa-lock-open"></i> Ingresar</button>
-                    </center>
-                </form>
+                    <input class="form-control" type="password" asp-for="Password" placeholder="Contraseña">
+                </div>
+            </div>
+            <div class="forgot-password">
+                <a href="#" id="forgotPasswordLink">¿Olvidaste tu contraseña?</a>
+            </div>
+            <button class="login-btn" type="submit"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
+        </form>
+        <div class="change-password">
+            <a href="#" id="changePasswordLink">Cambiar contraseña</a>
+        </div>
+    </div>
+
+    <!-- Modal Olvidé Contraseña -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="forgotPasswordModalLabel">Recuperar Contraseña</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="forgotPasswordForm">
+                        <div class="form-group">
+                            <label for="forgotUsername">Nombre de Usuario</label>
+                            <input type="text" class="form-control" id="forgotUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="forgotEmail">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="forgotEmail" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="recoverPassword()">Recuperar Contraseña</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal Cambiar Contraseña -->
+    <!-- Modal Cambiar Contraseña -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Cambiar Contraseña</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="form-group">
+                            <label for="user">Usuario</label>
+                            <input class="form-control" id="user" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="currentPassword">Contraseña Actual</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                        <div id="passwordMatchMessage" class="text-danger" style="display: none;">
+                            Las contraseñas no coinciden
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="changePasswordBtn" onclick="changePassword()" disabled>Cambiar Contraseña</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Activar los modales
+            $('#forgotPasswordLink').click(function (e) {
+                e.preventDefault();
+                $('#forgotPasswordModal').modal('show');
+            });
+
+            $('#changePasswordLink').click(function (e) {
+                e.preventDefault();
+                $('#changePasswordModal').modal('show');
+            });
+
+            // Validación de contraseña
+            // Validación de contraseña
+            $('#newPassword, #confirmPassword').on('keyup', function () {
+                var newPassword = $('#newPassword').val();
+                var confirmPassword = $('#confirmPassword').val();
+
+                if (newPassword === confirmPassword) {
+                    $('#changePasswordBtn').prop('disabled', false);
+                    $('#passwordMatchMessage').hide();
+                } else {
+                    $('#changePasswordBtn').prop('disabled', true);
+                    $('#passwordMatchMessage').show();
+                }
+            });
+        });
+
+        function recoverPassword() {
+            var username = $('#forgotUsername').val();
+            var email = $('#forgotEmail').val();
+
+            $.ajax({
+                url: '/Login/RecoverPassword',
+                type: 'POST',
+                data: { username: username, email: email },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire('Éxito', response.message, 'success');
+                        $('#forgotPasswordModal').modal('hide');
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Ocurrió un error al procesar la solicitud', 'error');
+                }
+            });
+        }
+
+        function changePassword() {
+            var currentPassword = $('#currentPassword').val();
+            var newPassword = $('#newPassword').val();
+            var user = $('#user').val();
+            $.ajax({
+                url: '/Login/ChangePassword',
+                type: 'POST',
+                data: { currentPassword: currentPassword, newPassword: newPassword , user:user},
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire('Éxito', response.message, 'success');
+                        $('#changePasswordModal').modal('hide');
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Ocurrió un error al procesar la solicitud', 'error');
+                }
+            });
+        }
+    </script>
 </body>
 </html>
 <partial name="_NotificacionParcial" />

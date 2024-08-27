@@ -1,5 +1,7 @@
 ﻿namespace ContaFacil.Models.Dto
+
 {
+    using System.ComponentModel;
     public class ProductoDTO
     {
         public string CodigoProducto { get; set; }
@@ -12,7 +14,7 @@
         public string FacturaNro { get; set; }
         public string IdProveedor { get; set; }
         public string Proveedor { get; set; }
-        public DateTime FechaCreacion { get; set; }
+        [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
         public decimal Cantidad { get; set; }
         public decimal ValorUnitario { get; set; }
         public decimal Descuento { get; set; }

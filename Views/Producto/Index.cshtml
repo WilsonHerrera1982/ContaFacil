@@ -5,7 +5,10 @@
 }
 
 <p>
-    <a asp-action="Create">Crear Nuevo</a>
+    <a asp-action="Create">Crear Nuevo</a> |
+    <a asp-action="ExportToExcel" class="btn btn-success">
+        <i class="fas fa-file-excel"></i> Exportar a Excel
+    </a>
 </p>
 <table class="table" id="tblProducto">
     <thead>
@@ -21,6 +24,18 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.PrecioUnitario)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Iva)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Comision)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PrecioVenta)
+            </th>
+            <th>
+                Descuento%
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Stock)
@@ -49,9 +64,21 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Descripcion)
             </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PrecioUnitario)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Iva)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Comision)
+                </td>
             <td>
-                @Html.DisplayFor(modelItem => item.PrecioUnitario)
+                    @Html.DisplayFor(modelItem => item.PrecioVenta)
             </td>
+                <td>
+                    @item.Descuento %
+                </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Stock)
             </td>

@@ -21,6 +21,7 @@ namespace ContaFacil.Models.ViewModel
         public decimal total { get; set; }
         public int utilidad {  get; set; }
         public decimal precioVenta { get; set; }
+        public int idProveedor { get; set; }
 
     }
 }

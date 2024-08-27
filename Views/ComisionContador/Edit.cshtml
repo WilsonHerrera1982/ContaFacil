@@ -28,10 +28,10 @@
                 <input asp-for="Estado" class="form-control" />
                 <span asp-validation-for="Estado" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="EstadoBoolean" class="control-label">Estado</label>
-                <input asp-for="EstadoBoolean" class="form-control" />
-                <span asp-validation-for="EstadoBoolean" class="text-danger"></span>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="EstadoBoolean" /> Activo/Inactivo
+                </label>
             </div>
             <div class="form-group">
                 <label asp-for="FechaCreacion" class="control-label"></label>

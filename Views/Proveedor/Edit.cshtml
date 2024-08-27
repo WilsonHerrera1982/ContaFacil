@@ -33,10 +33,10 @@
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Estado" class="control-label"></label>
-                <input asp-for="Estado" class="form-control" />
-                <span asp-validation-for="Estado" class="text-danger"></span>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Estado" /> Activo/Inactivo
+                </label>
             </div>
             <div class="form-group">
                 <label asp-for="IdEmpresa" class="control-label">ID Empresa</label>

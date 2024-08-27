@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Generic;  using System.ComponentModel;
+using System.ComponentModel;
 
 namespace ContaFacil.Models;
 
@@ -17,7 +18,7 @@ public partial class DetalleFactura
 
     public bool Estado { get; set; }
 
-    public DateTime FechaCreacion { get; set; }
+    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 

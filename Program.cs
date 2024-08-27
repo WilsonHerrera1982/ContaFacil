@@ -51,8 +51,24 @@ builder.Services.AddQuartz(q =>
     .WithCronSchedule("0 0/5 * * * ?"));
 
 });
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+    var jobKey = new JobKey("TareaRegistroTransacciones");
+    q.AddJob<TareaRegistroTransacciones>(opts => opts.WithIdentity(jobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("TareaRegistroTransacciones-trigger")
+        .WithCronSchedule("0 */2 * * * ?")); // Cada 5 minutos
+});
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.MaxDepth = 64; // Aumenta la profundidad máxima si es necesario
+});
+builder.Services.AddScoped<TareaRegistroTransacciones>();
 var app = builder.Build();
 
 var supportedCultures = new[]
@@ -83,6 +99,7 @@ app.UseSession();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSessionTimeout();
 app.UseAuthorization();
 
 

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Generic;  using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-
 namespace ContaFacil.Models;
 
 public partial class Factura
@@ -12,13 +12,14 @@ public partial class Factura
 
     public DateOnly Fecha { get; set; }
 
+    [DisplayName("Monto Total")]
     public decimal MontoTotal { get; set; }
 
     public string Estado { get; set; } = null!;
 
-    public bool EstadoBoolean { get; set; }
+    [DisplayName("Activo/Inactivo")]  public bool EstadoBoolean { get; set; }
 
-    public DateTime FechaCreacion { get; set; }
+    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
 
@@ -27,21 +28,23 @@ public partial class Factura
     public int? UsuarioModificacion { get; set; }
 
     public int? IdEmisor { get; set; }
-
+    [DisplayName("Descripcion SRI")]
     public string? DescripcionSri { get; set; }
 
     public decimal? Subtotal { get; set; }
 
     public string? Xml { get; set; }
-
+    [DisplayName("Clave Acceso")]
     public string? ClaveAcceso { get; set; }
-
+    [DisplayName("Numero Factura")]
     public string? NumeroFactura { get; set; }
 
     public int? IdSucursal { get; set; }
-
+    [DisplayName("Autorizacion SRI")]
     public string? AutorizacionSri { get; set; }
+    [DisplayName("Fecha Autorización SRI")]
     public DateTime? FechaAutorizacionSri { get; set; }
+
     [NotMapped]
     public virtual int? idPago { get; set; }
 
@@ -55,5 +58,5 @@ public partial class Factura
 
     public virtual ICollection<Pago> Pagos { get; set; } = new List<Pago>();
 
-    public virtual ICollection<SucursalFactura> SucursalFacturas { get; set; } = new List<SucursalFactura>();
+    public virtual ICollection<SucursalFactura> SucursalFacturas { get; set; } = new List<SucursalFactura>();  
 }

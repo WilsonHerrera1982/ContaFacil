@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Generic;  using System.ComponentModel;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContaFacil.Models;
@@ -37,6 +37,8 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<Factura> Facturas { get; set; }
 
+    public virtual DbSet<HistoricoProducto> HistoricoProductos { get; set; }
+
     public virtual DbSet<Impuesto> Impuestos { get; set; }
 
     public virtual DbSet<Inventario> Inventarios { get; set; }
@@ -44,6 +46,8 @@ public partial class ContableContext : DbContext
     public virtual DbSet<Menu> Menus { get; set; }
 
     public virtual DbSet<MenuPerfil> MenuPerfils { get; set; }
+
+    public virtual DbSet<NotaCredito> NotaCreditos { get; set; }
 
     public virtual DbSet<Pago> Pagos { get; set; }
 
@@ -605,6 +609,53 @@ public partial class ContableContext : DbContext
                 .HasConstraintName("sucursal_factura_fk");
         });
 
+        modelBuilder.Entity<HistoricoProducto>(entity =>
+        {
+            entity.HasKey(e => e.IdHistoricoProducto).HasName("historico_producto_pkey");
+
+            entity.ToTable("historico_producto");
+
+            entity.Property(e => e.IdHistoricoProducto)
+                .HasDefaultValueSql("nextval('seq_historico_producto'::regclass)")
+                .HasColumnName("id_historico_producto");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.Impuesto)
+                .HasPrecision(15, 2)
+                .HasColumnName("impuesto");
+            entity.Property(e => e.NumeroDespacho)
+                .HasMaxLength(200)
+                .HasColumnName("numero_despacho");
+            entity.Property(e => e.PrecioUnitarioFinal)
+                .HasPrecision(15, 2)
+                .HasColumnName("precio_unitario_final");
+            entity.Property(e => e.PrecioVenta)
+                .HasPrecision(15, 2)
+                .HasColumnName("precio_venta");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.HistoricoProductos)
+                .HasForeignKey(d => d.IdEmpresa)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("historico_producto_id_empresa_fkey");
+
+            entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.HistoricoProductos)
+                .HasForeignKey(d => d.IdProducto)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("historico_producto_id_producto_fkey");
+        });
+
         modelBuilder.Entity<Impuesto>(entity =>
         {
             entity.HasKey(e => e.IdImpuesto).HasName("impuesto_pkey");
@@ -657,15 +708,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Descuento)
                 .HasPrecision(10, 2)
                 .HasColumnName("descuento");
-            entity.Property(e => e.PrecioUnitario)
-                .HasPrecision(10, 2)
-                .HasColumnName("precio_unitario");
-            entity.Property(e => e.PrecioUnitarioFinal)
-                .HasPrecision(10, 2)
-                .HasColumnName("precio_unitario_final");
-            entity.Property(e => e.Subtotal15)
-                .HasPrecision(10, 2)
-                .HasColumnName("subtotal15");
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
@@ -684,6 +726,9 @@ public partial class ContableContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_movimiento");
+            entity.Property(e => e.TransaccionRegistrada)
+               .HasDefaultValue(true)
+               .HasColumnName("transaccion_registrada");
             entity.Property(e => e.IdCuentaContable).HasColumnName("id_cuenta_contable");
             entity.Property(e => e.IdProducto).HasColumnName("id_producto");
             entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
@@ -693,16 +738,28 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(50)
                 .HasColumnName("numero_despacho");
+            entity.Property(e => e.PrecioUnitario)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_unitario");
+            entity.Property(e => e.PrecioUnitarioFinal)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_unitario_final");
             entity.Property(e => e.Stock).HasColumnName("stock");
             entity.Property(e => e.SubTotal)
                 .HasPrecision(10, 2)
                 .HasColumnName("sub_total");
+            entity.Property(e => e.Subtotal15)
+                .HasPrecision(10, 2)
+                .HasColumnName("subtotal15");
             entity.Property(e => e.TipoMovimiento)
                 .HasMaxLength(1)
                 .HasColumnName("tipo_movimiento");
             entity.Property(e => e.Total)
                 .HasPrecision(10, 2)
                 .HasColumnName("total");
+            entity.Property(e => e.PrecioCalculo)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_calculo");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 
@@ -786,6 +843,73 @@ public partial class ContableContext : DbContext
                 .HasForeignKey(d => d.IdPerfil)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("menu_perfil_id_perfil_fkey");
+        });
+
+        modelBuilder.Entity<NotaCredito>(entity =>
+        {
+            entity.HasKey(e => e.IdNotaCredito).HasName("nota_credito_pkey");
+
+            entity.ToTable("nota_credito");
+
+            entity.Property(e => e.IdNotaCredito)
+                .HasDefaultValueSql("nextval('seq_nota_credito'::regclass)")
+                .HasColumnName("id_nota_credito");
+
+            entity.Property(e => e.ClaveAcceso)
+                .HasMaxLength(200)
+                .HasColumnName("clave_acceso");
+
+            entity.Property(e => e.Descripcion)
+                .HasMaxLength(200)
+                .HasColumnName("descripcion");
+
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+
+            entity.Property(e => e.FechaAutorizacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_autorizacion");
+
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+
+            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+
+            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
+
+            entity.Property(e => e.Motivo)
+                .HasMaxLength(200)
+                .HasColumnName("motivo");
+
+            entity.Property(e => e.NumeroAutorizacion)
+                .HasMaxLength(200)
+                .HasColumnName("numero_autorizacion");
+
+            entity.Property(e => e.NumeroNota)
+                .HasMaxLength(200)
+                .HasColumnName("numero_nota");
+
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.Property(e => e.Xml)
+                .HasMaxLength(1000000)
+                .HasColumnName("xml");
+
+            // Configuración de la relación con la entidad Empresa
+            entity.HasOne(d => d.IdEmpresaNavigation)
+                .WithMany(p => p.NotaCreditos)
+                .HasForeignKey(d => d.IdEmpresa)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("nota_credito_id_empresa_fkey");
         });
 
         modelBuilder.Entity<Pago>(entity =>
@@ -1054,12 +1178,19 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.PrecioUnitario)
                 .HasPrecision(10, 2)
                 .HasColumnName("precio_unitario");
+            entity.Property(e => e.PrecioVenta)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_venta");
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasColumnName("descuento%");
             entity.Property(e => e.Stock)
                 .HasPrecision(10, 2)
                 .HasDefaultValueSql("0")
                 .HasColumnName("stock");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Utilidad).HasColumnName("utilidad%");
 
             entity.HasOne(d => d.IdCategoriaProductoNavigation).WithMany(p => p.Productos)
                 .HasForeignKey(d => d.IdCategoriaProducto)
@@ -1094,6 +1225,9 @@ public partial class ContableContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_creacion");
+            entity.Property(e => e.Cantidad)
+        .HasColumnName("cantidad")
+        .HasColumnType("int");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
@@ -1128,6 +1262,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");
+            entity.Property(e => e.Identificacion)
+               .HasMaxLength(15)
+               .HasColumnName("identificacion");
             entity.Property(e => e.Estado)
                 .HasDefaultValue(true)
                 .HasColumnName("estado");
@@ -1377,6 +1514,7 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
             entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
             entity.Property(e => e.IdTipoTransaccion).HasColumnName("id_tipo_transaccion");
+            entity.Property(e => e.IdInventario).HasColumnName("id_inventario");
             entity.Property(e => e.Monto)
                 .HasPrecision(15, 2)
                 .HasColumnName("monto");
@@ -1587,10 +1725,12 @@ public partial class ContableContext : DbContext
         modelBuilder.HasSequence("seq_emisor");
         modelBuilder.HasSequence("seq_empresa");
         modelBuilder.HasSequence("seq_factura");
+        modelBuilder.HasSequence("seq_historico_producto");
         modelBuilder.HasSequence("seq_impuesto_id");
         modelBuilder.HasSequence("seq_inventario_id");
         modelBuilder.HasSequence("seq_menu");
         modelBuilder.HasSequence("seq_menu_perfil");
+        modelBuilder.HasSequence("seq_nota_credito");
         modelBuilder.HasSequence("seq_pago");
         modelBuilder.HasSequence("seq_paquete");
         modelBuilder.HasSequence("seq_paquete_contador");
