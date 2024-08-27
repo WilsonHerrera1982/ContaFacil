@@ -25,11 +25,15 @@ public partial class Empresa
 
     public int UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Anticipo> Anticipos { get; set; } = new List<Anticipo>();
+
     public virtual ICollection<CategoriaProducto> CategoriaProductos { get; set; } = new List<CategoriaProducto>();
 
     public virtual ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
 
     public virtual ICollection<Cuentum> Cuenta { get; set; } = new List<Cuentum>();
+
+    public virtual ICollection<CuentaCobrar> CuentaCobrars { get; set; } = new List<CuentaCobrar>();
 
     public virtual ICollection<Despacho> Despachos { get; set; } = new List<Despacho>();
 
@@ -46,6 +50,8 @@ public partial class Empresa
     public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
 
     public virtual ICollection<Proveedor> Proveedors { get; set; } = new List<Proveedor>();
+
+    public virtual ICollection<Retencion> Retencions { get; set; } = new List<Retencion>();
 
     public virtual ICollection<Transaccion> Transaccions { get; set; } = new List<Transaccion>();
 

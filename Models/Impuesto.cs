@@ -25,5 +25,7 @@ public partial class Impuesto
 
     public string? CodigoPorcentajeSri { get; set; }
 
+    public string? Tipo { get; set; }
+
     public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
 }

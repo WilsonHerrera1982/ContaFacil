@@ -44,9 +44,12 @@ public partial class Factura
     public string? AutorizacionSri { get; set; }
     [DisplayName("Fecha Autorización SRI")]
     public DateTime? FechaAutorizacionSri { get; set; }
+    [DisplayName("Crédito")]
+    public Boolean Credito {  get; set; }
 
     [NotMapped]
     public virtual int? idPago { get; set; }
+    public virtual ICollection<CuentaCobrar> CuentaCobrars { get; set; } = new List<CuentaCobrar>();
 
     public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();
 
@@ -56,7 +59,9 @@ public partial class Factura
 
     public virtual Sucursal? IdSucursalNavigation { get; set; }
 
+    public virtual ICollection<NotaCredito> NotaCreditos { get; set; } = new List<NotaCredito>();
+
     public virtual ICollection<Pago> Pagos { get; set; } = new List<Pago>();
 
-    public virtual ICollection<SucursalFactura> SucursalFacturas { get; set; } = new List<SucursalFactura>();  
+    public virtual ICollection<SucursalFactura> SucursalFacturas { get; set; } = new List<SucursalFactura>();
 }

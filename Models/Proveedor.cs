@@ -28,5 +28,9 @@ public partial class Proveedor
 
     public int? IdEmpresa { get; set; }
 
+    public decimal? RetencionPorcentaje { get; set; }
+
+    public decimal? RetencionIva { get; set; }
+
     public virtual Empresa? IdEmpresaNavigation { get; set; }
 }

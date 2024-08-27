@@ -21,6 +21,8 @@ public partial class Cliente
 
     public int? IdEmpresa { get; set; }
 
+    public virtual ICollection<Anticipo> Anticipos { get; set; } = new List<Anticipo>();
+
     public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
 
     public virtual Empresa? IdEmpresaNavigation { get; set; }

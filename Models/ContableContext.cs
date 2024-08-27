@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;  using System.ComponentModel;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContaFacil.Models;
@@ -15,6 +15,10 @@ public partial class ContableContext : DbContext
     {
     }
 
+    public virtual DbSet<Anticipo> Anticipos { get; set; }
+
+    public virtual DbSet<AnticipoCuentum> AnticipoCuenta { get; set; }
+
     public virtual DbSet<CategoriaProducto> CategoriaProductos { get; set; }
 
     public virtual DbSet<Cliente> Clientes { get; set; }
@@ -22,6 +26,8 @@ public partial class ContableContext : DbContext
     public virtual DbSet<Comision> Comisions { get; set; }
 
     public virtual DbSet<ComisionContador> ComisionContadors { get; set; }
+
+    public virtual DbSet<CuentaCobrar> CuentaCobrars { get; set; }
 
     public virtual DbSet<Cuentum> Cuenta { get; set; }
 
@@ -67,6 +73,8 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<Proveedor> Proveedors { get; set; }
 
+    public virtual DbSet<Retencion> Retencions { get; set; }
+
     public virtual DbSet<Sucursal> Sucursals { get; set; }
 
     public virtual DbSet<SucursalFactura> SucursalFacturas { get; set; }
@@ -99,6 +107,98 @@ public partial class ContableContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Anticipo>(entity =>
+        {
+            entity.HasKey(e => e.IdAnticipo).HasName("anticipo_pkey");
+
+            entity.ToTable("anticipo");
+
+            entity.Property(e => e.IdAnticipo)
+                .HasDefaultValueSql("nextval('seq_historico_producto'::regclass)")
+                .HasColumnName("id_anticipo");
+            entity.Property(e => e.Descripcion)
+                .HasMaxLength(200)
+                .HasColumnName("descripcion");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCheque)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_cheque");
+            entity.Property(e => e.FechaComprobante)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_comprobante");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdCliente).HasColumnName("id_cliente");
+            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.NumeroCheque)
+                .HasMaxLength(200)
+                .HasColumnName("numero_cheque");
+            entity.Property(e => e.NumeroComprobante)
+                .HasMaxLength(200)
+                .HasColumnName("numero_comprobante");
+            entity.Property(e => e.PagueseOrden)
+                .HasMaxLength(200)
+                .HasColumnName("paguese_orden");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Valor)
+                .HasPrecision(15, 2)
+                .HasColumnName("valor");
+
+            entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Anticipos)
+                .HasForeignKey(d => d.IdCliente)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("anticipo_id_cliente_fkey");
+
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Anticipos)
+                .HasForeignKey(d => d.IdEmpresa)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("anticipo_id_empresa_fkey");
+        });
+
+        modelBuilder.Entity<AnticipoCuentum>(entity =>
+        {
+            entity.HasKey(e => e.IdAnticipoCuenta).HasName("anticipo_cuenta_pkey");
+
+            entity.ToTable("anticipo_cuenta");
+
+            entity.Property(e => e.IdAnticipoCuenta)
+                .HasDefaultValueSql("nextval('seq_anticipo_cuenta'::regclass)")
+                .HasColumnName("id_anticipo_cuenta");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdAnticipo).HasColumnName("id_anticipo");
+            entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Valor)
+                .HasPrecision(15, 2)
+                .HasColumnName("valor");
+
+            entity.HasOne(d => d.IdAnticipoNavigation).WithMany(p => p.AnticipoCuenta)
+                .HasForeignKey(d => d.IdAnticipo)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("anticipo_cuenta_id_anticipo_fkey");
+           
+        });
+
         modelBuilder.Entity<CategoriaProducto>(entity =>
         {
             entity.HasKey(e => e.IdCategoriaProducto).HasName("categoria_producto_pkey");
@@ -234,6 +334,54 @@ public partial class ContableContext : DbContext
                 .HasForeignKey(d => d.IdComision)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("comision_contador_id_comision_fkey");
+        });
+
+        modelBuilder.Entity<CuentaCobrar>(entity =>
+        {
+            entity.HasKey(e => e.IdCuentaCobrar).HasName("cuenta_cobrar_pkey");
+
+            entity.ToTable("cuenta_cobrar");
+
+            entity.Property(e => e.IdCuentaCobrar)
+                .HasDefaultValueSql("nextval('seq_cuenta_cobrar'::regclass)")
+                .HasColumnName("id_cuenta_cobrar");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.EstadoCobro)
+                .HasMaxLength(50)
+                .HasColumnName("estado_cobro");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
+            entity.Property(e => e.Impuesto)
+                .HasPrecision(15, 2)
+                .HasColumnName("impuesto");
+            entity.Property(e => e.PlazoDias).HasColumnName("plazo_dias");
+            entity.Property(e => e.PrecioUnitarioFinal)
+                .HasPrecision(15, 2)
+                .HasColumnName("precio_unitario_final");
+            entity.Property(e => e.PrecioVenta)
+                .HasPrecision(15, 2)
+                .HasColumnName("precio_venta");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.CuentaCobrars)
+                .HasForeignKey(d => d.IdEmpresa)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("cuenta_cobrar_id_empresa_fkey");
+
+            entity.HasOne(d => d.IdFacturaNavigation).WithMany(p => p.CuentaCobrars)
+                .HasForeignKey(d => d.IdFactura)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("cuenta_cobrar_id_factura_fkey");
         });
 
         modelBuilder.Entity<Cuentum>(entity =>
@@ -556,6 +704,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.ClaveAcceso)
                 .HasMaxLength(200)
                 .HasColumnName("clave_acceso");
+            entity.Property(e => e.Credito)
+                .HasDefaultValue(true)
+                .HasColumnName("credito");
             entity.Property(e => e.DescripcionSri)
                 .HasMaxLength(200)
                 .HasColumnName("descripcion_sri");
@@ -688,6 +839,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Porcentaje)
                 .HasPrecision(5, 2)
                 .HasColumnName("porcentaje");
+            entity.Property(e => e.Tipo)
+                .HasMaxLength(10)
+                .HasColumnName("tipo");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
         });
@@ -726,9 +880,6 @@ public partial class ContableContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_movimiento");
-            entity.Property(e => e.TransaccionRegistrada)
-               .HasDefaultValue(true)
-               .HasColumnName("transaccion_registrada");
             entity.Property(e => e.IdCuentaContable).HasColumnName("id_cuenta_contable");
             entity.Property(e => e.IdProducto).HasColumnName("id_producto");
             entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
@@ -738,6 +889,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(50)
                 .HasColumnName("numero_despacho");
+            entity.Property(e => e.PrecioCalculo)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_calculo");
             entity.Property(e => e.PrecioUnitario)
                 .HasPrecision(10, 2)
                 .HasColumnName("precio_unitario");
@@ -757,9 +911,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Total)
                 .HasPrecision(10, 2)
                 .HasColumnName("total");
-            entity.Property(e => e.PrecioCalculo)
-                .HasPrecision(10, 2)
-                .HasColumnName("precio_calculo");
+            entity.Property(e => e.TransaccionRegistrada)
+                .HasDefaultValue(false)
+                .HasColumnName("transaccion_registrada");
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
 
@@ -854,62 +1008,47 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdNotaCredito)
                 .HasDefaultValueSql("nextval('seq_nota_credito'::regclass)")
                 .HasColumnName("id_nota_credito");
-
             entity.Property(e => e.ClaveAcceso)
                 .HasMaxLength(200)
                 .HasColumnName("clave_acceso");
-
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(200)
                 .HasColumnName("descripcion");
-
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
-
             entity.Property(e => e.FechaAutorizacion)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_autorizacion");
-
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_creacion");
-
             entity.Property(e => e.FechaModificacion)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_modificacion");
-
             entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-
             entity.Property(e => e.IdFactura).HasColumnName("id_factura");
-
             entity.Property(e => e.Motivo)
                 .HasMaxLength(200)
                 .HasColumnName("motivo");
-
             entity.Property(e => e.NumeroAutorizacion)
                 .HasMaxLength(200)
                 .HasColumnName("numero_autorizacion");
-
             entity.Property(e => e.NumeroNota)
                 .HasMaxLength(200)
                 .HasColumnName("numero_nota");
-
             entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-
             entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
-
             entity.Property(e => e.Xml)
                 .HasMaxLength(1000000)
                 .HasColumnName("xml");
 
-            // Configuración de la relación con la entidad Empresa
-            entity.HasOne(d => d.IdEmpresaNavigation)
-                .WithMany(p => p.NotaCreditos)
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.NotaCreditos)
                 .HasForeignKey(d => d.IdEmpresa)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("nota_credito_id_empresa_fkey");
+            
         });
 
         modelBuilder.Entity<Pago>(entity =>
@@ -1157,6 +1296,9 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("codigo");
             entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasColumnName("descuento%");
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
@@ -1181,9 +1323,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.PrecioVenta)
                 .HasPrecision(10, 2)
                 .HasColumnName("precio_venta");
-            entity.Property(e => e.Descuento)
-                .HasPrecision(10, 2)
-                .HasColumnName("descuento%");
             entity.Property(e => e.Stock)
                 .HasPrecision(10, 2)
                 .HasDefaultValueSql("0")
@@ -1218,6 +1357,7 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdProductoProveedor)
                 .HasDefaultValueSql("nextval('seq_producto_proveedor_id'::regclass)")
                 .HasColumnName("id_producto_proveedor");
+            entity.Property(e => e.Cantidad).HasColumnName("cantidad");
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
@@ -1225,9 +1365,6 @@ public partial class ContableContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_creacion");
-            entity.Property(e => e.Cantidad)
-        .HasColumnName("cantidad")
-        .HasColumnType("int");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
@@ -1262,9 +1399,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");
-            entity.Property(e => e.Identificacion)
-               .HasMaxLength(15)
-               .HasColumnName("identificacion");
             entity.Property(e => e.Estado)
                 .HasDefaultValue(true)
                 .HasColumnName("estado");
@@ -1277,9 +1411,18 @@ public partial class ContableContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.Identificacion)
+                .HasMaxLength(15)
+                .HasColumnName("identificacion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
                 .HasColumnName("nombre");
+            entity.Property(e => e.RetencionIva)
+                .HasPrecision(15, 2)
+                .HasColumnName("retencion_iva");
+            entity.Property(e => e.RetencionPorcentaje)
+                .HasPrecision(15, 2)
+                .HasColumnName("retencion_porcentaje");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(20)
                 .HasColumnName("telefono");
@@ -1289,6 +1432,74 @@ public partial class ContableContext : DbContext
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Proveedors)
                 .HasForeignKey(d => d.IdEmpresa)
                 .HasConstraintName("empresa_proveedor");
+        });
+
+        modelBuilder.Entity<Retencion>(entity =>
+        {
+            entity.HasKey(e => e.IdRetencion).HasName("retencion_pkey");
+
+            entity.ToTable("retencion");
+
+            entity.Property(e => e.IdRetencion)
+                .HasDefaultValueSql("nextval('seq_retencion'::regclass)")
+                .HasColumnName("id_retencion");
+            entity.Property(e => e.BaseImponible)
+                .HasPrecision(15, 2)
+                .HasColumnName("base_imponible");
+            entity.Property(e => e.ClaveAcceso)
+                .HasMaxLength(200)
+                .HasColumnName("clave_acceso");
+            entity.Property(e => e.ComprobanteRetencion)
+                .HasMaxLength(50)
+                .HasColumnName("comprobante_retencion");
+            entity.Property(e => e.EjercicioFiscal)
+                .HasMaxLength(50)
+                .HasColumnName("ejercicio_fiscal");
+            entity.Property(e => e.EstadoBoolean)
+                .HasDefaultValue(true)
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaAutorizacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_autorizacion");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
+            entity.Property(e => e.IdProveedor).HasColumnName("id_proveedor");
+            entity.Property(e => e.Impuesto)
+                .HasMaxLength(50)
+                .HasColumnName("impuesto");
+            entity.Property(e => e.NumeroAutorizacion)
+                .HasMaxLength(200)
+                .HasColumnName("numero_autorizacion");
+            entity.Property(e => e.NumeroFactura)
+                .HasMaxLength(50)
+                .HasColumnName("numero_factura");
+            entity.Property(e => e.PorcentajeRetencion)
+                .HasPrecision(15, 2)
+                .HasColumnName("porcentaje_retencion");
+            entity.Property(e => e.TipoContribuyente)
+                .HasMaxLength(100)
+                .HasColumnName("tipo_contribuyente");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.ValorRetenido)
+                .HasPrecision(15, 2)
+                .HasColumnName("valor_retenido");
+            entity.Property(e => e.Xml)
+                .HasMaxLength(1000000)
+                .HasColumnName("xml");
+
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Retencions)
+                .HasForeignKey(d => d.IdEmpresa)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("retencion_id_empresa_fkey");
         });
 
         modelBuilder.Entity<Sucursal>(entity =>
@@ -1513,8 +1724,8 @@ public partial class ContableContext : DbContext
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
             entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdTipoTransaccion).HasColumnName("id_tipo_transaccion");
             entity.Property(e => e.IdInventario).HasColumnName("id_inventario");
+            entity.Property(e => e.IdTipoTransaccion).HasColumnName("id_tipo_transaccion");
             entity.Property(e => e.Monto)
                 .HasPrecision(15, 2)
                 .HasColumnName("monto");
@@ -1714,11 +1925,14 @@ public partial class ContableContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("venta_paquete_id_usuario_fkey");
         });
+        modelBuilder.HasSequence("seq_anticipo");
+        modelBuilder.HasSequence("seq_anticipo_cuenta");
         modelBuilder.HasSequence("seq_categoria_producto_id");
         modelBuilder.HasSequence("seq_cliente");
         modelBuilder.HasSequence("seq_comision");
         modelBuilder.HasSequence("seq_comision_contador");
         modelBuilder.HasSequence("seq_cuenta");
+        modelBuilder.HasSequence("seq_cuenta_cobrar");
         modelBuilder.HasSequence("seq_despacho");
         modelBuilder.HasSequence("seq_detalle_despacho");
         modelBuilder.HasSequence("seq_detalle_factura");
@@ -1740,6 +1954,7 @@ public partial class ContableContext : DbContext
         modelBuilder.HasSequence("seq_producto_id");
         modelBuilder.HasSequence("seq_producto_proveedor_id");
         modelBuilder.HasSequence("seq_proveedor");
+        modelBuilder.HasSequence("seq_retencion");
         modelBuilder.HasSequence("seq_sucursal");
         modelBuilder.HasSequence("seq_sucursal_factura");
         modelBuilder.HasSequence("seq_sucursal_inventario");
