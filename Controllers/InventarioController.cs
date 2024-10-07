@@ -8,15 +8,20 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using OfficeOpenXml;
 using ClosedXML.Excel;
+using ContaFacil.Utilities;
+using System.Xml.Linq;
+using System.Xml;
 namespace ContaFacil.Controllers
 {
     public class InventarioController : NotificacionClass
     {
         private readonly ContableContext _context;
+        private readonly IConfiguration _configuration;
 
-        public InventarioController(ContableContext context)
+        public InventarioController(ContableContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: Inventario
@@ -192,25 +197,25 @@ namespace ContaFacil.Controllers
                      .Where(i => (i.TipoMovimiento == "E" || i.TipoMovimiento == "C") & i.IdProducto == inventario.idProducto & i.IdSucursal == usuarioSucursal.IdSucursal)
                      .OrderByDescending(i => i.FechaCreacion)
                      .FirstOrDefault();
-                    
-                    inv.IdProducto= inventario.idProducto;
+
+                    inv.IdProducto = inventario.idProducto;
                     inv.TipoMovimiento = inventario.tipoMovimiento;
-                    inv.NumeroDespacho= inventario.numeroDespacho;
+                    inv.NumeroDespacho = inventario.numeroDespacho;
                     inv.EstadoBoolean = true;
                     inv.UsuarioCreacion = int.Parse(idUsuario);
                     inv.FechaCreacion = new DateTime();
-                    inv.Cantidad= inventario.cantidad;
+                    inv.Cantidad = inventario.cantidad;
                     inv.Descripcion = "INGRESO POR COMPRA";
-                    inv.IdSucursal=usuarioSucursal.IdSucursal;
+                    inv.IdSucursal = usuarioSucursal.IdSucursal;
                     inv.IdCuentaContable = cuentum.IdCuenta;
                     inv.SubTotal = inventario.subtotal;
-                    inv.Subtotal15= inventario.subtotal15;
-                    inv.Descuento=inventario.descuento;
+                    inv.Subtotal15 = inventario.subtotal15;
+                    inv.Descuento = inventario.descuento;
                     inv.PrecioUnitario = inventario.precioUnitario;
-                    inv.PrecioUnitarioFinal=inventario.precioUnitarioFinal;
-                    inv.Iva=inventario.iva;
-                    inv.Total=inventario.total;
-                    inv.NumeroFactura= inventario.numeroFactura;
+                    inv.PrecioUnitarioFinal = inventario.precioUnitarioFinal;
+                    inv.Iva = inventario.iva;
+                    inv.Total = inventario.total;
+                    inv.NumeroFactura = inventario.numeroFactura;
                     if (ultimoMovimiento != null)
                     {
                         inv.Stock = ultimoMovimiento.Stock + inventario.cantidad;
@@ -226,7 +231,7 @@ namespace ContaFacil.Controllers
                     var utilidadPor = parametro.Valor;
                     parametro = _context.Parametros.FirstOrDefault(p => p.IdEmpresa == empresa.IdEmpresa && p.NombreParametro == "IVA");
                     var ivaPar = parametro.Valor;
-                    decimal precioProducto=0;                    
+                    decimal precioProducto = 0;
                     precioProducto = (inv.PrecioUnitarioFinal + movimientoIngreso.PrecioCalculo) / 2 ?? 0;
                     int cantidadTotal = ultimoMovimiento.Stock + (int)inv.Cantidad ?? 0;
                     producto.PrecioUnitario = inv.PrecioUnitarioFinal ?? 0;
@@ -234,30 +239,30 @@ namespace ContaFacil.Controllers
                     var iva = precioProducto * (decimal.Parse(parametro.Valor) / 100m);
                     inv.PrecioCalculo = precioProducto;
                     _context.Add(inv);
-                    await _context.SaveChangesAsync();                   
-                        producto.PrecioVenta = precioProducto + utilidad;
-                        producto.PrecioUnitario = precioProducto;
-                        producto.Utilidad = int.Parse(utilidadPor);
-                        _context.Update(producto);
-                        _context.SaveChanges();
-                        HistoricoProducto historicoProducto = new HistoricoProducto();
-                        historicoProducto.IdEmpresa =int.Parse(idEmpresa);
-                        historicoProducto.IdProducto = producto.IdProducto;
-                        historicoProducto.NumeroDespacho = inv.NumeroDespacho;
-                        historicoProducto.EstadoBoolean = true;
-                        historicoProducto.Impuesto = iva;
-                        historicoProducto.PrecioUnitarioFinal = producto.PrecioUnitario;
-                        historicoProducto.PrecioVenta = precioProducto + utilidad + iva;
-                        historicoProducto.UsuarioCreacion = int.Parse(idUsuario);
-                        historicoProducto.FechaCreacion = new DateTime();
-                        _context.Add(historicoProducto);
-                        _context.SaveChanges();
-                    
+                    await _context.SaveChangesAsync();
+                    producto.PrecioVenta = precioProducto + utilidad;
+                    producto.PrecioUnitario = precioProducto;
+                    producto.Utilidad = int.Parse(utilidadPor);
+                    _context.Update(producto);
+                    _context.SaveChanges();
+                    HistoricoProducto historicoProducto = new HistoricoProducto();
+                    historicoProducto.IdEmpresa = int.Parse(idEmpresa);
+                    historicoProducto.IdProducto = producto.IdProducto;
+                    historicoProducto.NumeroDespacho = inv.NumeroDespacho;
+                    historicoProducto.EstadoBoolean = true;
+                    historicoProducto.Impuesto = iva;
+                    historicoProducto.PrecioUnitarioFinal = producto.PrecioUnitario;
+                    historicoProducto.PrecioVenta = precioProducto + utilidad + iva;
+                    historicoProducto.UsuarioCreacion = int.Parse(idUsuario);
+                    historicoProducto.FechaCreacion = new DateTime();
+                    _context.Add(historicoProducto);
+                    _context.SaveChanges();
+
                     productoProveedor = new ProductoProveedor();
                     productoProveedor.IdProducto = producto.IdProducto;
                     productoProveedor.IdProveedor = proveedor.IdProveedor;
                     productoProveedor.FechaCreacion = new DateTime();
-                    productoProveedor.PrecioCompra = inv.PrecioUnitarioFinal??0;
+                    productoProveedor.PrecioCompra = inv.PrecioUnitarioFinal ?? 0;
                     productoProveedor.Cantidad = inventario.cantidad;
                     productoProveedor.EstadoBoolean = true;
                     productoProveedor.UsuarioCreacion = usuario.IdUsuario;
@@ -267,10 +272,131 @@ namespace ContaFacil.Controllers
                     sucursalInventario.EstadoBoolean = true;
                     sucursalInventario.IdInventario = inv.IdInventario;
                     sucursalInventario.IdSucursal = usuarioSucursal.IdSucursal;
-                    sucursalInventario.FechaCreacion= new DateTime();
-                    sucursalInventario.UsuarioCreacion= int.Parse(idUsuario);
+                    sucursalInventario.FechaCreacion = new DateTime();
+                    sucursalInventario.UsuarioCreacion = int.Parse(idUsuario);
                     _context.Add(sucursalInventario);
-                    await _context.SaveChangesAsync();                   
+                    await _context.SaveChangesAsync();
+                    // Generar retención si es aplicable
+                    List<Retencion> retencions = new List<Retencion>();
+                    if (proveedor.RetencionPorcentaje > 0 || proveedor.RetencionIva > 0)
+                    {
+                        Retencion ret = _context.Retencions.Where(r => r.IdEmpresa == empresa.IdEmpresa).OrderByDescending(r => r.FechaCreacion).FirstOrDefault();
+
+                        var retencionXml = new RetencionXmlGenerator(_configuration);
+                        string numeroAsiento = ObtenerSiguienteNumeroAsiento();
+                        if (proveedor.RetencionPorcentaje > 0)
+                        {
+                            String numeroRetencion = "";
+                            if (ret != null)
+                            {
+                                numeroRetencion = GenerarNumeroComprobanteRetencion(ret.ComprobanteRetencion);
+                            }
+                            else
+                            {
+                                numeroRetencion = "001-001-000000001";
+                            }
+
+                            var retencionRenta = new Retencion
+                            {
+                                IdEmpresa = empresa.IdEmpresa,
+                                IdFactura = inv.IdInventario,
+                                IdProveedor = inventario.idProveedor,
+                                NumeroFactura = inventario.numeroFactura,
+                                ComprobanteRetencion = numeroRetencion,
+                                EjercicioFiscal = DateTime.Now.Year.ToString(),
+                                BaseImponible = inv.Subtotal15 ?? 0,
+                                EstadoBoolean = true,
+                                FechaCreacion = DateTime.Now,
+                                UsuarioCreacion = int.Parse(idUsuario),
+                                Impuesto = "RENTA",
+                                PorcentajeRetencion = proveedor.RetencionPorcentaje,
+                                ValorRetenido = (inv.SubTotal ?? 0) * (proveedor.RetencionPorcentaje / 100)
+                            };
+
+                            
+                            await _context.Retencions.AddAsync(retencionRenta);
+                            retencions.Add(retencionRenta);
+                            proveedor.RetencionPorcentaje = Math.Truncate(proveedor.RetencionPorcentaje??0);
+                            Cuentum cuent2 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IR") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.3."));
+                            var tipoTransaccion2 = await _context.TipoTransaccions
+                            .FirstOrDefaultAsync(t => t.Nombre == "Compra");
+                            string descripcion2 = producto.Nombre + " " + inv.NumeroFactura;
+                            await CrearTransaccion(cuent2.Codigo, numeroAsiento + " Compra de " + descripcion2,retencionRenta.ValorRetenido ?? 0, tipoTransaccion2, empresa, usuario, true);
+
+                        }
+
+                        if (proveedor.RetencionIva > 0)
+                        {
+                            Retencion rete = _context.Retencions.Where(r => r.IdEmpresa == empresa.IdEmpresa).OrderByDescending(r => r.FechaCreacion).FirstOrDefault();
+
+                            String numeroRetencion = "";
+                            if (rete != null)
+                            {
+                                numeroRetencion = GenerarNumeroComprobanteRetencion(rete.ComprobanteRetencion);
+                            }
+                            else
+                            {
+                                numeroRetencion = "001-001-000000001";
+                            }
+                            var retencionIva = new Retencion
+                            {
+                                IdEmpresa = empresa.IdEmpresa,
+                                IdFactura = inv.IdInventario,
+                                IdProveedor = inventario.idProveedor,
+                                NumeroFactura = inventario.numeroFactura,
+                                ComprobanteRetencion = numeroRetencion,
+                                EjercicioFiscal = DateTime.Now.Year.ToString(),
+                                BaseImponible = inv.Iva ?? 0,
+                                EstadoBoolean = true,
+                                FechaCreacion = DateTime.Now,
+                                UsuarioCreacion = int.Parse(idUsuario),
+                                Impuesto = "IVA",
+                                PorcentajeRetencion = proveedor.RetencionIva,
+                                ValorRetenido = (inv.Iva ?? 0) * (proveedor.RetencionIva / 100)
+                            };
+                            
+                            await _context.Retencions.AddAsync(retencionIva);
+                            retencions.Add(retencionIva);
+                            
+                            proveedor.RetencionPorcentaje = Math.Truncate(proveedor.RetencionPorcentaje ?? 0);
+                            Cuentum cuent1 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IVA") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.3."));
+                            var tipoTransaccion1 = await _context.TipoTransaccions
+                            .FirstOrDefaultAsync(t => t.Nombre == "Compra");
+                            string descripcion1 = producto.Nombre + " " + inv.NumeroFactura;
+                            await CrearTransaccion(cuent1.Codigo, numeroAsiento + " Compra de " + descripcion1, retencionIva.ValorRetenido ?? 0, tipoTransaccion1, empresa, usuario, true);
+                        }
+
+                        await _context.SaveChangesAsync();
+                        // Generar el XML para todas las retenciones y actualizar cada una con el XML y la clave de acceso
+                        
+                            // Generar el XML para la retención actual
+                            var xmlDocumentRenta = retencionXml.GenerateXml(retencions, proveedor, emisor);
+
+                            // Convertir el XML a string y actualizar el campo Xml de la retención
+                           
+
+                            // Obtener la clave de acceso del XML
+                            string xmlString = xmlDocumentRenta.ToString();
+                            XDocument xdoc = XDocument.Parse(xmlString);
+                            string claveAcceso = (string)xdoc.Root
+                                                        .Element("infoTributaria")
+                                                        .Element("claveAcceso");
+                        var sumaRetencion = retencions.Sum(r=>r.ValorRetenido);
+                        foreach (var retencion in retencions)
+                        {
+                            retencion.Xml = xmlDocumentRenta.ToString();
+                            // Actualizar la clave de acceso de la retención
+                            retencion.ClaveAcceso = claveAcceso;
+                        }
+                        Cuentum cuent = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Proveedores nacionales"));
+                        var tipoTransaccion = await _context.TipoTransaccions
+                        .FirstOrDefaultAsync(t => t.Nombre == "Compra");
+                        string descripcion = producto.Nombre + " " + inv.NumeroFactura;
+                        await CrearTransaccion(cuent.Codigo, numeroAsiento + " Pago a proveedor " + descripcion, sumaRetencion ?? 0, tipoTransaccion, empresa, usuario, true);
+                        // Guardar los cambios en todas las retenciones
+                        await _context.SaveChangesAsync();
+
+                    }
                 }
                 else if(inventario.tipoMovimiento.Equals("S") && ultimoMovimiento.Stock>=0 && ultimoMovimiento.Stock>inventario.cantidad)
                 {
@@ -772,6 +898,21 @@ namespace ContaFacil.Controllers
                     pro.EstadoBoolean = true;
                     _context.Add(pro);
                     _context.SaveChanges();
+                    ProductoProveedor productoProveedor = new ProductoProveedor();
+                    productoProveedor.IdProducto=pro.IdProducto;
+                    if (producto.IdProveedor != null) { 
+                        productoProveedor.IdProveedor = int.Parse(producto.IdProveedor);
+                    }
+                    else
+                    {
+                        productoProveedor.IdProveedor = 0;
+                    }
+                    
+                    productoProveedor.EstadoBoolean = true;
+                    productoProveedor.FechaCreacion = new DateTime();
+                    productoProveedor.UsuarioCreacion = usuario.IdUsuario;
+                    _context.Add(productoProveedor);
+                    _context.SaveChanges();
                     Inventario inventario=new Inventario();
                     inventario.Cantidad=producto.Cantidad;
                     inventario.Descripcion = "INGRESO CARGA INICIAL";
@@ -1206,6 +1347,80 @@ namespace ContaFacil.Controllers
 
             // Si por alguna razón no se puede parsear el último segmento, devolver el código original + 1
             return codigo + ".1";
+        }
+        public string GenerarNumeroComprobanteRetencion(string ultimoNumero)
+        {
+            // Divide el número de factura en partes
+            var partes = ultimoNumero.Split('-');
+
+            if (partes.Length != 3)
+            {
+                throw new ArgumentException("Formato de número de factura inválido.");
+            }
+
+            // La parte secuencial es la última parte
+            var secuencialStr = partes[2];
+
+            // Convierte la parte secuencial en un número entero
+            if (!int.TryParse(secuencialStr, out int secuencial))
+            {
+                throw new ArgumentException("Parte secuencial inválida.");
+            }
+
+            // Incrementa el número secuencial
+            secuencial++;
+
+            // Formatea el número secuencial con ceros a la izquierda (mantener 9 dígitos)
+            var siguienteSecuencialStr = secuencial.ToString("D9");
+
+            // Crea el nuevo número de factura
+            var nuevoNumeroFactura = $"{partes[0]}-{partes[1]}-{siguienteSecuencialStr}";
+
+            return nuevoNumeroFactura;
+        }
+        private async Task CrearTransaccion(string cuentaNombre, string descripcion, decimal monto, TipoTransaccion tipoTransaccion, Empresa empresa, Usuario usuario, bool esdebito)
+        {
+            var cuenta = await _context.Cuenta.FirstOrDefaultAsync(c => c.Nombre == cuentaNombre || c.Codigo == cuentaNombre);
+
+            var transaccion = new Transaccion
+            {
+                IdCuenta = cuenta.IdCuenta,
+                Descripcion = descripcion,
+                IdInventario = 0,
+                Monto = monto,
+                IdTipoTransaccion = tipoTransaccion.IdTipoTransaccion,
+                IdEmpresa = empresa.IdEmpresa,
+                Fecha = DateOnly.FromDateTime(DateTime.Now),
+                FechaCreacion = DateTime.Now,
+                UsuarioCreacion = usuario.IdUsuario,
+                Estado = true,
+                EsDebito = esdebito
+            };
+
+            _context.Add(transaccion);
+            await _context.SaveChangesAsync();
+        }
+        private string ObtenerSiguienteNumeroAsiento()
+        {
+            var ultimaTransaccion = _context.Transaccions
+                .OrderByDescending(t => t.IdTransaccion)
+                .FirstOrDefault();
+
+            if (ultimaTransaccion == null)
+            {
+                return "AS0001";
+            }
+
+            string ultimoNumeroAsiento = ultimaTransaccion.Descripcion.Split(' ')[0];
+            if (ultimoNumeroAsiento.StartsWith("AS"))
+            {
+                int numero = int.Parse(ultimoNumeroAsiento.Substring(2)) + 1;
+                return $"AS{numero:D4}";
+            }
+            else
+            {
+                return "AS0001";
+            }
         }
     }
 }

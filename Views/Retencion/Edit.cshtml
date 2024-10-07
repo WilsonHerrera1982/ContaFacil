@@ -1,0 +1,129 @@
+﻿@model ContaFacil.Models.Retencion
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Retencion</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdRetencion" />
+            <div class="form-group">
+                <label asp-for="IdEmpresa" class="control-label"></label>
+                <select asp-for="IdEmpresa" class="form-control" asp-items="ViewBag.IdEmpresa"></select>
+                <span asp-validation-for="IdEmpresa" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Xml" class="control-label"></label>
+                <input asp-for="Xml" class="form-control" />
+                <span asp-validation-for="Xml" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdFactura" class="control-label"></label>
+                <input asp-for="IdFactura" class="form-control" />
+                <span asp-validation-for="IdFactura" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdProveedor" class="control-label"></label>
+                <input asp-for="IdProveedor" class="form-control" />
+                <span asp-validation-for="IdProveedor" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NumeroFactura" class="control-label"></label>
+                <input asp-for="NumeroFactura" class="form-control" />
+                <span asp-validation-for="NumeroFactura" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ComprobanteRetencion" class="control-label"></label>
+                <input asp-for="ComprobanteRetencion" class="form-control" />
+                <span asp-validation-for="ComprobanteRetencion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NumeroAutorizacion" class="control-label"></label>
+                <input asp-for="NumeroAutorizacion" class="form-control" />
+                <span asp-validation-for="NumeroAutorizacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ClaveAcceso" class="control-label"></label>
+                <input asp-for="ClaveAcceso" class="form-control" />
+                <span asp-validation-for="ClaveAcceso" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EjercicioFiscal" class="control-label"></label>
+                <input asp-for="EjercicioFiscal" class="form-control" />
+                <span asp-validation-for="EjercicioFiscal" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BaseImponible" class="control-label"></label>
+                <input asp-for="BaseImponible" class="form-control" />
+                <span asp-validation-for="BaseImponible" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Impuesto" class="control-label"></label>
+                <input asp-for="Impuesto" class="form-control" />
+                <span asp-validation-for="Impuesto" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PorcentajeRetencion" class="control-label"></label>
+                <input asp-for="PorcentajeRetencion" class="form-control" />
+                <span asp-validation-for="PorcentajeRetencion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ValorRetenido" class="control-label"></label>
+                <input asp-for="ValorRetenido" class="form-control" />
+                <span asp-validation-for="ValorRetenido" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TipoContribuyente" class="control-label"></label>
+                <input asp-for="TipoContribuyente" class="form-control" />
+                <span asp-validation-for="TipoContribuyente" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="EstadoBoolean" /> @Html.DisplayNameFor(model => model.EstadoBoolean)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaAutorizacion" class="control-label"></label>
+                <input asp-for="FechaAutorizacion" class="form-control" />
+                <span asp-validation-for="FechaAutorizacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaCreacion" class="control-label"></label>
+                <input asp-for="FechaCreacion" class="form-control" />
+                <span asp-validation-for="FechaCreacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaModificacion" class="control-label"></label>
+                <input asp-for="FechaModificacion" class="form-control" />
+                <span asp-validation-for="FechaModificacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UsuarioCreacion" class="control-label"></label>
+                <input asp-for="UsuarioCreacion" class="form-control" />
+                <span asp-validation-for="UsuarioCreacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UsuarioModificacion" class="control-label"></label>
+                <input asp-for="UsuarioModificacion" class="form-control" />
+                <span asp-validation-for="UsuarioModificacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

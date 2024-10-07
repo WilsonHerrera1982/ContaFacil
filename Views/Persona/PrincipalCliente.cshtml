@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Principal Cliente";
+}
+
+<style>
+    .form-group {
+        width: 400px;
+    }
+
+    .row {
+        justify-content: left;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Gestión de Clientes</h2>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <!-- Crear Cliente -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-plus fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Crear Cliente</h5>
+                    <p class="card-text">Registra un nuevo cliente en el sistema.</p>
+                    <a asp-action="Create" asp-controller="Persona" class="btn btn-primary mt-auto">Crear Cliente</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listado de Clientes -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-list-ul fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Listado de Clientes</h5>
+                    <p class="card-text">Ver y gestionar todos los clientes registrados.</p>
+                    <a asp-action="Index" asp-controller="Persona" class="btn btn-success mt-auto">Ver Listado</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Anticipos -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-hand-holding-usd fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">Anticipos</h5>
+                    <p class="card-text">Gestiona los anticipos de los clientes.</p>
+                    <a asp-action="Index" asp-controller="Anticipo" class="btn btn-info mt-auto">Gestionar Anticipos</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuentas Por Cobrar -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-invoice-dollar fa-3x mb-3 text-warning"></i>
+                    <h5 class="card-title">Cuentas Por Cobrar</h5>
+                    <p class="card-text">Administra las cuentas por cobrar de los clientes.</p>
+                    <a asp-action="Index" asp-controller="CuentaCobrar" class="btn btn-warning mt-auto">Ver Cuentas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

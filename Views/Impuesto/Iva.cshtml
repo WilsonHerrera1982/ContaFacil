@@ -1,0 +1,43 @@
+﻿@model IEnumerable<ContaFacil.Models.Impuesto>
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Índice de Impuestos</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Crear Nuevo</a>
+    <a asp-action="PrincipalImpuestos" asp-controller="Impuesto" class="btn btn-secondary">Regresar a Principal</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Tipo)</th>
+            <th>@Html.DisplayNameFor(model => model.Nombre)</th>
+            <th>@Html.DisplayNameFor(model => model.Porcentaje)</th>
+            <th>@Html.DisplayNameFor(model => model.CodigoSri)</th>
+            <th>@Html.DisplayNameFor(model => model.CodigoPorcentajeSri)</th>
+            <th>@Html.DisplayNameFor(model => model.EstadoBoolean)</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Tipo)</td>
+                <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
+                <td>@Html.DisplayFor(modelItem => item.Porcentaje)</td>
+                <td>@Html.DisplayFor(modelItem => item.CodigoSri)</td>
+                <td>@Html.DisplayFor(modelItem => item.CodigoPorcentajeSri)</td>
+                <td>@Html.DisplayFor(modelItem => item.EstadoBoolean)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.IdImpuesto">Editar</a> |
+                    <a asp-action="Details" asp-route-id="@item.IdImpuesto">Detalles</a> |
+                    <a asp-action="Delete" asp-route-id="@item.IdImpuesto">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

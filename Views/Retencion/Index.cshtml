@@ -1,0 +1,100 @@
+﻿@model IEnumerable<ContaFacil.Models.Retencion>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Gestión de Retenciones</h1>
+<p>
+    <a asp-action="Create">Crear Nuevo</a>
+</p>
+
+
+<table class="table">
+    <thead>
+        <tr>
+           
+            <th>
+                @Html.DisplayNameFor(model => model.NumeroFactura)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ComprobanteRetencion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NumeroAutorizacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ClaveAcceso)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EjercicioFiscal)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BaseImponible)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Impuesto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PorcentajeRetencion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ValorRetenido)
+            </th>
+           
+            <th>
+                @Html.DisplayNameFor(model => model.FechaAutorizacion)
+            </th>
+           
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+             <td>
+                @Html.DisplayFor(modelItem => item.NumeroFactura)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ComprobanteRetencion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NumeroAutorizacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ClaveAcceso)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EjercicioFiscal)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BaseImponible)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Impuesto)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PorcentajeRetencion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ValorRetenido)
+            </td>
+           
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaAutorizacion)
+            </td>
+          
+            <td>
+                    <form asp-action="GenerarRIDE" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.IdRetencion" />
+                        <button type="submit" class="btn btn-primary"><i class='fas fa-file-pdf'></i> RIDE</button>
+                    </form>
+                    <form asp-action="GenerarXml" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.IdRetencion" />
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-arrow-alt-circle-down"></i> XML</button>
+                    </form>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

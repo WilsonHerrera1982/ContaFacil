@@ -31,6 +31,8 @@ public partial class CuentaCobrar
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<AnticipoCuentum> AnticipoCuenta { get; set; } = new List<AnticipoCuentum>();
+
     public virtual Empresa IdEmpresaNavigation { get; set; } = null!;
 
     public virtual Factura IdFacturaNavigation { get; set; } = null!;

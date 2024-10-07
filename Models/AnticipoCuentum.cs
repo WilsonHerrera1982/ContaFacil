@@ -25,5 +25,5 @@ public partial class AnticipoCuentum
 
     public virtual Anticipo IdAnticipoNavigation { get; set; } = null!;
 
-    public virtual Cuentum IdCuentaNavigation { get; set; } = null!;
+    public virtual CuentaCobrar IdCuentaNavigation { get; set; } = null!;
 }

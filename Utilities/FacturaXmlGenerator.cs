@@ -8,7 +8,6 @@ using FirmaXadesNet;
 using FirmaXadesNet.Crypto;
 using FirmaXadesNet.Signature;
 using FirmaXadesNet.Signature.Parameters;
-using System.Text;
 using System.Security.Cryptography;
 using System.Xml;
 using System.Net.Http;

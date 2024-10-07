@@ -19,7 +19,13 @@ namespace ContaFacil.Controllers
         {
             _context = context;
         }
+        public IActionResult PrincipalCliente()
+        {
+            // Aquí puedes agregar cualquier lógica adicional que necesites antes de devolver la vista
+            // Por ejemplo, podrías cargar algunos datos desde la base de datos y pasarlos a la vista
 
+            return View(); // Esto devolverá la vista PrincipalProducto.cshtml
+        }
         // GET: Persona
         public async Task<IActionResult> Index()
         {
@@ -65,7 +71,16 @@ namespace ContaFacil.Controllers
                 }
 
                 ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "NombreEmpresa");
-
+                ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
+                ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
                 // Suponiendo que tienes una tabla TipoIdentificacion con IdTipoIdentificacion y Descripcion
                 var tiposIdentificacion = _context.TipoIdentificacions.ToList();
 
@@ -128,6 +143,16 @@ namespace ContaFacil.Controllers
             }
             catch (Exception ex)
             {
+                ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
+                ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
                 ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", persona.IdEmpresa);
                 Notificacion("Error al guardar el Registro " + ex.Message, NotificacionTipo.Error);
                 return View(persona);
@@ -147,6 +172,16 @@ namespace ContaFacil.Controllers
             {
                 return NotFound();
             }
+            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
+            {
+                IdImpuesto = i.Porcentaje,
+                NombrePorcentaje = i.Nombre
+            }), "IdImpuesto", "NombrePorcentaje");
+            ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE").Select(i => new
+            {
+                IdImpuesto = i.Porcentaje,
+                NombrePorcentaje = i.Nombre
+            }), "IdImpuesto", "NombrePorcentaje");
             ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", persona.IdEmpresa);
             return View(persona);
         }
@@ -156,15 +191,12 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdPersona,Nombre,Direccion,Telefono,Email,Estado,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion,Identificacion,IdEmpresa")] Persona persona)
+        public async Task<IActionResult> Edit(int id,Persona persona)
         {
             if (id != persona.IdPersona)
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
-            {
                 try
                 {
                     string idUsuario = HttpContext.Session.GetString("_idUsuario");
@@ -173,23 +205,28 @@ namespace ContaFacil.Controllers
                     _context.Update(persona);
                     await _context.SaveChangesAsync();
                     Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    if (!PersonaExists(persona.IdPersona))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
-                        throw;
-                    }
-                }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", persona.IdEmpresa);
-            return View(persona);
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
+                ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
+                ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
+                ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", persona.IdEmpresa);
+                return View(persona);
+            }
+               
+            
+          
         }
 
         // GET: Persona/Delete/5

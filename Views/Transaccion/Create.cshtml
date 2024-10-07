@@ -5,65 +5,244 @@
 }
 
 <h1>Crear</h1>
-
-<h4>Transacción</h4>
+<h4>Asiento Manual</h4>
 <hr />
-<div class="form-container">
+
+<form id="transactionForm" asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
-        <div class="col-md-4">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
-                    <label asp-for="IdCuenta" class="control-label"></label>
-                    <select asp-for="IdCuenta" class ="form-control" asp-items="ViewBag.IdCuenta"></select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Fecha" class="control-label"></label>
-                    <input asp-for="Fecha" class="form-control" />
-                    <span asp-validation-for="Fecha" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="IdTipoTransaccion" class="control-label"></label>
-                    <select asp-for="IdTipoTransaccion" class ="form-control" asp-items="ViewBag.IdTipoTransaccion"></select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Monto" class="control-label"></label>
-                    <input asp-for="Monto" class="form-control" />
-                    <span asp-validation-for="Monto" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Descripcion" class="control-label">Descripción</label>
-                    <input asp-for="Descripcion" class="form-control" />
-                    <span asp-validation-for="Descripcion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="UsuarioCreacion" class="control-label"></label>
-                    <input asp-for="UsuarioCreacion" class="form-control" />
-                    <span asp-validation-for="UsuarioCreacion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="UsuarioModificacion" class="control-label"></label>
-                    <input asp-for="UsuarioModificacion" class="form-control" />
-                    <span asp-validation-for="UsuarioModificacion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="IdEmpresa" class="control-label">ID Empresa</label>
-                    <select asp-for="IdEmpresa" class ="form-control" asp-items="ViewBag.IdEmpresa"></select>
-                </div>
-                <div class="form-group">
-                    <center>
-                        <button class="button" type="submit">Crear</button>
-                    </center>
-                </div>
-            </form>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="Fecha" class="control-label">Fecha</label>
+                <input type="date" id="Fecha" name="Fecha" class="form-control" required />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="Descripcion" class="control-label">Descripción</label>
+                <input id="Descripcion" name="Descripcion" class="form-control" required />
+            </div>
         </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Volver a la Lista</a>
-</div>
+    <table id="accountsTable" class="table">
+        <thead>
+            <tr>
+                <th>Cuenta</th>
+                <th>Saldo Actual</th>
+                <th>Debe</th>
+                <th>Haber</th>
+                <th>Nuevo Saldo</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be added dynamically -->
+        </tbody>
+    </table>
+
+    <button type="button" id="addAccountRow" class="btn btn-secondary">Agregar Cuenta</button>
+
+    <div class="row mt-3">
+        <div class="col-md-3">
+            <strong>Total Debe: </strong><span id="totalDebit">0.00</span>
+        </div>
+        <div class="col-md-3">
+            <strong>Total Haber: </strong><span id="totalCredit">0.00</span>
+        </div>
+        <div class="col-md-3">
+            <strong>Diferencia: </strong><span id="difference">0.00</span>
+        </div>
+    </div>
+
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary" id="submitButton" disabled>Crear</button>
+        <a asp-action="Index" class="btn btn-secondary">Volver a la Lista</a>
+    </div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            let rowCounter = 0;
+
+            function addAccountRow() {
+                rowCounter++;
+                const newRow = `
+                    <tr data-row-id="${rowCounter}">
+                        <td>
+                            <select name="Accounts[${rowCounter}].IdCuenta" class="form-control account-select" required>
+                                <option value="">Seleccione una cuenta</option>
+        @foreach (var item in (ViewData["IdCuenta"] as SelectList) ?? Enumerable.Empty<SelectListItem>())
+        {
+                                        <option value="@item.Value">@item.Text</option>
+        }
+                            </select>
+                        </td>
+                        <td><span class="current-balance">0.00</span></td>
+                        <td><input type="number" name="Accounts[${rowCounter}].Debit" class="form-control debit-input" step="0.01" min="0" value="0"></td>
+                        <td><input type="number" name="Accounts[${rowCounter}].Credit" class="form-control credit-input" step="0.01" min="0" value="0"></td>
+                        <td><span class="new-balance">0.00</span></td>
+                        <td><button type="button" class="btn btn-danger remove-row">Eliminar</button></td>
+                    </tr>
+                `;
+                $('#accountsTable tbody').append(newRow);
+            }
+
+            $('#addAccountRow').click(addAccountRow);
+
+            $(document).on('click', '.remove-row', function () {
+                $(this).closest('tr').remove();
+                calculateTotals();
+            });
+
+            $(document).on('input', '.debit-input, .credit-input', function () {
+                calculateRowBalance($(this).closest('tr'));
+                calculateTotals();
+            });
+
+            $(document).on('change', '.account-select', function () {
+                const $row = $(this).closest('tr');
+                const idCuenta = $(this).val();
+                console.log("id cuenta", $(this).val());
+                if (idCuenta) {
+                    console.log("id cuenta 2", idCuenta);
+                    $.ajax({
+                        url: '@Url.Action("GetAccountBalance", "Transaccion")',
+                        type: 'GET',
+                        data: { idCuenta: idCuenta },
+                        success: function (balance) {
+                            $row.find('.current-balance').text(parseFloat(balance).toFixed(2));
+                            calculateRowBalance($row);
+                            calculateTotals();
+                        },
+                        error: function () {
+                            alert('Error al obtener el saldo de la cuenta.');
+                        }
+                    });
+                } else {
+                    $row.find('.current-balance').text('0.00');
+                    calculateRowBalance($row);
+                    calculateTotals();
+                }
+            });
+
+            function calculateRowBalance($row) {
+                const currentBalance = parseFloat($row.find('.current-balance').text()) || 0;
+                const debit = parseFloat($row.find('.debit-input').val()) || 0;
+                const credit = parseFloat($row.find('.credit-input').val()) || 0;
+                const newBalance = currentBalance + debit - credit;
+                $row.find('.new-balance').text(newBalance.toFixed(2));
+            }
+
+            function calculateTotals() {
+                let totalDebit = 0;
+                let totalCredit = 0;
+
+                $('#accountsTable tbody tr').each(function () {
+                    const $row = $(this);
+                    const debit = parseFloat($row.find('.debit-input').val()) || 0;
+                    const credit = parseFloat($row.find('.credit-input').val()) || 0;
+
+                    totalDebit += debit;
+                    totalCredit += credit;
+                });
+
+                const difference = totalDebit - totalCredit;
+
+                $('#totalDebit').text(totalDebit.toFixed(2));
+                $('#totalCredit').text(totalCredit.toFixed(2));
+                $('#difference').text(Math.abs(difference).toFixed(2));
+
+                $('#submitButton').prop('disabled', difference !== 0);
+            }
+
+            $('#transactionForm').on('submit', function (e) {
+                e.preventDefault();
+
+                let hasValidEntry = false;
+                let formData = new FormData(this);
+                let accountsData = [];
+                let uniqueAccounts = new Map();
+
+                $('#accountsTable tbody tr').each(function (index) {
+                    const $row = $(this);
+                    const idCuenta = $row.find('.account-select').val();
+                    const debit = parseFloat($row.find('.debit-input').val()) || 0;
+                    const credit = parseFloat($row.find('.credit-input').val()) || 0;
+                    
+                    if (idCuenta && (debit > 0 || credit > 0)) {
+                        hasValidEntry = true;
+
+                        if (uniqueAccounts.has(idCuenta)) {
+                            // Si la cuenta ya existe, sumar los valores de debe y haber
+                            let existingAccount = uniqueAccounts.get(idCuenta);
+                            existingAccount.Debit += debit;
+                            existingAccount.Credit += credit;
+                        } else {
+                            // Si es una nueva cuenta, agregarla al Map
+                            uniqueAccounts.set(idCuenta, {
+                                IdCuenta: idCuenta,
+                                Debit: debit,
+                                Credit: credit
+                            });
+                        }
+                    }
+                });
+
+                if (!hasValidEntry) {
+                    alert('Debe ingresar al menos un monto (debe o haber) para una cuenta.');
+                    return false;
+                }
+
+                // Convertir el Map a un array de objetos
+                accountsData = Array.from(uniqueAccounts.values());
+
+                // Eliminar todos los campos 'Accounts' existentes
+                for (let pair of formData.entries()) {
+                    if (pair[0].startsWith('Accounts[')) {
+                        formData.delete(pair[0]);
+                    }
+                }
+                
+                // Agregar solo los registros únicos
+                accountsData.forEach((account, index) => {
+                    formData.append(`Accounts[${index}].IdCuenta`, account.IdCuenta);
+                    formData.append(`Accounts[${index}].Debit`, account.Debit);
+                    formData.append(`Accounts[${index}].Credit`, account.Credit);
+                });
+
+                // Imprimir el contenido de formData
+                console.log("Contenido de formData:");
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+
+                $.ajax({
+                    url: '@Url.Action("Create", "Transaccion")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            window.location.href = '@Url.Action("Index", "Transaccion")';
+                        } else {
+                            alert(response.message || 'Error al crear el asiento contable.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error details:', xhr.responseText);
+                        alert('Error al enviar los datos. Por favor, revise la consola para más detalles.');
+                    }
+                });
+            });
+
+            // Agregar fila inicial
+            addAccountRow();
+        });
+    </script>
 }

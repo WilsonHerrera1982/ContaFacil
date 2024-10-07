@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;  using System.ComponentModel;
-using System.ComponentModel;
+
 namespace ContaFacil.Models
 {
     public partial class Menu

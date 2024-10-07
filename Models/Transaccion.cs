@@ -29,6 +29,7 @@ public partial class Transaccion
 
     public int? IdEmpresa { get; set; }
     public int? IdInventario { get; set; }
+    public bool EsDebito {  get; set; }
 
     public virtual Cuentum IdCuentaNavigation { get; set; } = null!;
 

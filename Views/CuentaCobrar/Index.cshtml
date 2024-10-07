@@ -1,0 +1,177 @@
+﻿@model IEnumerable<ContaFacil.Models.CuentaCobrar>
+@using ContaFacil.Models
+
+@{
+    ViewData["Title"] = "Gestionar Cuentas por Cobrar";
+    var groupedAccounts = Model.GroupBy(c => c.IdFacturaNavigation.IdClienteNavigation);
+}
+
+<h1>Gestionar Cuentas por Cobrar</h1>
+
+@foreach (var clientGroup in groupedAccounts)
+{
+    var client = clientGroup.Key;
+    var anticipos = client.Anticipos
+     .Where(a => a.Valor > 0)  // Filtra los valores mayores a 0
+     .Sum(a => a.Valor);       // Suma solo los valores filtrados
+
+    <h2>@client.IdPersonaNavigation.Nombre (@client.IdPersonaNavigation.Identificacion)</h2>
+    <p>Total Anticipos: @anticipos.ToString("C")</p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Número Factura</th>
+                <th>Fecha</th>
+                <th>Plazo (Días)</th>
+                <th>Estado Cobro</th>
+                <th>Precio Venta</th>
+                <th>Saldo Pendiente</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in clientGroup)
+            {
+                var saldoPendiente = item.PrecioVenta - item.AnticipoCuenta.Sum(a => a.Valor);
+                <tr>
+                    <td>@item.IdFacturaNavigation.NumeroFactura</td>
+                    <td>@item.IdFacturaNavigation.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@item.PlazoDias</td>
+                    <td>@item.EstadoCobro</td>
+                    <td>@item.PrecioVenta.ToString("C")</td>
+                    <td>@saldoPendiente.ToString("C")</td>
+                    <td>@(item.EstadoBoolean ? "Activo" : "Inactivo")</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.IdCuentaCobrar">Editar</a> |
+                        <a asp-action="Details" asp-route-id="@item.IdCuentaCobrar">Details</a> |
+                        @if (saldoPendiente > 0 && @anticipos>0)
+                        {
+                            <button type="button" class="btn btn-primary btn-sm" onclick="openAnticipoCuentaModal(@item.IdCuentaCobrar, @saldoPendiente)">
+                                Registrar Anticipo
+                            </button>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="8">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var anticipo in item.AnticipoCuenta)
+                                {
+                                    <tr>
+                                        <td>@anticipo.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                                        <td>Pago</td>
+                                        <td>@anticipo.Valor.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- El modal y los scripts permanecen iguales -->
+
+<!-- Modal for AnticipoCuenta -->
+<div class="modal fade" id="anticipoCuentaModal" tabindex="-1" role="dialog" aria-labelledby="anticipoCuentaModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="anticipoCuentaModalLabel">Registrar Anticipo Cuenta</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="anticipoCuentaForm">
+                    <input type="hidden" id="idCuentaCobrar" name="IdCuenta" />
+                    <div class="form-group">
+                        <label for="idAnticipo">Anticipo</label>
+                        <select class="form-control" id="idAnticipo" name="IdAnticipo" required>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="valor">Valor</label>
+                        <input type="number" class="form-control" id="valor" name="Valor" required step="0.01" min="0" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="submitAnticipoCuenta()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Manejar el cierre del modal
+            $('#anticipoCuentaModal').on('hidden.bs.modal', function () {
+                // Limpiar el formulario cuando se cierre el modal
+                $('#anticipoCuentaForm')[0].reset();
+            });
+
+            // Asignar el evento de cierre a los botones correspondientes
+            $('.close, [data-dismiss="modal"]').on('click', function () {
+                $('#anticipoCuentaModal').modal('hide');
+            });
+        });
+
+        function openAnticipoCuentaModal(idCuentaCobrar, saldoPendiente) {
+            // Obtener anticipos para el cliente y llenar el select
+            $.get('/CuentaCobrar/GetAnticipos', { idCuentaCobrar: idCuentaCobrar }, function (data) {
+                console.log("Respuesta recibida: ", data);
+
+                var select = $('#idAnticipo');
+                select.empty();
+
+                // Acceder a la propiedad "$values" que contiene el array de anticipos
+                var anticipos = data["$values"];
+
+                if (anticipos && anticipos.length > 0) {
+                    $.each(anticipos, function (index, anticipo) {
+                        console.log("anticipo.valor: ", anticipo.valor);
+                        select.append($('<option></option>').val(anticipo.idAnticipo).text(anticipo.valor));
+                    });
+                } else {
+                    console.log("No se encontraron anticipos.");
+                    select.append($('<option></option>').text("No hay anticipos disponibles"));
+                }
+
+                // Establecer el valor del saldo pendiente en el campo correspondiente
+                $('#idCuentaCobrar').val(idCuentaCobrar);
+                $('#valor').val(saldoPendiente);
+            });
+
+            $('#anticipoCuentaModal').modal('show');
+        }
+
+        function submitAnticipoCuenta() {
+            var formData = $('#anticipoCuentaForm').serialize();
+            console.log("Datos enviados: ", formData);
+            $.post('/AnticipoCuentums/Create', formData, function (response) {
+                if (response.success) {
+                    $('#anticipoCuentaModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Error al guardar el anticipo cuenta: ' + response.message);
+                }
+            });
+        }
+    </script>
+}

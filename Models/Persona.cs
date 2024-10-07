@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;  using System.ComponentModel;
+using System.Collections.Generic;  
 using System.ComponentModel;
 namespace ContaFacil.Models;
 
@@ -30,6 +30,8 @@ public partial class Persona
     public int? IdEmpresa { get; set; }
 
     public int? IdTipoIdentificacion { get; set; }
+    public decimal RetencionIva {  get; set; }
+    public decimal RetencionPorcentaje {  get; set; }
 
     public virtual ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
 

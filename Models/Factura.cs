@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;  using System.ComponentModel;
+using System.Collections.Generic; 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace ContaFacil.Models;
@@ -46,6 +46,7 @@ public partial class Factura
     public DateTime? FechaAutorizacionSri { get; set; }
     [DisplayName("Crédito")]
     public Boolean Credito {  get; set; }
+    public int? IdImpuesto { get; set; }
 
     [NotMapped]
     public virtual int? idPago { get; set; }

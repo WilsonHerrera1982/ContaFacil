@@ -80,5 +80,26 @@
                 </div>
             </div>
         </div>
+        <!-- Reporte Retenciones -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-percent fa-3x mb-3 text-warning"></i>
+                    <h5 class="card-title">Listado Retenciones</h5>
+                    <p class="card-text">Registra retenciones de proveedores y clientes.</p>
+                    <form asp-controller="Retencion" asp-action="Index" method="post">
+                        <div class="form-group">
+                            <label for="fechaInicioBal">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicioBal" name="fechaInicio" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFinBal">Fecha Fin:</label>
+                            <input type="date" id="fechaFinBal" name="fechaFin" class="form-control" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Gestionar Retenciones</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

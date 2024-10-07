@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;  using System.ComponentModel;
+using System.Collections.Generic;  
 using System.ComponentModel;
 namespace ContaFacil.Models;
 
@@ -27,9 +27,9 @@ public partial class Proveedor
     public int? UsuarioModificacion { get; set; }
 
     public int? IdEmpresa { get; set; }
-
+    [DisplayName("Retención en la Fuente")]
     public decimal? RetencionPorcentaje { get; set; }
-
+    [DisplayName("Retención IVA")]
     public decimal? RetencionIva { get; set; }
 
     public virtual Empresa? IdEmpresaNavigation { get; set; }

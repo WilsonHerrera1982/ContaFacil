@@ -25,6 +25,12 @@
                 @Html.DisplayNameFor(model => model.Email)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.RetencionPorcentaje)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RetencionIva)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Estado)
             </th>
             <th></th>
@@ -46,8 +52,14 @@
                 @Html.DisplayFor(modelItem => item.Email)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Estado)
+                @Html.DisplayFor(modelItem => item.RetencionPorcentaje)
             </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RetencionIva)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Estado)
+                </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.IdProveedor">Editar</a> |
                 <a asp-action="Details" asp-route-id="@item.IdProveedor">Detalles</a> |

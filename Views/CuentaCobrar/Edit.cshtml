@@ -1,0 +1,47 @@
+﻿@model ContaFacil.Models.CuentaCobrar
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>CuentaCobrar</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdCuentaCobrar" />
+          
+            <div class="form-group">
+                <label asp-for="PlazoDias" class="control-label"></label>
+                <input asp-for="PlazoDias" class="form-control" />
+                <span asp-validation-for="PlazoDias" class="text-danger"></span>
+            </div>
+           
+            <div class="form-group">
+                <label asp-for="EstadoCobro" class="control-label"></label>
+                <input asp-for="EstadoCobro" class="form-control" />
+                <span asp-validation-for="EstadoCobro" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PrecioVenta" class="control-label"></label>
+                <input asp-for="PrecioVenta" class="form-control" />
+                <span asp-validation-for="PrecioVenta" class="text-danger"></span>
+            </div>
+          
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

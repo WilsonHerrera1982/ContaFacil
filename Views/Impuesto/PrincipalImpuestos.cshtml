@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Principal Impuestos";
+}
+
+<style>
+    .row {
+        justify-content: center;
+    }
+</style>
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <!-- IVA -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calculator fa-3x mb-3 text-danger"></i>
+                    <h5 class="card-title">IVA</h5>
+                    <p class="card-text">Gestiona IVA del sistema.</p>
+                    <a asp-action="Iva" asp-controller="Impuesto" class="btn btn-danger mt-auto">Gestionar IVA</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Retenciones -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-percent fa-3x mb-3 text-secondary"></i>
+                    <h5 class="card-title">Retenciones</h5>
+                    <p class="card-text">Gestiona las retenciones del sistema.</p>
+                    <a asp-action="Index" asp-controller="Impuesto" class="btn btn-secondary mt-auto">Gestionar Retenciones</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

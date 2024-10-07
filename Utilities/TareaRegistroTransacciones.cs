@@ -102,7 +102,8 @@ namespace ContaFacil.Utilities
                             FechaModificacion = DateTime.Now,
                             UsuarioCreacion = 1,
                             IdEmpresa = empresa.IdEmpresa,
-                            IdInventario = inv.IdInventario
+                            IdInventario = inv.IdInventario,
+                            EsDebito=true,
                         };
                         transacciones.Add(transaccionInventarios);
 
@@ -154,7 +155,7 @@ namespace ContaFacil.Utilities
             Empresa empresa = _context.Empresas.FirstOrDefault(e => e.Identificacion == emisor.Ruc);
             // Función local para crear una nueva transacción
             Cuentum cuentum = _context.Cuenta.FirstOrDefault(c=>c.IdCuenta==inventario.IdCuentaContable);
-            Transaccion CrearTransaccion(string codigoCuenta, decimal monto, string descripcion, string tipoTransaccion)
+            Transaccion CrearTransaccion(string codigoCuenta, decimal monto, string descripcion, string tipoTransaccion,Boolean esDebito)
             {
                 return new Transaccion
                 {
@@ -173,22 +174,22 @@ namespace ContaFacil.Utilities
             }
             if (inventario.TipoMovimiento == "E") // Compra
             {
-                transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.Total ?? 0, $"Saldo de {producto.Nombre}", "Saldo"));
+                transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.Total ?? 0, $"Saldo de {producto.Nombre}", "Saldo",false));
             }
             if (inventario.TipoMovimiento == "C") // Compra
             {
                 if (inventario.Descuento > 0)
                 {
-                    transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.Subtotal15 ?? 0, $"Compra de {producto.Nombre}", "Compra"));
+                    transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.Subtotal15 ?? 0, $"Compra de {producto.Nombre}", "Compra",false));
                 }
                 else
                 {
-                    transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.SubTotal ?? 0, $"Compra de {producto.Nombre}", "Compra"));
+                    transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.SubTotal ?? 0, $"Compra de {producto.Nombre}", "Compra",true));
                 }
                 
-                transacciones.Add(CrearTransaccion("1.1.3.3", inventario.Iva ?? 0, $"IVA en compra de {producto.Nombre}", "Compra"));
+                transacciones.Add(CrearTransaccion("1.1.3.3", inventario.Iva ?? 0, $"IVA en compra de {producto.Nombre}", "Compra", false));
                
-                transacciones.Add(CrearTransaccion("2.1.1.1", -(inventario.Total ?? 0), $"Pago a proveedor por {producto.Nombre}", "Compra"));
+                transacciones.Add(CrearTransaccion("2.1.1.1", -(inventario.Total ?? 0), $"Pago a proveedor por {producto.Nombre}", "Compra", false));
             }
             
 

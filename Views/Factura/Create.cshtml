@@ -15,6 +15,9 @@
             }
         </select>
     </div>
+    <div id="anticipoInfo" class="alert alert-warning mt-3" style="display: none;">
+        <strong>Anticipo del cliente:</strong> <span id="anticipoAmount"></span>
+    </div>
 
     <h3>Detalles de Factura</h3>
     <table id="detallesTable" class="table">
@@ -77,7 +80,11 @@
         <label>Total Pagado</label>
         <input type="text" id="totalPagado" class="form-control" readonly />
     </div>
-
+    <div class="form-group form-check">
+        <label class="form-check-label">
+            <input class="form-check-input" asp-for="Credito" /> Crédito
+        </label>
+    </div>
     <button type="submit" id="crearFactura" class="btn btn-primary mt-3" style="display: none;">Crear Factura</button>
 </form>
 
@@ -321,6 +328,33 @@
                 }
             }
         });
+
+        $('.select2-cliente').on('change', function () {
+            let clienteId = $(this).val();
+            if (clienteId) {
+                $.ajax({
+                    url: '/Factura/GetClienteAnticipos',
+                    type: 'GET',
+                    data: { idCliente: clienteId },
+                    success: function (data) {
+                        if (data.totalAnticipos > 0) {
+                            $('#anticipoAmount').text('$' + data.totalAnticipos.toFixed(2));
+                            $('#anticipoInfo').show();
+                        } else {
+                            $('#anticipoInfo').hide();  // Corrected: this block hides if no anticipos
+                        }
+                    },
+                
+                    error: function () {
+                        console.error('Error al obtener anticipos del cliente');
+                        $('#anticipoInfo').hide();
+                    }
+                            });
+                        } else {
+            $('#anticipoInfo').hide();
+        }
+                    });
+
         $(document).ready(function () {
             try {
                 $('.producto-select').select2({

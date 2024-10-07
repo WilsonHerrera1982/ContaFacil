@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ContaFacil.Models;
 using Microsoft.DiaSymReader;
+using System;
+using System.Text.RegularExpressions;
 
 namespace ContaFacil.Controllers
 {
@@ -37,6 +39,7 @@ namespace ContaFacil.Controllers
             Emisor emisor = new Emisor();
             emisor = _context.Emisors.Where(e => e.Ruc == persona.Identificacion).FirstOrDefault();
             Empresa empresa = _context.Empresas.FirstOrDefault(e => e.Identificacion == emisor.Ruc);
+
             if (fechaInicio == default || fechaFin == default)
             {
                 TempData["Error"] = "Las fechas de inicio y fin son obligatorias.";
@@ -74,7 +77,6 @@ namespace ContaFacil.Controllers
                 worksheet.Cell(currentRow, 6).Value = "Debe";
                 worksheet.Cell(currentRow, 7).Value = "Haber";
                 worksheet.Cell(currentRow, 8).Value = "Movimiento";
-                //worksheet.Cell(currentRow, 9).Value = "Saldo";
 
                 // Estilo para encabezados
                 var headerRange = worksheet.Range(currentRow, 1, currentRow, 8);
@@ -83,27 +85,20 @@ namespace ContaFacil.Controllers
 
                 currentRow++;
 
-                // Agregar título COMPRAS
-                 currentRow++;
                 Cuentum cue2 = _context.Cuenta.FirstOrDefault(c => c.Nombre == "Relacionadas por pagar");
                 string lastAsiento = "";
-                var compras = transacciones.Where(t => !t.Descripcion.ToLower().Contains("venta") && t.IdCuenta!=cue2.IdCuenta);
-                            var ventas = transacciones
-                .Where(t => t.Descripcion.ToLower().Contains("venta") &&
-                            !t.Descripcion.ToLower().Contains("saldo inicial inventarios"))
-                .OrderBy(t => t.FechaCreacion)
-                .ToList();
+                var compras = transacciones.Where(t => !t.Descripcion.ToLower().Contains("venta") && t.IdCuenta != cue2.IdCuenta);
+                var ventas = transacciones
+                    .Where(t => t.Descripcion.ToLower().Contains("venta") &&
+                                !t.Descripcion.ToLower().Contains("saldo inicial inventarios"))
+                    .OrderBy(t => t.FechaCreacion)
+                    .ToList();
 
                 var inicial = transacciones.Where(t => t.Descripcion.ToLower().Contains("inicial")).ToList();
-                
-                // Agregar datos de compras
-                foreach (var transaccion in inicial)
-                {
-                    Inventario inventario = _context.Inventarios.FirstOrDefault(i=>i.IdInventario==transaccion.IdInventario);
-                    Producto producto = _context.Productos.Include(p=>p.IdCategoriaProductoNavigation).FirstOrDefault(p=>p.IdProducto==inventario.IdProducto);
 
-                    Cuentum cue = _context.Cuenta.FirstOrDefault(c => c.Nombre ==producto.IdCategoriaProductoNavigation.Nombre);
-                    
+                // Procesar todas las transacciones en orden cronológico
+                foreach (var transaccion in compras.Concat(ventas).Concat(inicial).OrderBy(t => t.FechaCreacion))
+                {
                     if (transaccion.Descripcion.Split(' ')[0] != lastAsiento)
                     {
                         if (lastAsiento != "")
@@ -112,164 +107,83 @@ namespace ContaFacil.Controllers
                         }
                         lastAsiento = transaccion.Descripcion.Split(' ')[0];
                     }
-                    if (transaccion.IdCuenta==cue.IdCuenta)
+
+                    currentRow++;
+                    worksheet.Cell(currentRow, 1).Value = transaccion.FechaCreacion;
+                    worksheet.Cell(currentRow, 2).Value = transaccion.Descripcion.Split(' ')[0];
+                    worksheet.Cell(currentRow, 3).Value = transaccion.IdCuentaNavigation.Codigo;
+                    worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
+                    worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
+                    // Manejo especial para Anticipos de clientes y Cuentas por cobrar
+                    if (transaccion.IdCuentaNavigation.Codigo == "1.1.4" && transaccion.EsDebito)
                     {
-                        currentRow++;
-                        worksheet.Cell(currentRow, 1).Value = transaccion.FechaCreacion;
-                        worksheet.Cell(currentRow, 2).Value = transaccion.Descripcion.Split(' ')[0];
-                        worksheet.Cell(currentRow, 3).Value = transaccion.IdCuentaNavigation.Codigo;
-                        worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
-                        worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
-                        worksheet.Cell(currentRow, 6).Value = transaccion.Monto;
-                        worksheet.Cell(currentRow, 7).Value = 0;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto;
-                        
+                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
+                        worksheet.Cell(currentRow, 7).Value = -Math.Abs(transaccion.Monto); // Haber
+                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.2.1" && transaccion.EsDebito)
+                    {
+                        worksheet.Cell(currentRow, 6).Value = Math.Abs(transaccion.Monto); // Debe
+                        worksheet.Cell(currentRow, 7).Value = 0; // Haber
+                        worksheet.Cell(currentRow, 8).Value = Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                   
+                    else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.2.")&& transaccion.EsDebito)
+                    {
+                        worksheet.Cell(currentRow, 6).Value = Math.Abs(transaccion.Monto); // Debe
+                        worksheet.Cell(currentRow, 7).Value = 0; // Haber
+                        worksheet.Cell(currentRow, 8).Value = Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                    else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.2.") && !transaccion.EsDebito)
+                    {
+                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
+                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
+                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.3.1")
+                    {
+                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
+                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
+                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.5.1")
+                    {
+                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
+                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
+                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                    // Manejo especial para Anticipos de clientes y Cuentas por cobrar
+                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.2.1")
+                    {
+                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
+                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
+                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                    else if (transaccion.IdCuentaNavigation.Codigo == "1.1.4")
+                    {
+                        worksheet.Cell(currentRow, 6).Value = Math.Abs(transaccion.Monto); // Debe
+                        worksheet.Cell(currentRow, 7).Value = 0; // Haber
+                        worksheet.Cell(currentRow, 8).Value = Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                    else if (transaccion.IdCuentaNavigation.Codigo != "4.1.1" && transaccion.IdCuentaNavigation.Codigo.Contains("4.1."))
+                    {
+                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
+                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
+                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
+                    }
+                    else if (transaccion.IdCuentaNavigation.Codigo.Contains( "2.1.3.") && transaccion.EsDebito)
+                    {
+                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
+                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
+                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
                     }
                     else
                     {
-                        currentRow++;
-                        worksheet.Cell(currentRow, 1).Value = transaccion.FechaCreacion;
-                        worksheet.Cell(currentRow, 2).Value = transaccion.Descripcion.Split(' ')[0];
-                        worksheet.Cell(currentRow, 3).Value = transaccion.IdCuentaNavigation.Codigo;
-                        worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
-                        worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
-                        worksheet.Cell(currentRow, 6).Value = 0;
-                        worksheet.Cell(currentRow, 7).Value = transaccion.Monto;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto*-1;
-                        // El cálculo del saldo dependerá de tu lógica de negocio
+                        // Manejo normal para otras cuentas
+                        worksheet.Cell(currentRow, 6).Value = transaccion.Monto > 0 ? transaccion.Monto : 0; // Debe
+                        worksheet.Cell(currentRow, 7).Value = transaccion.Monto < 0 ? Math.Abs(transaccion.Monto) : 0; // Haber
+                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto; // Movimiento
                     }
-                }
-
-                currentRow++;
-
-                // Agregar título COMPRAS
-                  currentRow++;
-
-                              // Agregar datos de compras
-                foreach (var transaccion in compras)
-                {
-                    if (transaccion.Descripcion.Split(' ')[0] != lastAsiento)
-                    {
-                        if (lastAsiento != "")
-                        {
-                            currentRow++; // Agregar fila vacía después de cada asiento completo
-                        }
-                        lastAsiento = transaccion.Descripcion.Split(' ')[0];
-                    }
-                    if (transaccion.Descripcion.Contains("Saldo"))
-                    {
-                        currentRow++;
-                        worksheet.Cell(currentRow, 1).Value = transaccion.FechaCreacion;
-                        worksheet.Cell(currentRow, 2).Value = transaccion.Descripcion.Split(' ')[0];
-                        worksheet.Cell(currentRow, 3).Value = transaccion.IdCuentaNavigation.Codigo;
-                        worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
-                        worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
-                        worksheet.Cell(currentRow, 6).Value = 0;
-                        worksheet.Cell(currentRow, 7).Value = 0;
-                        worksheet.Cell(currentRow, 8).Value = 0;
-                       // worksheet.Cell(currentRow, 9).Value = transaccion.Monto;
-                    }
-                    else
-                    {
-                        currentRow++;
-                        worksheet.Cell(currentRow, 1).Value = transaccion.FechaCreacion;
-                        worksheet.Cell(currentRow, 2).Value = transaccion.Descripcion.Split(' ')[0];
-                        worksheet.Cell(currentRow, 3).Value = transaccion.IdCuentaNavigation.Codigo;
-                        worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
-                        worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
-                        worksheet.Cell(currentRow, 6).Value = transaccion.Monto > 0 ? transaccion.Monto : 0;
-                        worksheet.Cell(currentRow, 7).Value = transaccion.Monto < 0 ? Math.Abs(transaccion.Monto) : 0;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto;
-                        // El cálculo del saldo dependerá de tu lógica de negocio
-                    }
-                }
-
-                currentRow++;
-
-                // Agregar título VENTAS
-                 currentRow++;
-
-                lastAsiento = "";
-
-                // Agregar datos de ventas
-                int cont = 1;
-                foreach (var transaccion in ventas)
-                {
-                    Inventario inventario = _context.Inventarios.FirstOrDefault(i=>i.IdInventario==transaccion.IdInventario);
-                    Cuentum cuentum = new Cuentum();
-                    Cuentum cuentaIngreso= new Cuentum();
-                    Cuentum cuentaCosto = new Cuentum();
-                    Cuentum cuentaCaja = new Cuentum();
-                    Cuentum cuentaIva = new Cuentum();
-                    Cuentum cuentaDescuento = new Cuentum();
-                    if (inventario != null)
-                    {
-                        Producto producto = _context.Productos.Include(p => p.IdCategoriaProductoNavigation).FirstOrDefault(p => p.IdProducto == inventario.IdProducto);
-                        string categoria = producto.IdCategoriaProductoNavigation.Nombre;
-                        cuentum = _context.Cuenta.FirstOrDefault(c => c.Nombre == categoria);
-                        cuentaCosto = _context.Cuenta.FirstOrDefault(c => c.Nombre == "Costo " + producto.IdCategoriaProductoNavigation.Nombre);
-                        string cuentaCost = cuentaCosto.Nombre;
-                        cuentaIngreso = _context.Cuenta.FirstOrDefault(c => c.Nombre == "Ingreso " + producto.IdCategoriaProductoNavigation.Nombre);
-                        cuentaCaja = _context.Cuenta.FirstOrDefault(c => c.Nombre == "Caja");
-                        cuentaIva = _context.Cuenta.FirstOrDefault(c => c.Nombre == "IVA por pagar");
-                        cuentaDescuento = _context.Cuenta.FirstOrDefault(c => c.Nombre == "Descuento en ventas");
-                    }
-                    if (transaccion.Descripcion.Split(' ')[0] != lastAsiento)
-                    {
-                        if (lastAsiento != "")
-                        {
-                            currentRow++; // Agregar fila vacía después de cada asiento completo
-                        }
-                        lastAsiento = transaccion.Descripcion.Split(' ')[0];
-                    }
-                      
-                          currentRow++;
-                          worksheet.Cell(currentRow, 1).Value = transaccion.FechaCreacion;
-                          worksheet.Cell(currentRow, 2).Value = transaccion.Descripcion.Split(' ')[0];
-                          worksheet.Cell(currentRow, 3).Value = transaccion.IdCuentaNavigation.Codigo;
-                          worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
-                          worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
-                    
-                    if (transaccion.IdCuenta == cuentaCosto.IdCuenta)
-                    {
-                        worksheet.Cell(currentRow, 6).Value = transaccion.Monto;
-                        worksheet.Cell(currentRow, 7).Value =  0;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto;
-                    }
-                    if (transaccion.IdCuenta == cuentaIngreso.IdCuenta)
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0;
-                        worksheet.Cell(currentRow, 7).Value = transaccion.Monto;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto * -1;
-                    }
-                    if (transaccion.IdCuenta == cuentum.IdCuenta)
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0;
-                        worksheet.Cell(currentRow, 7).Value = transaccion.Monto;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto * -1;
-                    }
-                    if (transaccion.IdCuenta == cuentaCaja.IdCuenta)
-                    {
-                        worksheet.Cell(currentRow, 6).Value = transaccion.Monto;
-                        worksheet.Cell(currentRow, 7).Value = 0;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto;
-                    }
-                    if(transaccion.IdCuenta == cuentaIva.IdCuenta) 
-                    {
-                        worksheet.Cell(currentRow, 6).Value =  0;
-                        worksheet.Cell(currentRow, 7).Value = transaccion.Monto;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto*-1;
-
-                    }
-                    if (transaccion.IdCuenta == cuentaDescuento.IdCuenta)
-                    {
-                        worksheet.Cell(currentRow, 6).Value = transaccion.Monto;
-                        worksheet.Cell(currentRow, 7).Value = 0;
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto ;
-
-                    }
-                    cont++;
-                    // El cálculo del saldo dependerá de tu lógica de negocio
                 }
 
                 // Ajustar anchos de columna
@@ -287,7 +201,6 @@ namespace ContaFacil.Controllers
                 }
             }
         }
-       
         [HttpPost]
         public async Task<IActionResult> ExportarMayorizacionExcel(DateTime fechaInicio, DateTime fechaFin)
         {
@@ -359,8 +272,7 @@ namespace ContaFacil.Controllers
                             currentRow++;
                         }
                         if (lastCuenta != "")
-                        {                            
-
+                        {
                             // Agregar total de la cuenta anterior
                             currentRow++;
                             worksheet.Cell(currentRow, 4).Value = $"Total {lastCuenta}" + " " + nameCuenta;
@@ -379,7 +291,6 @@ namespace ContaFacil.Controllers
                         nameCuenta = transaccion.IdCuentaNavigation.Nombre;
                         totalMovimiento = 0;
                         saldoInicial = 0;
-                        
                     }
 
                     currentRow++;
@@ -421,30 +332,111 @@ namespace ContaFacil.Controllers
                     }
                     else
                     {
-                        bool esPositivo = DeterminarSiEsPositivo(transaccion.IdCuentaNavigation);
-                    
-                    if (esPositivo)
-                    {
-                        worksheet.Cell(currentRow, 6).Value = montoAbs;
-                        worksheet.Cell(currentRow, 7).Value = 0;
-                        worksheet.Cell(currentRow, 8).Value = montoAbs;
-                        totalMovimiento += montoAbs;
-                    }
-                    else
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0;
-                        worksheet.Cell(currentRow, 7).Value = montoAbs;
-                        worksheet.Cell(currentRow, 8).Value = -montoAbs;
-                        totalMovimiento -= montoAbs;
-                    }
-                        cont++;
-                }
+                        // Manejo especial para las cuentas 1.1.4 y 2.1.2.1
+                        if (transaccion.IdCuentaNavigation.Codigo == "1.1.4")
+                        {
+                            if (transaccion.EsDebito)
+                            {
+                                worksheet.Cell(currentRow, 6).Value = 0;
+                                worksheet.Cell(currentRow, 7).Value = montoAbs;
+                                worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                                totalMovimiento -= montoAbs;
+                            }
+                            else
+                            {
+                                worksheet.Cell(currentRow, 6).Value = montoAbs;
+                                worksheet.Cell(currentRow, 7).Value = 0;
+                                worksheet.Cell(currentRow, 8).Value = montoAbs;
+                                totalMovimiento += montoAbs;
+                            }
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo == "2.1.2.1")
+                        {
+                            if (transaccion.EsDebito)
+                            {
+                                worksheet.Cell(currentRow, 6).Value = montoAbs;
+                                worksheet.Cell(currentRow, 7).Value = 0;
+                                worksheet.Cell(currentRow, 8).Value = montoAbs;
+                                totalMovimiento += montoAbs;
+                            }
+                            else
+                            {
+                                worksheet.Cell(currentRow, 6).Value = 0;
+                                worksheet.Cell(currentRow, 7).Value = montoAbs;
+                                worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                                totalMovimiento -= montoAbs;
+                            }
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo == "2.1.1.1" && transaccion.EsDebito)
+                        {
+                            worksheet.Cell(currentRow, 6).Value = montoAbs;
+                            worksheet.Cell(currentRow, 7).Value = 0;
+                            worksheet.Cell(currentRow, 8).Value = montoAbs;
+                            totalMovimiento += montoAbs;
 
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo.Contains("2.1.3.") && transaccion.IdCuentaNavigation.Nombre.Contains("Retención IR"))
+                        {
+
+                            worksheet.Cell(currentRow, 6).Value = 0;
+                            worksheet.Cell(currentRow, 7).Value = montoAbs;
+                            worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                            totalMovimiento -= montoAbs;
+
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo.Contains("2.1.3.") && transaccion.IdCuentaNavigation.Nombre.Contains("Retención IVA"))
+                        {
+
+                            worksheet.Cell(currentRow, 6).Value = 0;
+                            worksheet.Cell(currentRow, 7).Value = montoAbs;
+                            worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                            totalMovimiento -= montoAbs;
+
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.3.") && transaccion.IdCuentaNavigation.Nombre.Contains("Retención IR"))
+                        {
+
+                            worksheet.Cell(currentRow, 6).Value = montoAbs;
+                            worksheet.Cell(currentRow, 7).Value = 0;
+                            worksheet.Cell(currentRow, 8).Value = montoAbs;
+                            totalMovimiento += montoAbs;
+
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.3.") && transaccion.IdCuentaNavigation.Nombre.Contains("Retención IVA"))
+                        {
+
+                            worksheet.Cell(currentRow, 6).Value = montoAbs;
+                            worksheet.Cell(currentRow, 7).Value = 0;
+                            worksheet.Cell(currentRow, 8).Value = montoAbs;
+                            totalMovimiento += montoAbs;
+
+                        }
+                        else
+                        {
+                            bool esPositivo = DeterminarSiEsPositivo(transaccion.IdCuentaNavigation);
+
+                            if (esPositivo)
+                            {
+                                worksheet.Cell(currentRow, 6).Value = montoAbs;
+                                worksheet.Cell(currentRow, 7).Value = 0;
+                                worksheet.Cell(currentRow, 8).Value = montoAbs;
+                                totalMovimiento += montoAbs;
+                            }
+                            else
+                            {
+                                worksheet.Cell(currentRow, 6).Value = 0;
+                                worksheet.Cell(currentRow, 7).Value = montoAbs;
+                                worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                                totalMovimiento -= montoAbs;
+                            }
+                        }
+                    }
+                    cont++;
                 }
 
                 // Agregar total de la última cuenta
                 currentRow++;
-                worksheet.Cell(currentRow, 4).Value = $"Total {lastCuenta}" + " "+ nameCuenta;
+                worksheet.Cell(currentRow, 4).Value = $"Total {lastCuenta}" + " " + nameCuenta;
                 worksheet.Cell(currentRow, 8).Value = totalMovimiento;
                 worksheet.Range(currentRow, 1, currentRow, 8).Style.Font.Bold = true;
 
@@ -462,278 +454,7 @@ namespace ContaFacil.Controllers
                 }
             }
         }
-
-       
-        [HttpPost]
-        public async Task<IActionResult> ExportarBalanceExcel(DateTime fechaInicio, DateTime fechaFin)
-        {
-            string idUsuario = HttpContext.Session.GetString("_idUsuario");
-            Usuario usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == int.Parse(idUsuario));
-            UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.FirstOrDefault(u => u.IdUsuario == usuario.IdUsuario);
-            ContaFacil.Models.Sucursal sucursal = _context.Sucursals.FirstOrDefault(s => s.IdSucursal == usuarioSucursal.IdSucursal);
-            Persona persona = _context.Personas.FirstOrDefault(p => p.IdPersona == usuario.IdPersona);
-            Emisor emisor = _context.Emisors.FirstOrDefault(e => e.Ruc == persona.Identificacion);
-            Empresa empresa = _context.Empresas.FirstOrDefault(e => e.Identificacion == emisor.Ruc);
-
-            if (fechaFin == default)
-            {
-                TempData["Error"] = "La fecha de corte es obligatoria.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            Console.WriteLine($"Buscando transacciones para la empresa {empresa.IdEmpresa} entre {fechaInicio} y {fechaFin}");
-
-            var transacciones = await _context.Transaccions
-                .Where(t => t.FechaCreacion >= fechaInicio && t.FechaCreacion <= fechaFin && t.IdEmpresa == empresa.IdEmpresa)
-                .Include(t => t.IdCuentaNavigation)
-                .ToListAsync();
-
-            Console.WriteLine($"Número de transacciones encontradas: {transacciones.Count}");
-
-            if (transacciones.Count == 0)
-            {
-                TempData["Error"] = "No se encontraron transacciones para el período seleccionado.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var balanceData = await GenerarBalanceItems(transacciones, fechaFin);
-
-            Console.WriteLine($"Número de items en el balance: {balanceData.Count}");
-
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Estado de Situación Financiera");
-                var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
-                var logo = worksheet.AddPicture(logoPath)
-                    .MoveTo(worksheet.Cell("A1"))
-                    .Scale(0.25);
-
-                worksheet.Cell("C1").Value = "Estado de Situación Financiera";
-                worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";
-                worksheet.Cell("C3").Value = $"RUC: {empresa.Identificacion}";
-                worksheet.Cell("C4").Value = $"Sucursal: {sucursal.NombreSucursal}";
-                worksheet.Cell("C5").Value = $"Fecha de corte: {fechaFin:dd/MM/yyyy}";
-
-                int currentRow = 8;
-                worksheet.Cell(currentRow, 1).Value = "Código";
-                worksheet.Cell(currentRow, 2).Value = "Cuenta";
-                worksheet.Cell(currentRow, 3).Value = "Movimiento";
-                worksheet.Cell(currentRow, 4).Value = "Subtotal 1";
-                worksheet.Cell(currentRow, 5).Value = "Subtotal 2";
-                worksheet.Cell(currentRow, 6).Value = "Total";
-
-                var headerRange = worksheet.Range(currentRow, 1, currentRow, 6);
-                headerRange.Style.Font.Bold = true;
-                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
-
-                currentRow++;
-                decimal totalIngresos = 0;
-                decimal totalGastos = 0;
-                decimal descuento = 0;
-                foreach (var item in balanceData.Where(i => !i.Codigo.StartsWith("4") && !i.Codigo.StartsWith("5")))
-                {
-                    worksheet.Cell(currentRow, 1).Value = item.Codigo;
-                    worksheet.Cell(currentRow, 2).Value = item.Cuenta;
-                    string cadena = item.Codigo;
-                    string[] partes = cadena.Split('.');
-
-                    // Verificamos si las primeras dos partes son "4" y "1"
-                    if (partes.Length == 3 && partes[0] == "4" && partes[1] == "1")
-                    {
-                        // Obtenemos el último número y verificamos si es 3 o mayor
-                        int ultimoNumero = int.Parse(partes[2]);
-
-                        if (ultimoNumero >= 3)
-                        {
-                            //item.Subtotal1 = item.Subtotal1 * -1;
-                            totalIngresos += item.Subtotal1 ?? 0;
-                        }
-                    }
-                    if (item.Codigo.Equals("2.1.1"))
-                    {
-                        item.Subtotal1= item.Subtotal1 *-1;
-                    }
-                    if (item.Codigo.Equals("2.1.1.1"))
-                    {
-                        item.Movimiento = item.Movimiento * -1;
-                    }
-                    var nivelCuenta = item.Codigo.Split('.').Length;
-                    if (item.Codigo.Equals("4.1.1"))
-                    {
-                        descuento = descuento + item.Subtotal1 ?? 0;
-                    }
-                    if (item.Codigo.StartsWith("1.1.2")) // Inventario
-                    {
-                        if (nivelCuenta == 3) // 1.1.2
-                        {
-                            worksheet.Cell(currentRow, 4).Value = item.Subtotal1;
-                        }
-                        else if (nivelCuenta >= 4) // 1.1.2.1, 1.1.2.2, etc.
-                        {
-                            worksheet.Cell(currentRow, 3).Value = item.Movimiento;
-                        }
-                    }
-                    else if (item.Codigo.StartsWith("3")) // Patrimonio
-                    {
-                        if (nivelCuenta == 1) // 3
-                        {
-                            worksheet.Cell(currentRow, 6).Value = item.Total;
-                        }
-                        else if (nivelCuenta == 2) // 3.1, 3.2, 3.3
-                        {
-                            worksheet.Cell(currentRow, 5).Value = item.Subtotal1;
-                        }
-                        else if (nivelCuenta >= 3) // 3.2.1, 3.3.1, etc.
-                        {
-                            worksheet.Cell(currentRow, 3).Value = item.Movimiento;
-                        }
-                    }
-                    else // Otras cuentas
-                    {
-                        if (nivelCuenta == 1)
-                        {
-                            worksheet.Cell(currentRow, 6).Value = item.Total;
-                        }
-                        else if (nivelCuenta == 2)
-                        {
-                            worksheet.Cell(currentRow, 5).Value = item.Subtotal2;
-                        }
-                        else if (nivelCuenta == 3)
-                        {
-                            worksheet.Cell(currentRow, 4).Value = item.Subtotal1;
-                        }
-                        else if (nivelCuenta >= 4)
-                        {
-                            worksheet.Cell(currentRow, 3).Value = item.Movimiento;
-                        }
-                    }
-                    if (item.Codigo.Equals("2.1"))
-                    {
-                        item.Subtotal1 = item.Total;
-                    }
-                    if (nivelCuenta == 1 || nivelCuenta == 2 || string.IsNullOrEmpty(item.Codigo))
-                    {
-                        worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
-                    }
-
-                    worksheet.Range(currentRow, 1, currentRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                    worksheet.Cell(currentRow, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
-
-                    worksheet.Cell(currentRow, 2).Value = new string(' ', (nivelCuenta - 1) * 4) + item.Cuenta;
-
-                    currentRow++;
-                }
-
-/*currentRow++;
-                worksheet.Cell(currentRow, 1).Value = "Estado de resultados";
-                worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
-                currentRow++;
-
-                worksheet.Cell(currentRow, 1).Value = "Código";
-                worksheet.Cell(currentRow, 2).Value = "Cuenta";
-                worksheet.Cell(currentRow, 3).Value = "Movimiento";
-                worksheet.Cell(currentRow, 4).Value = "Subtotal 1";
-                worksheet.Cell(currentRow, 5).Value = "Subtotal 2";
-                worksheet.Cell(currentRow, 6).Value = "Total";
-                worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
-                worksheet.Range(currentRow, 1, currentRow, 6).Style.Fill.BackgroundColor = XLColor.LightGray;
-                currentRow++;
-*/
-                var estadoResultados = balanceData.Where(item => item.Codigo.StartsWith("4") || item.Codigo.StartsWith("5")).ToList();
-                
-                foreach (var item in estadoResultados)
-                {
-                   // worksheet.Cell(currentRow, 1).Value = item.Codigo;
-                   // worksheet.Cell(currentRow, 2).Value = item.Cuenta;
-
-                    var nivelCuenta = item.Codigo.Split('.').Length;
-
-                    string cadena = item.Codigo;
-                    string[] partes = cadena.Split('.');
-
-                    // Verificamos si las primeras dos partes son "4" y "1"
-                    if (partes.Length == 3 && partes[0] == "4" && partes[1] == "1")
-                    {
-                        // Obtenemos el último número y verificamos si es 3 o mayor
-                        int ultimoNumero = int.Parse(partes[2]);
-
-                        if (ultimoNumero >= 3)
-                        {
-                            //item.Subtotal1 = item.Subtotal1 * -1;
-                            totalIngresos += item.Subtotal1 ?? 0;
-                        }
-                    }
-
-                    if (item.Codigo.Equals("4.1.1"))
-                    {
-                        descuento = descuento + item.Subtotal1 ?? 0;
-                    }
-                    if (nivelCuenta == 1)
-                    {
-                       // worksheet.Cell(currentRow, 6).Value = item.Total;
-                        if (item.Codigo.StartsWith("4"))
-                        {
-                           // totalIngresos += item.Total ?? 0;
-                        }
-                        else if (item.Codigo.StartsWith("5"))
-                        {
-                            totalGastos += item.Total ?? 0;
-                        }
-                    }
-                    else if (nivelCuenta == 2)
-                    {
-                      //  worksheet.Cell(currentRow, 5).Value = item.Subtotal2;
-                    }
-                    else if (nivelCuenta >= 3)
-                    {
-                     //   worksheet.Cell(currentRow, 3).Value = item.Movimiento;
-                      //  worksheet.Cell(currentRow, 4).Value = item.Subtotal1;
-                    }
-
-                    if (nivelCuenta == 1 || nivelCuenta == 2 || string.IsNullOrEmpty(item.Codigo))
-                    {
-                     //   worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
-                    }
-
-                   /* worksheet.Range(currentRow, 1, currentRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                    worksheet.Cell(currentRow, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
-
-                    worksheet.Cell(currentRow, 2).Value = new string(' ', (nivelCuenta - 1) * 4) + item.Cuenta;
-
-                    currentRow++;*/
-                }
-
-                // Calcular la utilidad correctamente
-                // decimal utilidad = totalIngresos + totalGastos; // Sumamos porque los gastos ya son negativos
-                // Calcular la utilidad
-                totalGastos = totalGastos * -1;
-                decimal subt = (totalIngresos - descuento)*-1;
-                decimal utilidad = subt + Math.Abs(totalGastos); // Restando los gastos como valor absoluto
-
-                // Agregar la utilidad al final del estado de resultados
-               /* currentRow++;
-                worksheet.Cell(currentRow, 1).Value = "Utilidad";
-                worksheet.Cell(currentRow, 2).Value = "Utilidad del ejercicio";
-                worksheet.Cell(currentRow, 6).Value = utilidad;
-                worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
-               */
-                worksheet.Columns().AdjustToContents();
-                var rangeNumerica = worksheet.Range(9, 3, currentRow - 1, 6);
-                rangeNumerica.Style.NumberFormat.Format = "#,##0.00";
-
-                Console.WriteLine("Preparando el archivo Excel para descarga");
-
-                using (var stream = new MemoryStream())
-                {
-                    workbook.SaveAs(stream);
-                    var content = stream.ToArray();
-                    Console.WriteLine($"Tamaño del archivo Excel generado: {content.Length} bytes");
-                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EstadoSituacionFinanciera.xlsx");
-                }
-            }
-        }
-
-        [HttpPost]
+         [HttpPost]
         public async Task<IActionResult> ExportEstadoExcel(DateTime fechaInicio, DateTime fechaFin)
         {
             string idUsuario = HttpContext.Session.GetString("_idUsuario");
@@ -919,6 +640,278 @@ namespace ContaFacil.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ExportarBalanceExcel(DateTime fechaInicio, DateTime fechaFin)
+        {
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == int.Parse(idUsuario));
+            UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.FirstOrDefault(u => u.IdUsuario == usuario.IdUsuario);
+            ContaFacil.Models.Sucursal sucursal = _context.Sucursals.FirstOrDefault(s => s.IdSucursal == usuarioSucursal.IdSucursal);
+            Persona persona = _context.Personas.FirstOrDefault(p => p.IdPersona == usuario.IdPersona);
+            Emisor emisor = _context.Emisors.FirstOrDefault(e => e.Ruc == persona.Identificacion);
+            Empresa empresa = _context.Empresas.FirstOrDefault(e => e.Identificacion == emisor.Ruc);
+
+            if (fechaFin == default)
+            {
+                TempData["Error"] = "La fecha de corte es obligatoria.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            Console.WriteLine($"Buscando transacciones para la empresa {empresa.IdEmpresa} entre {fechaInicio} y {fechaFin}");
+
+            var transacciones = await _context.Transaccions
+                .Where(t => t.FechaCreacion >= fechaInicio && t.FechaCreacion <= fechaFin && t.IdEmpresa == empresa.IdEmpresa)
+                .Include(t => t.IdCuentaNavigation)
+                .ToListAsync();
+
+            Console.WriteLine($"Número de transacciones encontradas: {transacciones.Count}");
+
+            if (transacciones.Count == 0)
+            {
+                TempData["Error"] = "No se encontraron transacciones para el período seleccionado.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var balanceData = await GenerarBalanceItems(transacciones, fechaFin);
+
+            Console.WriteLine($"Número de items en el balance: {balanceData.Count}");
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Estado de Situación Financiera");
+                var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
+                var logo = worksheet.AddPicture(logoPath)
+                    .MoveTo(worksheet.Cell("A1"))
+                    .Scale(0.25);
+
+                worksheet.Cell("C1").Value = "Estado de Situación Financiera";
+                worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";
+                worksheet.Cell("C3").Value = $"RUC: {empresa.Identificacion}";
+                worksheet.Cell("C4").Value = $"Sucursal: {sucursal.NombreSucursal}";
+                worksheet.Cell("C5").Value = $"Fecha de corte: {fechaFin:dd/MM/yyyy}";
+
+                int currentRow = 8;
+                worksheet.Cell(currentRow, 1).Value = "Código";
+                worksheet.Cell(currentRow, 2).Value = "Cuenta";
+                worksheet.Cell(currentRow, 3).Value = "Movimiento";
+                worksheet.Cell(currentRow, 4).Value = "Subtotal 1";
+                worksheet.Cell(currentRow, 5).Value = "Subtotal 2";
+                worksheet.Cell(currentRow, 6).Value = "Total";
+
+                var headerRange = worksheet.Range(currentRow, 1, currentRow, 6);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                currentRow++;
+                decimal totalIngresos = 0;
+                decimal totalGastos = 0;
+                decimal descuento = 0;
+                foreach (var item in balanceData.Where(i => !i.Codigo.StartsWith("4") && !i.Codigo.StartsWith("5")))
+                {
+                    worksheet.Cell(currentRow, 1).Value = item.Codigo;
+                    worksheet.Cell(currentRow, 2).Value = item.Cuenta;
+                    string cadena = item.Codigo;
+                    string[] partes = cadena.Split('.');
+
+                    // Verificamos si las primeras dos partes son "4" y "1"
+                    if (partes.Length == 3 && partes[0] == "4" && partes[1] == "1")
+                    {
+                        // Obtenemos el último número y verificamos si es 3 o mayor
+                        int ultimoNumero = int.Parse(partes[2]);
+
+                        if (ultimoNumero >= 3)
+                        {
+                            //item.Subtotal1 = item.Subtotal1 * -1;
+                            totalIngresos += item.Subtotal1 ?? 0;
+                        }
+                    }
+                    if (item.Codigo.Equals("2.1.1"))
+                    {
+                        item.Subtotal1 = item.Subtotal1 * -1;
+                    }
+                    if (item.Codigo.Equals("2.1.1.1"))
+                    {
+                        item.Movimiento = item.Movimiento * -1;
+                    }
+                    if (item.Codigo.Contains("2.1.3.")&& item.Movimiento>0)
+                    {
+                        item.Movimiento= item.Movimiento * -1;
+                    }
+                    var nivelCuenta = item.Codigo.Split('.').Length;
+                    if (item.Codigo.Equals("4.1.1"))
+                    {
+                        descuento = descuento + item.Subtotal1 ?? 0;
+                    }
+                    if (item.Codigo.StartsWith("1.1.2")) // Inventario
+                    {
+                        if (nivelCuenta == 3) // 1.1.2
+                        {
+                            worksheet.Cell(currentRow, 4).Value = item.Subtotal1;
+                        }
+                        else if (nivelCuenta >= 4) // 1.1.2.1, 1.1.2.2, etc.
+                        {
+                            worksheet.Cell(currentRow, 3).Value = item.Movimiento;
+                        }
+                    }
+                    else if (item.Codigo.StartsWith("3")) // Patrimonio
+                    {
+                        if (nivelCuenta == 1) // 3
+                        {
+                            worksheet.Cell(currentRow, 6).Value = item.Total;
+                        }
+                        else if (nivelCuenta == 2) // 3.1, 3.2, 3.3
+                        {
+                            worksheet.Cell(currentRow, 5).Value = item.Subtotal1;
+                        }
+                        else if (nivelCuenta >= 3) // 3.2.1, 3.3.1, etc.
+                        {
+                            worksheet.Cell(currentRow, 3).Value = item.Movimiento;
+                        }
+                    }
+                    else // Otras cuentas
+                    {
+                        if (nivelCuenta == 1)
+                        {
+                            worksheet.Cell(currentRow, 6).Value = item.Total;
+                        }
+                        else if (nivelCuenta == 2)
+                        {
+                            worksheet.Cell(currentRow, 5).Value = item.Subtotal2;
+                        }
+                        else if (nivelCuenta == 3)
+                        {
+                            worksheet.Cell(currentRow, 4).Value = item.Subtotal1;
+                        }
+                        else if (nivelCuenta >= 4)
+                        {
+                            worksheet.Cell(currentRow, 3).Value = item.Movimiento;
+                        }
+                    }
+                    if (item.Codigo.Equals("2.1"))
+                    {
+                        item.Subtotal1 = item.Total;
+                    }
+                    if (nivelCuenta == 1 || nivelCuenta == 2 || string.IsNullOrEmpty(item.Codigo))
+                    {
+                        worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
+                    }
+
+                    worksheet.Range(currentRow, 1, currentRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                    worksheet.Cell(currentRow, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+
+                    worksheet.Cell(currentRow, 2).Value = new string(' ', (nivelCuenta - 1) * 4) + item.Cuenta;
+
+                    currentRow++;
+                }
+
+                /*currentRow++;
+                                worksheet.Cell(currentRow, 1).Value = "Estado de resultados";
+                                worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
+                                currentRow++;
+
+                                worksheet.Cell(currentRow, 1).Value = "Código";
+                                worksheet.Cell(currentRow, 2).Value = "Cuenta";
+                                worksheet.Cell(currentRow, 3).Value = "Movimiento";
+                                worksheet.Cell(currentRow, 4).Value = "Subtotal 1";
+                                worksheet.Cell(currentRow, 5).Value = "Subtotal 2";
+                                worksheet.Cell(currentRow, 6).Value = "Total";
+                                worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
+                                worksheet.Range(currentRow, 1, currentRow, 6).Style.Fill.BackgroundColor = XLColor.LightGray;
+                                currentRow++;
+                */
+                var estadoResultados = balanceData.Where(item => item.Codigo.StartsWith("4") || item.Codigo.StartsWith("5")).ToList();
+
+                foreach (var item in estadoResultados)
+                {
+                    // worksheet.Cell(currentRow, 1).Value = item.Codigo;
+                    // worksheet.Cell(currentRow, 2).Value = item.Cuenta;
+
+                    var nivelCuenta = item.Codigo.Split('.').Length;
+
+                    string cadena = item.Codigo;
+                    string[] partes = cadena.Split('.');
+
+                    // Verificamos si las primeras dos partes son "4" y "1"
+                    if (partes.Length == 3 && partes[0] == "4" && partes[1] == "1")
+                    {
+                        // Obtenemos el último número y verificamos si es 3 o mayor
+                        int ultimoNumero = int.Parse(partes[2]);
+
+                        if (ultimoNumero >= 3)
+                        {
+                            //item.Subtotal1 = item.Subtotal1 * -1;
+                            totalIngresos += item.Subtotal1 ?? 0;
+                        }
+                    }
+
+                    if (item.Codigo.Equals("4.1.1"))
+                    {
+                        descuento = descuento + item.Subtotal1 ?? 0;
+                    }
+                    if (nivelCuenta == 1)
+                    {
+                        // worksheet.Cell(currentRow, 6).Value = item.Total;
+                        if (item.Codigo.StartsWith("4"))
+                        {
+                            // totalIngresos += item.Total ?? 0;
+                        }
+                        else if (item.Codigo.StartsWith("5"))
+                        {
+                            totalGastos += item.Total ?? 0;
+                        }
+                    }
+                    else if (nivelCuenta == 2)
+                    {
+                        //  worksheet.Cell(currentRow, 5).Value = item.Subtotal2;
+                    }
+                    else if (nivelCuenta >= 3)
+                    {
+                        //   worksheet.Cell(currentRow, 3).Value = item.Movimiento;
+                        //  worksheet.Cell(currentRow, 4).Value = item.Subtotal1;
+                    }
+
+                    if (nivelCuenta == 1 || nivelCuenta == 2 || string.IsNullOrEmpty(item.Codigo))
+                    {
+                        //   worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
+                    }
+
+                    /* worksheet.Range(currentRow, 1, currentRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                     worksheet.Cell(currentRow, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+
+                     worksheet.Cell(currentRow, 2).Value = new string(' ', (nivelCuenta - 1) * 4) + item.Cuenta;
+
+                     currentRow++;*/
+                }
+
+                // Calcular la utilidad correctamente
+                // decimal utilidad = totalIngresos + totalGastos; // Sumamos porque los gastos ya son negativos
+                // Calcular la utilidad
+                totalGastos = totalGastos * -1;
+                decimal subt = (totalIngresos - descuento) * -1;
+                decimal utilidad = subt + Math.Abs(totalGastos); // Restando los gastos como valor absoluto
+
+                // Agregar la utilidad al final del estado de resultados
+                /* currentRow++;
+                 worksheet.Cell(currentRow, 1).Value = "Utilidad";
+                 worksheet.Cell(currentRow, 2).Value = "Utilidad del ejercicio";
+                 worksheet.Cell(currentRow, 6).Value = utilidad;
+                 worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
+                */
+                worksheet.Columns().AdjustToContents();
+                var rangeNumerica = worksheet.Range(9, 3, currentRow - 1, 6);
+                rangeNumerica.Style.NumberFormat.Format = "#,##0.00";
+
+                Console.WriteLine("Preparando el archivo Excel para descarga");
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    Console.WriteLine($"Tamaño del archivo Excel generado: {content.Length} bytes");
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EstadoSituacionFinanciera.xlsx");
+                }
+            }
+        }
         private async Task<List<BalanceItem>> GenerarBalanceItems(List<Transaccion> transacciones, DateTime fechaFin)
         {
             var balanceItems = new Dictionary<string, BalanceItem>();
@@ -937,25 +930,53 @@ namespace ContaFacil.Controllers
                 };
             }
 
-            var cuentasAgrupadas = transacciones.GroupBy(t => new {
-                Codigo = t.IdCuentaNavigation.Codigo,
-                Nombre = t.IdCuentaNavigation.Nombre
-            }).OrderBy(g => g.Key.Codigo);
+            var cuentasAgrupadas = transacciones
+                .GroupBy(t => new {
+                    Codigo = t.IdCuentaNavigation.Codigo,
+                    Nombre = t.IdCuentaNavigation.Nombre
+                })
+                .Select(g => new {
+                    g.Key.Codigo,
+                    g.Key.Nombre,
+                    Movimiento = g.Sum(t => t.EsDebito ? -t.Monto : t.Monto)
+                })
+                .OrderBy(g => g.Codigo);
 
             foreach (var grupo in cuentasAgrupadas)
             {
-                var codigoCuenta = grupo.Key.Codigo;
-                var nombreCuenta = grupo.Key.Nombre;
-                var movimiento = grupo.Sum(t => t.Monto);
+                var codigoCuenta = grupo.Codigo;
+                var nombreCuenta = grupo.Nombre;
+                var movimiento = grupo.Movimiento;
 
                 if (codigoCuenta.StartsWith("1.1.2")) // Inventario
                 {
-                    var saldoInicial = grupo.Where(t => t.Descripcion.Contains("Saldo inicial")).Sum(t => t.Monto);
-                    var compras = grupo.Where(t => t.Descripcion.Contains("Compra")).Sum(t => t.Monto);
-                    var ventas = grupo.Where(t => t.Descripcion.Contains("Venta")).Sum(t => t.Monto);
+                    var saldoInicial = transacciones
+                        .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta && t.Descripcion.Contains("Saldo inicial"))
+                        .Sum(t => t.EsDebito ? t.Monto : t.Monto);
+                    var compras = transacciones
+                        .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta && t.Descripcion.Contains("Compra"))
+                        .Sum(t => t.EsDebito ? t.Monto : t.Monto);
+                    var ventas = transacciones
+                        .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta && t.Descripcion.Contains("Venta"))
+                        .Sum(t => t.EsDebito ? -t.Monto : t.Monto);
                     movimiento = saldoInicial + compras - ventas;
                 }
+                else if (codigoCuenta.StartsWith("2.1.1.1")) // Proveedores
+                {
+                    var saldoInicial = transacciones
+                        .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta)
+                        .Sum(t => !t.EsDebito ? t.Monto : t.Monto);
+                   
+                    movimiento = saldoInicial;
+                }
+                else if (codigoCuenta.StartsWith("2.1.3.")) // Proveedores
+                {
+                    var saldoInicial = transacciones
+                        .Where(t => t.IdCuentaNavigation.Codigo.Contains(codigoCuenta))
+                        .Sum(t => !t.EsDebito ? t.Monto : t.Monto);
 
+                    movimiento = saldoInicial;
+                }
                 // Invertir el signo para cuentas de Pasivo y Patrimonio
                 if (codigoCuenta.StartsWith("2") || codigoCuenta.StartsWith("3"))
                 {
@@ -1024,23 +1045,21 @@ namespace ContaFacil.Controllers
             }
 
             // Calcular la utilidad
-            
             decimal totalGastos = balanceItems["5"].Total ?? 0;
-            totalGastos = totalGastos;
-            //totalIngresos = totalIngresos * -1;
             decimal des = totalIngresos + descuento;
-            decimal utilidad = des+totalGastos;
+            decimal utilidad = des + totalGastos;
 
             // Agregar las cuentas de patrimonio
             AgregarOActualizarCuenta(balanceItems, "3", "Patrimonio", 0);
             AgregarOActualizarCuenta(balanceItems, "3.1", "Capital", 0);
             AgregarOActualizarCuenta(balanceItems, "3.2", "Reserva", 0);
             AgregarOActualizarCuenta(balanceItems, "3.2.1", "Reserva legal", 0);
-            AgregarOActualizarCuenta(balanceItems, "3.3", "Utilidad", utilidad); // Invertir el signo de la utilidad
-            AgregarOActualizarCuenta(balanceItems, "3.3.1", $"Utilidad {fechaFin.Year}", utilidad); // Invertir el signo de la utilidad
+            AgregarOActualizarCuenta(balanceItems, "3.3", "Utilidad", utilidad);
+            AgregarOActualizarCuenta(balanceItems, "3.3.1", $"Utilidad {fechaFin.Year}", utilidad);
 
             ActualizarTotalesPatrimonio(balanceItems);
             ActualizarTotalesPasivo(balanceItems);
+
             // Imprimir los valores para depuración
             foreach (var item in balanceItems.Where(i => i.Key.StartsWith("3")))
             {
@@ -1054,6 +1073,7 @@ namespace ContaFacil.Controllers
 
             foreach (var item in cuentasInventario)
             {
+              
                 var partes = item.Key.Split('.');
                 if (partes.Length > 3) // Es una subcuenta de inventario
                 {
@@ -1226,6 +1246,7 @@ namespace ContaFacil.Controllers
             {
                 codigoCuenta = "5";
             }
+            
             return codigoCuenta switch
             {
                 "1" => true, // Activo
@@ -1239,6 +1260,27 @@ namespace ContaFacil.Controllers
             };
         }
 
+        private bool DeterminarPositivoNegativo(Transaccion transaccion)
+        {
+            Cuentum cuenta = transaccion.IdCuentaNavigation;
+            string codigoCuenta = cuenta.Codigo.Split('.')[0];
+            string nombreCuenta = cuenta.Nombre.ToLower();
+            if (cuenta.Nombre.Equals("Anticipo de clientes") && transaccion.EsDebito)
+            {
+                codigoCuenta = "5";
+            }
 
+            return codigoCuenta switch
+            {
+                "1" => true, // Activo
+                "2" => false, // Pasivo
+                "3" => false, // Patrimonio
+                "4" => false, // Ingresos
+                "5" => true, // Costos y Gastos
+                _ => !(nombreCuenta.Contains("iva por pagar") ||
+                       nombreCuenta.Contains("proveedores") ||
+                       nombreCuenta.Contains("por pagar"))
+            };
+        }
     }
 }

@@ -19,12 +19,39 @@ namespace ContaFacil.Controllers
             _context = context;
         }
 
+        public IActionResult PrincipalImpuestos()
+        {
+            // Aquí puedes agregar cualquier lógica adicional que necesites antes de devolver la vista
+            // Por ejemplo, podrías cargar algunos datos desde la base de datos y pasarlos a la vista
+
+            return View(); // Esto devolverá la vista PrincipalProducto.cshtml
+        }
         // GET: Impuesto
         public async Task<IActionResult> Index()
         {
-              return _context.Impuestos != null ? 
-                          View(await _context.Impuestos.ToListAsync()) :
-                          Problem("Entity set 'ContableContext.Impuestos'  is null.");
+            if (_context.Impuestos == null)
+            {
+                return Problem("Entity set 'ContableContext.Impuestos' is null.");
+            }
+
+            var impuestosSinRetencion = await _context.Impuestos
+                .Where(i => i.Nombre.ToUpper().Contains("RETENCION"))
+                .ToListAsync();
+
+            return View(impuestosSinRetencion);
+        }
+        public async Task<IActionResult> Iva()
+        {
+            if (_context.Impuestos == null)
+            {
+                return Problem("Entity set 'ContableContext.Impuestos' is null.");
+            }
+
+            var impuestosSinRetencion = await _context.Impuestos
+                .Where(i => !i.Nombre.ToUpper().Contains("RETENCION"))
+                .ToListAsync();
+
+            return View(impuestosSinRetencion);
         }
 
         // GET: Impuesto/Details/5
@@ -98,16 +125,13 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdImpuesto,Nombre,Porcentaje,EstadoBoolean,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion")] Impuesto impuesto)
+        public async Task<IActionResult> Edit(int id,Impuesto impuesto)
         {
             if (id != impuesto.IdImpuesto)
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
-            {
-                try
+                            try
                 {
                     string idUsuario = HttpContext.Session.GetString("_idUsuario");
                     impuesto.UsuarioModificacion = int.Parse(idUsuario);
@@ -115,22 +139,18 @@ namespace ContaFacil.Controllers
                     _context.Update(impuesto);
                     await _context.SaveChangesAsync();
                     Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    if (!ImpuestoExists(impuesto.IdImpuesto))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
-                        throw;
-                    }
-                }
                 return RedirectToAction(nameof(Index));
             }
-            return View(impuesto);
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
+                return View(impuesto);
+
+            }
+               
+           
+            
         }
 
         // GET: Impuesto/Delete/5

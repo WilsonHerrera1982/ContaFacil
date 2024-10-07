@@ -56,6 +56,16 @@ namespace ContaFacil.Controllers
         public IActionResult Create()
         {
             ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa");
+            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
+            {
+                IdImpuesto = i.Porcentaje,
+                NombrePorcentaje = i.Nombre
+            }), "IdImpuesto", "NombrePorcentaje");
+            ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE").Select(i => new
+            {
+                IdImpuesto = i.Porcentaje,
+                NombrePorcentaje = i.Nombre 
+            }), "IdImpuesto", "NombrePorcentaje");
             return View();
         }
 
@@ -85,7 +95,17 @@ namespace ContaFacil.Controllers
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
-            { 
+            {
+                ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
+                ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
                 ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", proveedor.IdEmpresa);
                 Notificacion("Error al guardar el Registro" + ex.Message, NotificacionTipo.Error);
                 return View(proveedor);
@@ -106,6 +126,16 @@ namespace ContaFacil.Controllers
                 return NotFound();
             }
             ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", proveedor.IdEmpresa);
+            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
+            {
+                IdImpuesto = i.Porcentaje,
+                NombrePorcentaje = i.Nombre
+            }), "IdImpuesto", "NombrePorcentaje");
+            ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Nombre.Contains("RETENCION IR")).Select(i => new
+            {
+                IdImpuesto = i.Porcentaje,
+                NombrePorcentaje = i.Nombre
+            }), "IdImpuesto", "NombrePorcentaje");
             return View(proveedor);
         }
 
@@ -114,16 +144,14 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdProveedor,Nombre,Direccion,Telefono,Email,Estado,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion,IdEmpresa")] Proveedor proveedor)
+        public async Task<IActionResult> Edit(int id, Proveedor proveedor)
         {
             if (id != proveedor.IdProveedor)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
-                try
+             try
                 {
                     string idUsuario = HttpContext.Session.GetString("_idUsuario");
                     proveedor.UsuarioModificacion = int.Parse(idUsuario);
@@ -131,23 +159,28 @@ namespace ContaFacil.Controllers
                     _context.Update(proveedor);
                     await _context.SaveChangesAsync();
                     Notificacion("Registro actualizado con éxito", NotificacionTipo.Success);
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    if (!ProveedorExists(proveedor.IdProveedor))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
-                        throw;
-                    }
-                }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", proveedor.IdEmpresa);
-            return View(proveedor);
+                catch (DbUpdateConcurrencyException ex)
+                {
+                   
+                        Notificacion("Error al actualizar el Registro" + ex.Message, NotificacionTipo.Error);
+                ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", proveedor.IdEmpresa);
+                ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
+                ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE").Select(i => new
+                {
+                    IdImpuesto = i.Porcentaje,
+                    NombrePorcentaje = i.Nombre
+                }), "IdImpuesto", "NombrePorcentaje");
+                return View(proveedor);
+            }
+                
+          
+            
         }
 
         // GET: Proveedor/Delete/5

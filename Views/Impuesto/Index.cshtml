@@ -8,10 +8,14 @@
 
 <p>
     <a asp-action="Create">Crear Nuevo</a>
+    <a asp-action="PrincipalImpuestos" asp-controller="Impuesto" class="btn btn-secondary">Regresar a Principal</a>
 </p>
 <table class="table">
     <thead>
         <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Tipo)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Nombre)
             </th>
@@ -33,6 +37,9 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
+             <td>
+                @Html.DisplayFor(modelItem => item.Tipo)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Nombre)
             </td>

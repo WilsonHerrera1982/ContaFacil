@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Principal Retenciones";
+}
+
+<style>
+    .form-group {
+        width: 400px;
+    }
+
+    .row {
+        justify-content: left;
+    }
+</style>
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <!-- Nueva Retención -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-invoice fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Nueva Retención</h5>
+                    <p class="card-text">Crea una nueva retención en el sistema.</p>
+                    <a asp-action="Create" asp-controller="Retencion" class="btn btn-primary mt-auto">Crear Retención</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listado de Retenciones -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-list-alt fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Listado de Retenciones</h5>
+                    <p class="card-text">Consulta el listado de todas las retenciones.</p>
+                    <a asp-action="Index" asp-controller="Retencion" class="btn btn-success mt-auto">Ver Listado</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

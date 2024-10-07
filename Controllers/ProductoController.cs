@@ -97,7 +97,7 @@ namespace ContaFacil.Controllers
             ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos.Where(c=>c.IdEmpresa==empresa.IdEmpresa), "IdCategoriaProducto", "Nombre");
             ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre");
             ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "Nombre");
-            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Select(i => new
+            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i=>i.Tipo=="IVA").Select(i => new
             {
                 IdImpuesto = i.IdImpuesto,
                 NombrePorcentaje = i.Nombre + " " + i.Porcentaje.ToString("F2") + "%"

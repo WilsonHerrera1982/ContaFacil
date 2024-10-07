@@ -47,6 +47,7 @@ namespace ContaFacil.Controllers
             UsuarioSucursal usuarioSucursal = new UsuarioSucursal();
             usuarioSucursal = _context.UsuarioSucursals.Where(u => u.IdUsuario == usuario.IdUsuario).FirstOrDefault();
             var contableContext = _context.Facturas.Where(f=>f.IdEmisor==emisor.IdEmisor & f.IdSucursal==usuarioSucursal.IdSucursal).Include(f => f.IdClienteNavigation).ThenInclude(c=>c.IdPersonaNavigation);
+          
             return View(await contableContext.ToListAsync());
         }
 
@@ -79,7 +80,7 @@ namespace ContaFacil.Controllers
             empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
             UsuarioSucursal usuarioSucursal= new UsuarioSucursal();
             usuarioSucursal = _context.UsuarioSucursals.Where(e => e.IdUsuario==usuario.IdUsuario).FirstOrDefault();
-
+            
             List<SucursalInventario> sucursalInventario = _context.SucursalInventarios.Where(s => s.IdSucursal == usuarioSucursal.IdSucursal).
                 Include(i=>i.IdInventarioNavigation).Where(i=> (i.IdInventarioNavigation.TipoMovimiento == "S" || i.IdInventarioNavigation.TipoMovimiento == "E") & i.IdInventarioNavigation.Stock >= 0).ToList();
             // Obtener la lista de IdProducto de sucursalInventario
@@ -107,6 +108,7 @@ namespace ContaFacil.Controllers
 
             ViewBag.Clientes = _context.Clientes.Include(p=>p.IdPersonaNavigation).Where(p=>p.IdEmpresa==empresa.IdEmpresa).ToList();
             ViewData["IdTipoPago"] = new SelectList(_context.TipoPagos, "IdTipoPago", "Nombre");
+            
             return View();
         }
 
@@ -290,7 +292,7 @@ namespace ContaFacil.Controllers
 
                     facturaCreada = factura;
                     await transaction.CommitAsync();
-                }
+                 }
 
                 // Operaciones fuera de la transacción principal
                 await EnviarRIDEPorEmail(facturaCreada.IdFactura);
@@ -298,7 +300,9 @@ namespace ContaFacil.Controllers
                 // Usar un nuevo contexto para registrarTransaccionesVenta
                 using (var nuevoContexto = new ContableContext())
                 {
-                    await registrarTransaccionesVenta(nuevoContexto, facturaCreada);
+                   
+                        await registrarTransaccionesVenta(nuevoContexto, facturaCreada);
+                    
                 }
 
                 Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
@@ -371,7 +375,8 @@ namespace ContaFacil.Controllers
             {
                 precioUnitario = producto.PrecioVenta,
                 porcentaje = producto.Porcentaje,
-                descuento = producto.Descuento
+                descuento = producto.Descuento,
+                impuesto=producto.IdImpuestoNavigation.Porcentaje
             });
         }
 
@@ -887,20 +892,37 @@ namespace ContaFacil.Controllers
             // Transacción IVA
             await CrearTransaccion("IVA por pagar", numeroAsiento + " IVA por pagar en venta de " + descripcion, iva, tipoTransaccion, empresa, usuario);
 
-           
 
-            // Transacciones por tipo de pago
-            foreach (var pag in lista)
+            if (!factura.Credito)
             {
-                string cuentaCodigo = pag.IdTipoPagoNavigation.Nombre switch
+                // Transacciones por tipo de pago
+                foreach (var pag in lista)
                 {
-                    var s when s.Contains("EFECTIVO") => "1.1.1.1",
-                    var s when s.Contains("CREDITO") => "1.1.1.3",
-                    var s when s.Contains("TRANSFERENCIA") => "1.1.1.2",
-                    _ => throw new ArgumentException("Tipo de pago no reconocido")
-                };
+                    string cuentaCodigo = pag.IdTipoPagoNavigation.Nombre switch
+                    {
+                        var s when s.Contains("EFECTIVO") => "1.1.1.1",
+                        var s when s.Contains("CREDITO") => "1.1.1.3",
+                        var s when s.Contains("TRANSFERENCIA") => "1.1.1.2",
+                        _ => throw new ArgumentException("Tipo de pago no reconocido")
+                    };
 
-                await CrearTransaccion(cuentaCodigo, numeroAsiento + " Venta de " + descripcion, pag.Monto, tipoTransaccion, empresa, usuario);
+                    await CrearTransaccion(cuentaCodigo, numeroAsiento + " Venta de " + descripcion, pag.Monto, tipoTransaccion, empresa, usuario);
+                }
+            }
+            else
+            {
+                Cuentum cuentum = context.Cuenta.FirstOrDefault(c=>c.Nombre== "Cuentas por cobrar");
+                CuentaCobrar cuentaCobrar = new CuentaCobrar();
+                Cliente cliente=context.Clientes.Include(c=>c.IdPersonaNavigation).FirstOrDefault(c=>c.IdCliente==factura.IdCliente);
+                string desc= cliente.IdPersonaNavigation.Nombre + " " + cliente.IdPersonaNavigation.Identificacion;
+                cuentaCobrar.IdFactura = factura.IdFactura;
+                cuentaCobrar.EstadoCobro = "PENDIENTE";
+                cuentaCobrar.EstadoBoolean= true;
+                cuentaCobrar.PrecioVenta = factura.MontoTotal;
+                cuentaCobrar.IdEmpresa = empresa.IdEmpresa;
+                 context.Add(cuentaCobrar);
+                context.SaveChanges();
+                await CrearTransaccion(cuentum.Codigo, numeroAsiento + " Cuenta por cobrar " + desc, factura.MontoTotal, tipoTransaccion, empresa, usuario);
             }
             // Transacciones por categoría
             foreach (var cat in listaCategorias)
@@ -953,5 +975,64 @@ namespace ContaFacil.Controllers
             _context.Add(transaccion);
             await _context.SaveChangesAsync();
         }
+        public JsonResult GetClienteAnticipos(int idCliente)
+        {
+            var anticipos = _context.Anticipos.Where(a => a.IdCliente == idCliente).ToList();
+            var totalAnticipos = anticipos.Sum(a => a.Valor);
+            return Json(new { totalAnticipos });
+        }
+        public string GenerarNumeroComprobanteRetencion(string ultimoNumero)
+        {
+            // Divide el número de factura en partes
+            var partes = ultimoNumero.Split('-');
+
+            if (partes.Length != 3)
+            {
+                throw new ArgumentException("Formato de número de factura inválido.");
+            }
+
+            // La parte secuencial es la última parte
+            var secuencialStr = partes[2];
+
+            // Convierte la parte secuencial en un número entero
+            if (!int.TryParse(secuencialStr, out int secuencial))
+            {
+                throw new ArgumentException("Parte secuencial inválida.");
+            }
+
+            // Incrementa el número secuencial
+            secuencial++;
+
+            // Formatea el número secuencial con ceros a la izquierda (mantener 9 dígitos)
+            var siguienteSecuencialStr = secuencial.ToString("D9");
+
+            // Crea el nuevo número de factura
+            var nuevoNumeroFactura = $"{partes[0]}-{partes[1]}-{siguienteSecuencialStr}";
+
+            return nuevoNumeroFactura;
+        }
+        private async Task CrearTransaccion(string cuentaNombre, string descripcion, decimal monto, TipoTransaccion tipoTransaccion, Empresa empresa, Usuario usuario, bool esdebito)
+        {
+            var cuenta = await _context.Cuenta.FirstOrDefaultAsync(c => c.Nombre == cuentaNombre || c.Codigo == cuentaNombre);
+
+            var transaccion = new Transaccion
+            {
+                IdCuenta = cuenta.IdCuenta,
+                Descripcion = descripcion,
+                IdInventario = 0,
+                Monto = monto,
+                IdTipoTransaccion = tipoTransaccion.IdTipoTransaccion,
+                IdEmpresa = empresa.IdEmpresa,
+                Fecha = DateOnly.FromDateTime(DateTime.Now),
+                FechaCreacion = DateTime.Now,
+                UsuarioCreacion = usuario.IdUsuario,
+                Estado = true,
+                EsDebito = esdebito
+            };
+
+            _context.Add(transaccion);
+            await _context.SaveChangesAsync();
+        }
+        
     }
 }
