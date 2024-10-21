@@ -411,6 +411,83 @@ namespace ContaFacil.Controllers
                             totalMovimiento += montoAbs;
 
                         }
+                        else if (transaccion.IdCuentaNavigation.Codigo.Contains("2.1.3.1"))
+                        {
+
+                            if (transaccion.EsDebito)
+                            {
+                                worksheet.Cell(currentRow, 6).Value = montoAbs;
+                                worksheet.Cell(currentRow, 7).Value = 0;
+                                worksheet.Cell(currentRow, 8).Value = montoAbs;
+                                totalMovimiento += montoAbs;
+                            }
+                            else
+                            {
+                                worksheet.Cell(currentRow, 6).Value = 0;
+                                worksheet.Cell(currentRow, 7).Value = montoAbs;
+                                worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                                totalMovimiento -= montoAbs;
+                            }
+
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo.Contains("4.1.1"))
+                        {
+
+                            if (transaccion.EsDebito)
+                            {
+                                worksheet.Cell(currentRow, 6).Value = 0;
+                                worksheet.Cell(currentRow, 7).Value = montoAbs;
+                                worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                                totalMovimiento -= montoAbs;                                
+                            }
+                            else
+                            {
+                                worksheet.Cell(currentRow, 6).Value = montoAbs;
+                                worksheet.Cell(currentRow, 7).Value = 0;
+                                worksheet.Cell(currentRow, 8).Value = montoAbs;
+                                totalMovimiento += montoAbs;
+                            }
+
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo.Contains("4.1.2"))
+                        {
+
+                            if (transaccion.EsDebito)
+                            {
+                              
+                                worksheet.Cell(currentRow, 6).Value = 0;
+                                worksheet.Cell(currentRow, 7).Value = montoAbs;
+                                worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                                totalMovimiento -= montoAbs;
+                            }
+                            else
+                            {
+                                worksheet.Cell(currentRow, 6).Value = montoAbs;
+                                worksheet.Cell(currentRow, 7).Value = 0;
+                                worksheet.Cell(currentRow, 8).Value = montoAbs;
+                                totalMovimiento += montoAbs;
+                            }
+
+                        }
+                        else if (transaccion.IdCuentaNavigation.Codigo.Contains("5.1.") && transaccion.Descripcion.Contains("Devolución"))
+                        {
+
+                            if (transaccion.EsDebito)
+                            {
+                                worksheet.Cell(currentRow, 6).Value = montoAbs;
+                                worksheet.Cell(currentRow, 7).Value = 0;
+                                worksheet.Cell(currentRow, 8).Value = montoAbs;
+                                totalMovimiento += montoAbs;
+                            }
+                            else
+                            {
+                                worksheet.Cell(currentRow, 6).Value = 0;
+                                worksheet.Cell(currentRow, 7).Value = montoAbs;
+                                worksheet.Cell(currentRow, 8).Value = -montoAbs;
+                                totalMovimiento -= montoAbs;
+                            }
+
+                        }
                         else
                         {
                             bool esPositivo = DeterminarSiEsPositivo(transaccion.IdCuentaNavigation);

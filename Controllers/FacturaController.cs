@@ -19,6 +19,8 @@ using System.Net.Mail;
 using ClosedXML.Excel;
 using Irony.Parsing;
 using DocumentFormat.OpenXml.Office2013.Excel;
+using ContaFacil.Models.Dto;
+using Newtonsoft.Json;
 namespace ContaFacil.Controllers
 {
     public class FacturaController : NotificacionClass
@@ -571,7 +573,7 @@ namespace ContaFacil.Controllers
             }
 
             var factura = await _context.Facturas
-                .Include(f => f.IdClienteNavigation).ThenInclude(f => f.IdPersonaNavigation)
+                .Include(f => f.IdClienteNavigation).ThenInclude(f => f.IdPersonaNavigation).Include(f=>f.DetalleFacturas).ThenInclude(f=>f.IdProductoNavigation).ThenInclude(f=>f.IdImpuestoNavigation)
                 .FirstOrDefaultAsync(m => m.IdFactura == id);
             if (factura == null)
             {
@@ -580,19 +582,119 @@ namespace ContaFacil.Controllers
 
             return View(factura);
         }
-        // POST: Factura/Delete/5
+
         [HttpPost]
-        public IActionResult NotaConfirmed(int id,string motivo)
+        public async Task<IActionResult> NotaConfirmed(int id, string motivo, string detallesNotaCredito)
         {
-            var generator = new NotaCreditoXmlGenerator(_configuration);
-            Factura factura=new Factura();
-            factura=_context.Facturas.Include(f=>f.DetalleFacturas).ThenInclude(f=>f.IdProductoNavigation).ThenInclude(f=>f.IdImpuestoNavigation).Include(f=>f.IdEmisorNavigation). FirstOrDefault(f => f.IdFactura == id);
-            Cliente cliente = new Cliente();
-            cliente=_context.Clientes.Include(c=>c.IdPersonaNavigation).ThenInclude(c => c.IdTipoIdentificacionNavigation).FirstOrDefault(f => f.IdCliente == factura.IdCliente);
-            var xmlDocument= generator.GenerateXml(factura,cliente.IdPersonaNavigation,factura.IdEmisorNavigation,motivo);
-            xmlDocument.Save("notaCredito.xml");
-            return RedirectToAction(nameof(Index));
+            if (string.IsNullOrEmpty(detallesNotaCredito))
+            {
+                ModelState.AddModelError("", "Debe seleccionar al menos un detalle para la nota de crédito.");
+                return View(/* Add your model here */);
+            }
+
+            var detalles = JsonConvert.DeserializeObject<List<DetalleNotaCreditoDto>>(detallesNotaCredito);
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var factura = await _context.Facturas
+                        .Include(f => f.DetalleFacturas)
+                            .ThenInclude(f => f.IdProductoNavigation)
+                                .ThenInclude(f => f.IdImpuestoNavigation)
+                        .Include(f => f.IdEmisorNavigation)
+                        .Include(f => f.IdClienteNavigation)
+                            .ThenInclude(c => c.IdPersonaNavigation)
+                                .ThenInclude(p => p.IdTipoIdentificacionNavigation)
+                        .FirstOrDefaultAsync(f => f.IdFactura == id);
+
+                    if (factura == null)
+                    {
+                        return NotFound();
+                    }
+
+                    var empresa = await _context.Empresas.FirstOrDefaultAsync(e => e.IdEmpresa == factura.IdClienteNavigation.IdEmpresa);
+                    var idUsuario = HttpContext.Session.GetString("_idUsuario");
+
+                    var usuario = await _context.Usuarios
+                        .Where(u => u.IdUsuario == int.Parse(idUsuario))
+                        .Include(p => p.IdPersonaNavigation)
+                        .FirstOrDefaultAsync();
+
+                    decimal totalNotaCredito = detalles.Sum(d => d.Cantidad * d.ValorUnitario);
+
+                    var generator = new NotaCreditoXmlGenerator(_configuration);
+                   // var xmlDocument = generator.GenerateXml(factura, factura.IdClienteNavigation.IdPersonaNavigation, factura.IdEmisorNavigation, motivo, detalles, totalNotaCredito);
+                    //xmlDocument.Save("notaCredito.xml");
+
+                    string numeroAs = ObtenerSiguienteNumeroAsiento();
+
+                    foreach (var detalle in detalles)
+                    {
+                        var detalleFactura = factura.DetalleFacturas.FirstOrDefault(df => df.IdDetalleFactura == detalle.IdDetalleFactura);
+                        if (detalleFactura != null)
+                        {
+                            var producto = detalleFactura.IdProductoNavigation;
+                            var categoriaProducto = await _context.CategoriaProductos.FirstOrDefaultAsync(c => c.IdCategoriaProducto == producto.IdCategoriaProducto);
+
+                            var cuentaVenta = await _context.Cuenta.FirstOrDefaultAsync(c => c.Nombre == categoriaProducto.Nombre);
+                            var tipoTrans = await _context.TipoTransaccions.FirstOrDefaultAsync(t => t.Nombre == "Venta");
+                            string descrip = $"{numeroAs} Devolución en Ventas de mercadería {categoriaProducto.Descripcion} {factura.NumeroFactura}";
+
+                            await CrearTransaccion(cuentaVenta.Codigo, descrip, detalle.Cantidad * detalle.ValorUnitario, tipoTrans, empresa, usuario, true);
+
+                            var cuentaCosto = await _context.Cuenta.FirstOrDefaultAsync(c => c.Nombre.Contains("Costo") && c.Nombre.Contains(categoriaProducto.Nombre));
+                            await CrearTransaccion(cuentaCosto.Codigo, descrip, detalle.Cantidad * detalle.ValorUnitario, tipoTrans, empresa, usuario, false);
+                        }
+                    }
+
+                    var cuentaPorCobrar = await _context.Cuenta.FirstOrDefaultAsync(c => c.Nombre == "Cuentas por cobrar");
+                    var cliente = factura.IdClienteNavigation;
+                    string numeroAsiento = ObtenerSiguienteNumeroAsiento();
+                    var tipoTransaccion = await _context.TipoTransaccions.FirstOrDefaultAsync(t => t.Nombre == "Venta");
+
+                    decimal totalDescuento = detalles.Sum(d =>
+                    {
+                        var detalleFactura = factura.DetalleFacturas.FirstOrDefault(df => df.IdDetalleFactura == d.IdDetalleFactura);
+                        return (detalleFactura?.Descuento ?? 0) * (d.Cantidad /detalleFactura.Cantidad);
+                    });
+
+                    if (totalDescuento > 0)
+                    {
+                        string descDescuento = $"{numeroAsiento} Devolución en Ventas de {factura.NumeroFactura}";
+                        var cuentaDescuento = await _context.Cuenta.FirstOrDefaultAsync(c => c.Nombre == "Descuento en ventas");
+                        await CrearTransaccion(cuentaDescuento.Codigo, descDescuento, totalDescuento, tipoTransaccion, empresa, usuario, true);
+                    }
+
+                    var cuentaIVA = await _context.Cuenta.FirstOrDefaultAsync(c => c.Nombre == "IVA por pagar");
+                    decimal iva = detalles.Sum(d => d.Cantidad * d.ValorUnitario * 0.15m);
+                    string descIVA = $"{numeroAsiento} IVA por pagar en venta de {factura.NumeroFactura}";
+                    await CrearTransaccion(cuentaIVA.Codigo, descIVA, iva, tipoTransaccion, empresa, usuario, true);
+
+                    string descCuentaCobrar = $"{numeroAsiento} Cuenta por cobrar {cliente.IdPersonaNavigation.Nombre} {cliente.IdPersonaNavigation.Identificacion}";
+                    CuentaCobrar cuentaCobrar = await _context.CuentaCobrars.FirstOrDefaultAsync(c => c.IdFactura == factura.IdFactura);
+                    if (cuentaCobrar != null)
+                    {
+                        await CrearTransaccion(cuentaPorCobrar.Codigo, descCuentaCobrar, totalNotaCredito + iva - totalDescuento, tipoTransaccion, empresa, usuario, true);
+                    }
+
+                    var cuentaDevolucion = await _context.Cuenta.FirstOrDefaultAsync(c => c.Nombre == "Devolución en ventas");
+                    string descDevolucion = $"{numeroAsiento} Devolución en Ventas de {factura.NumeroFactura}";
+                    await CrearTransaccion(cuentaDevolucion.Codigo, descDevolucion, totalNotaCredito, tipoTransaccion, empresa, usuario, false);
+
+                    await transaction.CommitAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    // Log the exception
+                    return StatusCode(500, "An error occurred while processing your request.");
+                }
+            }
         }
+
+        // Assume these methods are implemented elsewhere in your code
         public string ObtenerNumeroDespacho(string tipoMovimiento)
         {
             string idUsuario = HttpContext.Session.GetString("_idUsuario");

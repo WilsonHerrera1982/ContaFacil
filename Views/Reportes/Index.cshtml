@@ -35,7 +35,7 @@
                     <i class="fas fa-book icon-size mb-3 text-primary"></i>
                     <h5 class="card-title">Plan de Cuentas</h5>
                     <p class="card-text">Genera el reporte del Plan de Cuentas.</p>
-                    <a asp-action="Index" asp-controller="Cuentum" class="btn  btn-primary mt-3 ">Generar Plan de Cuentas</a>
+                    <a asp-action="Index" asp-controller="Cuentum" class="btn btn-primary mt-3">Generar Plan de Cuentas</a>
                 </div>
             </div>
         </div>
@@ -107,12 +107,12 @@
                     <p class="card-text">Genera el reporte de Estado de Resultados.</p>
                     <form asp-action="ExportEstadoExcel" method="post">
                         <div class="form-group">
-                            <label for="fechaInicioBal">Fecha Inicio:</label>
-                            <input type="date" id="fechaInicioBal" name="fechaInicio" class="form-control" required />
+                            <label for="fechaInicioEst">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicioEst" name="fechaInicio" class="form-control" required />
                         </div>
                         <div class="form-group">
-                            <label for="fechaFinBal">Fecha Fin:</label>
-                            <input type="date" id="fechaFinBal" name="fechaFin" class="form-control" required />
+                            <label for="fechaFinEst">Fecha Fin:</label>
+                            <input type="date" id="fechaFinEst" name="fechaFin" class="form-control" required />
                         </div>
                         <button type="submit" class="btn btn-primary mt-3">Generar Estado de Resultados</button>
                     </form>
@@ -121,3 +121,45 @@
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Interceptar todos los envíos de formularios
+    $('form').submit(function() {
+        showLoading();
+    });
+
+    // Interceptar el clic en el botón de "Generar Plan de Cuentas"
+    $('a[asp-action="Index"][asp-controller="Cuentum"]').click(function() {
+        showLoading();
+    });
+
+    // Función para mostrar el indicador de carga
+    function showLoading() {
+        $('#loading-overlay').show();
+    }
+
+    // Función para ocultar el indicador de carga
+    function hideLoading() {
+        $('#loading-overlay').hide();
+    }
+
+    // Ocultar el indicador de carga cuando la página termine de cargar
+    $(window).on('load', function() {
+        hideLoading();
+    });
+
+    // Opcional: Agregar un temporizador para ocultar el loading después de un tiempo máximo
+    var loadingTimer;
+    function showLoadingWithTimeout() {
+        showLoading();
+        clearTimeout(loadingTimer);
+        loadingTimer = setTimeout(hideLoading, 30000); // 30 segundos de tiempo máximo
+    }
+
+    // Interceptar navegación del navegador
+    $(window).on('beforeunload', function() {
+        showLoading();
+    });
+});
+</script>

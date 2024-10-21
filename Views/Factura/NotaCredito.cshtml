@@ -1,104 +1,156 @@
 ﻿@model ContaFacil.Models.Factura
-
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Nota de Crédito";
 }
-Nota de Crédito
+
+<h1>Nota de Crédito</h1>
 
 <div>
     <h4>Factura</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Fecha)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Fecha)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.NumeroFactura)
-        </dt>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Fecha)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Fecha)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.NumeroFactura)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.NumeroFactura)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.MontoTotal)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.MontoTotal)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Estado)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Estado)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ClaveAcceso)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.ClaveAcceso)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.AutorizacionSri)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.AutorizacionSri)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.FechaAutorizacionSri)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.FechaAutorizacionSri)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.FechaCreacion)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.FechaCreacion)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.UsuarioCreacion)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.UsuarioCreacion)</dd>
+        <dt class="col-sm-2">Cliente</dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.NumeroFactura)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.MontoTotal)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.MontoTotal)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Estado)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Estado)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ClaveAcceso)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ClaveAcceso)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AutorizacionSri)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AutorizacionSri)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaAutorizacionSri)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.FechaAutorizacionSri)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaCreacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaCreacion)
-        </dd>
-       
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UsuarioCreacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UsuarioCreacion)
-        </dd>
-       
-        <dt class = "col-sm-2">
-            Cliente
-        </dt>
-        <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.IdClienteNavigation.IdPersonaNavigation.Identificacion)
-        </dd>
-        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.IdClienteNavigation.IdPersonaNavigation.Nombre)
         </dd>
     </dl>
 </div>
-<div class="container mt-4">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        <div class="col">
-            <div class="card h-100">
-                
-                <div class="card-body text-center">
-                    <i class="fas fa-plus-circle fa-3x mb-3 text-warning"></i>
-                    <h5 class="card-title">Nota de Credito</h5>
-                    <p class="card-text">Registra y envia la nota de crédito al SRI.</p>
-                    <form asp-action="NotaConfirmed" method="post" style="display:inline;">
-                        <div >
-                            <input name="motivo" />
-                        </div>
-                        <input type="hidden" name="id" value="@Model.IdFactura" />
-                        <button type="submit" class=" btn btn-primary">Crear</button>
-                    </form>
-                </div>
+
+<h4>Detalles de la Factura</h4>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="NotaConfirmed" method="post" id="notaCreditoForm">
+            <input type="hidden" name="id" value="@Model.IdFactura" />
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Seleccionar</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detalle in Model.DetalleFacturas)
+                    {
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="producto-check"
+                                       data-id-detalle="@detalle.IdDetalleFactura"
+                                       data-precio-unitario="@detalle.PrecioUnitario"
+                                       data-cantidad-maxima="@detalle.Cantidad" />
+                            </td>
+                            <td>@detalle.IdProductoNavigation.Nombre</td>
+                            <td>
+                                <input type="number" class="cantidad-input" value="1" min="1" max="@detalle.Cantidad" disabled />
+                            </td>
+                            <td>@detalle.PrecioUnitario</td>
+                            <td class="subtotal">@(detalle.Cantidad * detalle.PrecioUnitario)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="form-group">
+                <label for="motivo" class="control-label">Motivo</label>
+                <input name="motivo" id="motivo" class="form-control" required />
             </div>
-            <div class="col">
-                <a asp-action="Index">Volver a la Lista</a>
+
+            <div class="form-group">
+                <label for="totalNotaCredito" class="control-label">Total Nota de Crédito</label>
+                <input type="text" id="totalNotaCredito" class="form-control" readonly />
             </div>
-        </div>
+
+            <div class="form-group">
+                <input type="submit" value="Crear" class="btn btn-primary" />
+            </div>
+        </form>
+
     </div>
 </div>
 
+<div>
+    <a asp-action="Index">Volver a la Lista</a>
+</div>
 
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            function actualizarTotal() {
+                var total = 0;
+                $('.producto-check:checked').each(function () {
+                    var cantidad = parseInt($(this).closest('tr').find('.cantidad-input').val());
+                    var precioUnitario = parseFloat($(this).data('precio-unitario'));
+                    total += cantidad * precioUnitario;
+                });
+                $('#totalNotaCredito').val(total.toFixed(2));
+            }
+
+            $('.producto-check').change(function () {
+                var cantidadInput = $(this).closest('tr').find('.cantidad-input');
+                cantidadInput.prop('disabled', !this.checked);
+                if (this.checked) {
+                    cantidadInput.val(1);
+                } else {
+                    cantidadInput.val('');
+                }
+                actualizarTotal();
+            });
+
+            $('.cantidad-input').change(actualizarTotal);
+
+            $('#notaCreditoForm').submit(function (e) {
+                e.preventDefault();
+                var detalles = [];
+                $('.producto-check:checked').each(function () {
+                    var tr = $(this).closest('tr');
+                    detalles.push({
+                        idDetalleFactura: $(this).data('id-detalle'),
+                        cantidad: parseInt(tr.find('.cantidad-input').val()),
+                        valorUnitario: parseFloat($(this).data('precio-unitario'))
+                    });
+                });
+
+                if (detalles.length === 0) {
+                    alert('Por favor, seleccione al menos un detalle para la nota de crédito.');
+                    return;
+                }
+
+                var formData = $(this).serializeArray();
+                formData.push({ name: 'detallesNotaCredito', value: JSON.stringify(detalles) });
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: $.param(formData),
+                    success: function (response) {
+                        window.location.href = '@Url.Action("Index")';
+                    },
+                    error: function () {
+                        alert('Ocurrió un error al procesar la solicitud.');
+                    }
+                });
+            });
+        });
+    </script>
+}

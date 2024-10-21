@@ -126,24 +126,34 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-<script>
-    $(document).ready(function () {
-        setTimeout(function () {
-            $(".alerta").fadeOut(2000);
-        }, 3000);
-    });
+@section Scripts {
+    <script>
+        $(window).on('load', function() {
+            hideLoading();
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
 
-    $("#alerta").delay().hide(1);
+        <script>
+        $(document).ready(function () {
+            setTimeout(function () {
+                $(".alerta").fadeOut(2000);
+            }, 3000);
+        });
 
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var activeDropdownItem = document.querySelector('.dropdown-item.active-menu');
-        if (activeDropdownItem) {
-            var dropdownToggle = activeDropdownItem.closest('.dropdown').querySelector('.dropdown-toggle');
-            if (dropdownToggle) {
-                dropdownToggle.classList.add('active-menu');
+        $("#alerta").delay().hide(1);
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var activeDropdownItem = document.querySelector('.dropdown-item.active-menu');
+            if (activeDropdownItem) {
+                var dropdownToggle = activeDropdownItem.closest('.dropdown').querySelector('.dropdown-toggle');
+                if (dropdownToggle) {
+                    dropdownToggle.classList.add('active-menu');
+                }
             }
-        }
-    });
-</script>
+        });
+    </script>
+
+}
