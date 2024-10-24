@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 using System.ComponentModel;
 namespace ContaFacil.Models;
 
@@ -26,6 +26,8 @@ public partial class Impuesto
     public string? CodigoPorcentajeSri { get; set; }
 
     public string? Tipo { get; set; }
+
+    public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();
 
     public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
 }

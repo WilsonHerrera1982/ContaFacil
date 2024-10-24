@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;  
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace ContaFacil.Models;
@@ -39,6 +39,8 @@ public partial class Sucursal
     public virtual ICollection<Despacho> Despachos { get; set; } = new List<Despacho>();
 
     public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
+
+    public virtual ICollection<GuiaRemision> GuiaRemisions { get; set; } = new List<GuiaRemision>();
 
     public virtual Emisor IdEmisorNavigation { get; set; } = null!;
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;  
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace ContaFacil.Models;
@@ -27,9 +27,14 @@ public partial class DetalleFactura
     public int? UsuarioModificacion { get; set; }
 
     public int? IdProducto { get; set; }
+
     public decimal? Descuento { get; set; }
 
+    public int? IdImpuesto { get; set; }
+
     public virtual Factura IdFacturaNavigation { get; set; } = null!;
+
+    public virtual Impuesto? IdImpuestoNavigation { get; set; }
 
     public virtual Producto? IdProductoNavigation { get; set; }
 }

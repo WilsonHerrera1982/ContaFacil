@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;  
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,9 +23,9 @@ public partial class Producto
 
     public decimal? Stock { get; set; }
 
-    [DisplayName("Activo/Inactivo")]  public bool EstadoBoolean { get; set; }
+    public bool EstadoBoolean { get; set; }
 
-    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
+    public DateTime FechaCreacion { get; set; }
 
     [DisplayName("Fecha Modificación")]  public DateTime FechaModificacion { get; set; }
 
@@ -54,9 +54,12 @@ public partial class Producto
         }
     }
     public decimal? Descuento { get; set; }
+
     public virtual ICollection<DetalleDespacho> DetalleDespachos { get; set; } = new List<DetalleDespacho>();
 
     public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();
+
+    public virtual ICollection<GuiaRemisionDetalle> GuiaRemisionDetalles { get; set; } = new List<GuiaRemisionDetalle>();
 
     public virtual ICollection<HistoricoProducto> HistoricoProductos { get; set; } = new List<HistoricoProducto>();
 
