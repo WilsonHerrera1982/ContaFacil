@@ -1021,7 +1021,7 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.EstadoBoolean)
                 .HasDefaultValue(true)
                 .HasColumnName("estado_boolean");
-            entity.Property(e => e.FacturaNumero)
+            entity.Property(e => e.NumeroFactura)
                 .HasMaxLength(100)
                 .HasColumnName("factura_numero");
             entity.Property(e => e.FechaCreacion)
@@ -1881,7 +1881,7 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(255)
                 .HasColumnName("descripcion");
-            entity.Property(e => e.Esdebito)
+            entity.Property(e => e.EsDebito)
                 .HasDefaultValue(false)
                 .HasColumnName("esdebito");
             entity.Property(e => e.Estado)

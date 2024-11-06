@@ -7,6 +7,8 @@ using ContaFacil.Utilities;
 using ContaFacil.Controllers;
 using Quartz;
 using OfficeOpenXml;
+using ContaFacil.Models.Interfaces;
+using ContaFacil.Models.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +41,7 @@ builder.Services.AddDbContext<ContableContext>(options =>
 
 builder.Services.AddTransient<FacturaController>();
 builder.Services.AddTransient<FacturaXmlGenerator>();
-
+builder.Services.AddScoped<IReporteMayorizacionService, ReporteMayorizacionService>();
 builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();

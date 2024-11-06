@@ -4,23 +4,108 @@
 @{
     ViewData["Title"] = "Plan de Cuentas";
 }
+<style>
+    .cuenta-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
 
+    .cuenta-padre {
+        border-left: 4px solid #0d6efd;
+        transition: all 0.3s ease;
+    }
+
+        .cuenta-padre:hover {
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+    .cuenta-hijo {
+        border-left: 3px solid #6c757d;
+        margin-left: 2rem;
+        margin-bottom: 0.5rem;
+        background-color: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        transition: all 0.3s ease;
+    }
+
+        .cuenta-hijo:hover {
+            background-color: #f1f3f5;
+        }
+
+    .cuenta-nieto {
+        margin-left: 3rem;
+        border-left: 2px solid #adb5bd;
+    }
+
+    .form-check-group {
+        background-color: rgba(0,0,0,0.03);
+        padding: 0.3rem 0.6rem;
+        border-radius: 0.25rem;
+    }
+
+    .btn-group .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+</style>
 <h1>Plan de Cuentas</h1>
 
-@Html.ActionLink("Exportar a Excel", "ExportToExcel", "Cuentum", null, new { @class = "btn btn-primary mb-3" })
+<div class="mb-3">
+    @Html.ActionLink("Exportar a Excel", "ExportToExcel", "Cuentum", null, new { @class = "btn btn-primary" })
+</div>
 
-@foreach (var cuenta in Model.Cuentas.Where(c => c.IdIdCuenta == null))
-{
-    <div class="card mb-3">
-        <div class="card-header">
-            <h5>@cuenta.Codigo - @cuenta.Nombre</h5>
-            <button onclick="showAddDialog('@cuenta.IdCuenta', '@cuenta.Codigo', '@cuenta.Nombre')" class="btn btn-sm btn-success">Agregar subcuenta</button>
+<div class="cuenta-container">
+    @foreach (var cuenta in Model.Cuentas.Where(c => c.IdIdCuenta == null && c.Estado==true))
+    {
+        <div class="card mb-3 cuenta-padre">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="cuenta-info">
+                        <h5 class="mb-2">
+                            <i class="fas fa-folder me-2"></i>
+                            @cuenta.Codigo - @cuenta.Nombre
+                        </h5>
+                        <div class="form-check-group ms-4">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox"
+                                       id="debito_@cuenta.IdCuenta"
+                                @(cuenta.Debito ? "checked" : "")
+                                       disabled>
+                                <label class="form-check-label" for="debito_@cuenta.IdCuenta">
+                                    Débito
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox"
+                                       id="credito_@cuenta.IdCuenta"
+                                @(cuenta.Credito ? "checked" : "")
+                                       disabled>
+                                <label class="form-check-label" for="credito_@cuenta.IdCuenta">
+                                    Crédito
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="@Url.Action("Edit", "Cuentum", new { id = cuenta.IdCuenta })"
+                           class="btn btn-sm btn-warning me-2">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <button onclick="showAddDialog('@cuenta.IdCuenta', '@cuenta.Codigo', '@cuenta.Nombre')"
+                                class="btn btn-sm btn-success">
+                            <i class="fas fa-plus"></i> Agregar subcuenta
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body py-2">
+                @await Html.PartialAsync("_SubCuentasPartial", new SubCuentasPartialViewModel { Cuentas = Model.Cuentas, ParentId = cuenta.IdCuenta })
+            </div>
         </div>
-        <div class="card-body">
-            @await Html.PartialAsync("_SubCuentasPartial", new SubCuentasPartialViewModel { Cuentas = Model.Cuentas, ParentId = cuenta.IdCuenta })
-        </div>
-    </div>
-}
+    }
+</div>
 <div id="addAccountDialog" class="modal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -43,6 +128,14 @@
                         <label for="nombre" class="form-label">Nombre</label>
                         <input type="text" class="form-control" id="nombre" name="Nombre" required>
                     </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="Debito" name="Debito">
+                        <label class="form-check-label" for="Debito">Débito</label>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="Credito" name="Credito">
+                        <label class="form-check-label" for="Credito">Crédito</label>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -59,28 +152,50 @@
         function showAddDialog(parentId, parentCodigo, parentNombre) {
             document.getElementById('parentId').value = parentId;
             document.getElementById('parentAccount').value = parentCodigo + ' - ' + parentNombre;
+
+            // Reset checkboxes and their states when opening the dialog
+            const debitoCheckbox = document.getElementById('Debito');
+            const creditoCheckbox = document.getElementById('Credito');
+            debitoCheckbox.checked = false;
+            creditoCheckbox.checked = false;
+            debitoCheckbox.disabled = false;
+            creditoCheckbox.disabled = false;
+
+            // Add event listeners for the checkboxes
+            debitoCheckbox.addEventListener('change', function () {
+                creditoCheckbox.disabled = this.checked;
+            });
+
+            creditoCheckbox.addEventListener('change', function () {
+                debitoCheckbox.disabled = this.checked;
+            });
+
             new bootstrap.Modal(document.getElementById('addAccountDialog')).show();
         }
 
         function addAccount() {
             const form = document.getElementById('addAccountForm');
             const formData = new FormData(form);
-
+            formData.set('Debito', document.getElementById('Debito').checked);
+            formData.set('Credito', document.getElementById('Credito').checked);
+            if (!Debito && !Credito) {
+                alert('Debe seleccionar al menos Débito o Crédito');
+                return;
+            }
             fetch('/Cuentum/Create', {
                 method: 'POST',
                 body: formData
                 // Eliminado el encabezado RequestVerificationToken
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
+                .then(response => {
+                    if (response.ok) {  // Verifica si el status es 200-299
                         const modal = bootstrap.Modal.getInstance(document.getElementById('addAccountDialog'));
                         modal.hide();
+                        location.reload();
                     } else {
-                        alert('Error al agregar la cuenta: ' + data.message);
+                        alert('Error al agregar la cuenta');
                     }
-                });
+                })
         }
 
 

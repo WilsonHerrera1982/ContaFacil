@@ -25,17 +25,7 @@
             </div>
         </div>
 
-        <!-- Listado de Facturación -->
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-list-alt fa-3x mb-3 text-success"></i>
-                    <h5 class="card-title">Listado de Facturación</h5>
-                    <p class="card-text">Consulta el listado de todas las facturas.</p>
-                    <a asp-action="Index" asp-controller="Factura" class="btn btn-success mt-auto">Ver Listado</a>
-                </div>
-            </div>
-        </div>
+       
 
         <!-- Reporte Facturación -->
         <div class="col">
@@ -43,7 +33,9 @@
                 <div class="card-body text-center">
                     <i class="fas fa-chart-line fa-3x mb-3 text-info"></i>
                     <h5 class="card-title">Reporte Facturación</h5>
-                    <p class="card-text">Genera reportes de facturación detallados.</p>                   
+                    <p class="card-text">Genera reportes de facturación detallados.</p>
+                    <a asp-action="Index" asp-controller="Factura" class="btn btn-success mt-auto">Ver Listado</a>
+
                     <form asp-action="ExportFacturaExcel" method="post">
                         <div class="form-group">
                             <label for="fechaInicioBal">Fecha Inicio:</label>
@@ -53,6 +45,7 @@
                             <label for="fechaFinBal">Fecha Fin:</label>
                             <input type="date" id="fechaFinBal" name="fechaFin" class="form-control" required />
                         </div>
+
                         <button type="submit" class="btn btn-primary mt-3">Generar reporte facturación</button>
                     </form>
                 </div>
@@ -65,7 +58,9 @@
                 <div class="card-body text-center">
                     <i class="fas fa-receipt fa-3x mb-3 text-warning"></i>
                     <h5 class="card-title">Reporte Notas de Crédito</h5>
-                    <p class="card-text">Genera reportes de notas de crédito.</p>                   
+                    <p class="card-text">Genera reportes de notas de crédito.</p>
+                    <a asp-action="Index" asp-controller="Factura" class="btn btn-success mt-auto">Ver Listado</a>
+
                     <form asp-action="ExportNotasCreditoExcel" method="post">
                         <div class="form-group">
                             <label for="fechaInicioBal">Fecha Inicio:</label>
@@ -80,13 +75,26 @@
                 </div>
             </div>
         </div>
+        <!-- Registrar Retenciones -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-invoice-dollar fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Registrar Retención de Clientes</h5>
+                    <p class="card-text">Registrar una nueva retención en el sistema.</p>
+                    <a asp-action="Create" asp-controller="Retencion" class="btn btn-primary mt-auto">Registrar Retención</a>
+                </div>
+            </div>
+        </div>
         <!-- Reporte Retenciones -->
         <div class="col">
             <div class="card h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-percent fa-3x mb-3 text-warning"></i>
                     <h5 class="card-title">Listado Retenciones</h5>
-                    <p class="card-text">Registra retenciones de proveedores y clientes.</p>
+                    <p class="card-text"Listado retenciones de proveedores y clientes.</p>
+                    <a asp-action="Index" asp-controller="Factura" class="btn btn-success mt-auto">Ver Listado</a>
+
                     <form asp-controller="Retencion" asp-action="Index" method="post">
                         <div class="form-group">
                             <label for="fechaInicioBal">Fecha Inicio:</label>
@@ -96,10 +104,13 @@
                             <label for="fechaFinBal">Fecha Fin:</label>
                             <input type="date" id="fechaFinBal" name="fechaFin" class="form-control" required />
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3">Gestionar Retenciones</button>
+                        <button type="submit" class="btn btn-primary mt-3">Generar Reporte Retenciones</button>
                     </form>
                 </div>
             </div>
         </div>
+
+       
+
     </div>
 </div>

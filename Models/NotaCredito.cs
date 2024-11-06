@@ -36,5 +36,6 @@ public partial class NotaCredito
     public int? UsuarioModificacion { get; set; }
 
     public virtual Empresa IdEmpresaNavigation { get; set; } = null!;
+    public virtual Factura IdFacturaNavigation { get; set; } = null!;
 
 }

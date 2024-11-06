@@ -45,7 +45,7 @@
                     <i class="fas fa-journal-whills icon-size mb-3 text-primary"></i>
                     <h5 class="card-title">Libro Diario</h5>
                     <p class="card-text">Genera el reporte del Libro Diario.</p>
-                    <form asp-action="ExportarLibroDiarioExcel" method="post">
+                    <form asp-action="ExportarLibroDiarioExcel" method="post" data-download="true">
                         <div class="form-group">
                             <label for="fechaInicio">Fecha Inicio:</label>
                             <input type="date" id="fechaInicio" name="fechaInicio" class="form-control" required />
@@ -65,7 +65,7 @@
                     <i class="fas fa-calculator icon-size mb-3 text-primary"></i>
                     <h5 class="card-title">Mayorización</h5>
                     <p class="card-text">Genera el reporte de Mayorización.</p>
-                    <form asp-action="ExportarMayorizacionExcel" method="post">
+                    <form asp-action="ExportarMayorizacionExcel" method="post" data-download="true">
                         <div class="form-group">
                             <label for="fechaInicioMay">Fecha Inicio:</label>
                             <input type="date" id="fechaInicioMay" name="fechaInicio" class="form-control" required />
@@ -85,7 +85,7 @@
                     <i class="fas fa-balance-scale icon-size mb-3 text-primary"></i>
                     <h5 class="card-title">Estado de Situación Financiera</h5>
                     <p class="card-text">Genera el reporte de Estado Situación Financiera.</p>
-                    <form asp-action="ExportarBalanceExcel" method="post">
+                    <form asp-action="ExportarBalanceExcel" method="post" data-download="true">
                         <div class="form-group">
                             <label for="fechaInicioBal">Fecha Inicio:</label>
                             <input type="date" id="fechaInicioBal" name="fechaInicio" class="form-control" required />
@@ -105,7 +105,7 @@
                     <i class="fas fa-chart-line icon-size mb-3 text-primary"></i>
                     <h5 class="card-title">Estado de Resultados</h5>
                     <p class="card-text">Genera el reporte de Estado de Resultados.</p>
-                    <form asp-action="ExportEstadoExcel" method="post">
+                    <form asp-action="ExportEstadoExcel" method="post" data-download="true">
                         <div class="form-group">
                             <label for="fechaInicioEst">Fecha Inicio:</label>
                             <input type="date" id="fechaInicioEst" name="fechaInicio" class="form-control" required />
@@ -115,8 +115,10 @@
                             <input type="date" id="fechaFinEst" name="fechaFin" class="form-control" required />
                         </div>
                         <button type="submit" class="btn btn-primary mt-3">Generar Estado de Resultados</button>
+                       
                     </form>
                 </div>
+                 <button id="btnCargar" class="btn btn-primary">Cargar Reportes</button>
             </div>
         </div>
     </div>
@@ -162,4 +164,33 @@ $(document).ready(function() {
         showLoading();
     });
 });
+
+
+</script>
+
+<script>
+    // En tu archivo JavaScript específico para la página de reportes
+    $(document).ready(function () {
+        function cargarReportes() {
+            $.ajax({
+                url: 'https://localhost:7072/Reportes/Index',
+                method: 'GET',
+                dataType: 'json', // Especifica que esperas JSON
+                beforeSend: function () {
+                    console.log('Iniciando petición...');
+                },
+                success: function (data) {
+                    console.log('Datos recibidos:', data);
+                    // Aquí procesas los datos
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    // Aquí manejas el error
+                }
+            });
+        }
+
+        // Si tienes un botón para cargar
+        $('#btnCargar').on('click', cargarReportes);
+    });
 </script>

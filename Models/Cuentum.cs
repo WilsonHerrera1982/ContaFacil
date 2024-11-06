@@ -16,7 +16,9 @@ public partial class Cuentum
     public decimal SaldoActual { get; set; }
 
     public bool Estado { get; set; }
+    public bool Credito { get; set; }
 
+    public bool Debito { get; set; }
     [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 
     public DateTime? FechaModificacion { get; set; }

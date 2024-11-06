@@ -26,7 +26,7 @@ namespace ContaFacil.Controllers
         // GET: Cuentum
         public async Task<IActionResult> Index()
         {
-            var cuentas = await _context.Cuenta
+            var cuentas = await _context.Cuenta.Where(c=>c.Estado==true)
                 .Include(c => c.IdEmpresaNavigation)
                 .Include(c => c.IdTipoCuentaNavigation).OrderBy(c=>c.Codigo)
                 .ToListAsync();
@@ -119,36 +119,44 @@ namespace ContaFacil.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdCuenta,Nombre,IdTipoCuenta,SaldoInicial,SaldoActual,Estado,FechaCreacion,FechaModificacion,UsuarioCreacion,UsuarioModificacion,IdEmpresa")] Cuentum cuentum)
+        public async Task<IActionResult> Edit(int id,Cuentum cuentum)
         {
             if (id != cuentum.IdCuenta)
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
-            {
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Cuentum cue=_context.Cuenta.FirstOrDefault(c=>c.IdCuenta==id);
+           
                 try
                 {
-                    _context.Update(cuentum);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
+                if (cue.IdTipoCuenta == 0)
                 {
-                    if (!CuentumExists(cuentum.IdCuenta))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                       Tipocuentum tipocuentum = await _context.Tipocuenta.FirstOrDefaultAsync(m => m.Nombre == "PASIVOS");
+                    cue.IdTipoCuenta = tipocuentum.IdTipoCuenta; // Set appropriate default value
                 }
+                cue.Credito = cuentum.Credito;
+                cue.Debito = cuentum.Debito;
+                cue.Estado = cuentum.Estado;
+                cue.Nombre = cuentum.Nombre;
+                cue.UsuarioModificacion = int.Parse(idUsuario); 
+                cue.FechaModificacion= new DateTime();
+                    _context.Update(cue);
+                  Notificacion("Registro actualizado correctamente",NotificacionTipo.Success);
+                await _context.SaveChangesAsync();
+               
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", cuentum.IdEmpresa);
-            ViewData["IdTipoCuenta"] = new SelectList(_context.Tipocuenta, "IdTipoCuenta", "IdTipoCuenta", cuentum.IdTipoCuenta);
-            return View(cuentum);
+                catch (DbUpdateConcurrencyException)
+                {
+                Notificacion("Error al actualizar el registro", NotificacionTipo.Error);
+                ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", cuentum.IdEmpresa);
+                ViewData["IdTipoCuenta"] = new SelectList(_context.Tipocuenta, "IdTipoCuenta", "IdTipoCuenta", cuentum.IdTipoCuenta);
+                return View(cuentum);
+            }
+
+
+
         }
 
         // GET: Cuentum/Delete/5
