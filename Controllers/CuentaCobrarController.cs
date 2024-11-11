@@ -196,7 +196,7 @@ namespace ContaFacil.Controllers
                  .Select(a => new { a.IdAnticipo, a.Descripcion, a.Valor });*/
             // Obtener la lista completa de anticipos para calcular la suma total
             var anticiposQuery = _context.Anticipos
-                .Where(a => a.IdCliente == cuentaCobrar.IdFacturaNavigation.IdClienteNavigation.IdCliente && a.EstadoBoolean);
+                .Where(a => a.IdCliente == cuentaCobrar.IdFacturaNavigation.IdClienteNavigation.IdCliente && a.EstadoBoolean.GetValueOrDefault());
 
             // Calcular la suma total de los anticipos
             var totalAnticipos = anticiposQuery.Sum(a => a.Valor);

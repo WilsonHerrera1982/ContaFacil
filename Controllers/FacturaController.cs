@@ -240,7 +240,7 @@ namespace ContaFacil.Controllers
                         inventario.Iva = subtotal * 0.15m;
                         inventario.Total = subtotal;
                         inventario.SubTotal = subtotal;
-                        inventario.NumeroFactura = factura.NumeroFactura;
+                        inventario.FacturaNumero = factura.NumeroFactura;
 
                         _context.Inventarios.Add(inventario);
                         await _context.SaveChangesAsync();
@@ -970,7 +970,7 @@ namespace ContaFacil.Controllers
             var listaInventarios = await _context.Inventarios
                 .Include(i => i.IdProductoNavigation)
                 .ThenInclude(i => i.IdCategoriaProductoNavigation)
-                .Where(i => i.NumeroFactura.Equals(factura.NumeroFactura))
+                .Where(i => i.FacturaNumero.Equals(factura.NumeroFactura))
                 .ToListAsync();
 
             decimal iva = listaInventarios.Sum(li => li.Iva) ?? 0;

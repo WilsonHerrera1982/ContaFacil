@@ -1,29 +1,67 @@
 ﻿using System;
-using System.Collections.Generic;  using System.ComponentModel;
+using System.Collections.Generic;
 
 namespace ContaFacil.Models;
 
+/// <summary>
+/// TRIAL
+/// </summary>
 public partial class Usuario
 {
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int IdUsuario { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string Nombre { get; set; } = null!;
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string Clave { get; set; } = null!;
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int IdPersona { get; set; }
 
-    public bool Estado { get; set; }
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public bool? Estado { get; set; }
 
-    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public DateTime FechaCreacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public DateTime? FechaModificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int UsuarioCreacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? UsuarioModificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? IdEmpresa { get; set; }
+
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public string? Trial482 { get; set; }
 
     public virtual ICollection<Despacho> Despachos { get; set; } = new List<Despacho>();
 

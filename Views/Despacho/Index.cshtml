@@ -65,7 +65,7 @@
                         <tr>
                                     <td>@detalle.IdProductoNavigation.Nombre @detalle.IdProductoNavigation.Descripcion</td>
                             <td>@detalle.Cantidad</td>
-                            <td>@(detalle.EstadoBoolean ? "Activo" : "Inactivo")</td>
+                                    <td>@(detalle.EstadoBoolean.GetValueOrDefault() ? "Activo" : "Inactivo")</td>
                         </tr>
                     }
                     </tbody>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace ContaFacil.Models;
 
@@ -109,58 +110,86 @@ public partial class ContableContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Database=contable;Username=postgres;Password=postgres");
+        => optionsBuilder.UseMySql("Server=localhost;Database=contable;User=root;Password=ROOT;ConvertZeroDateTime=True;", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder
+            .UseCollation("utf8mb4_0900_ai_ci")
+            .HasCharSet("utf8mb4");
+
         modelBuilder.Entity<Anticipo>(entity =>
         {
-            entity.HasKey(e => e.IdAnticipo).HasName("anticipo_pkey");
+            entity.HasKey(e => e.IdAnticipo).HasName("PRIMARY");
 
-            entity.ToTable("anticipo");
+            entity.ToTable("anticipo", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdCliente, "anticipo_id_cliente_fkey");
+
+            entity.HasIndex(e => e.IdEmpresa, "anticipo_id_empresa_fkey");
 
             entity.Property(e => e.IdAnticipo)
-                .HasDefaultValueSql("nextval('seq_historico_producto'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_anticipo");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCheque)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_cheque");
             entity.Property(e => e.FechaComprobante)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_comprobante");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdCliente).HasColumnName("id_cliente");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdCliente)
+                .HasComment("TRIAL")
+                .HasColumnName("id_cliente");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
             entity.Property(e => e.NumeroCheque)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_cheque");
             entity.Property(e => e.NumeroComprobante)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_comprobante");
-            entity.Property(e => e.TipoPago)
-               .HasMaxLength(200)
-               .HasColumnName("tipo_pago");
             entity.Property(e => e.PagueseOrden)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("paguese_orden");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.TipoPago)
+                .HasMaxLength(10)
+                .HasComment("TRIAL")
+                .HasColumnName("tipo_pago");            
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Valor)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("valor");
 
             entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Anticipos)
@@ -176,31 +205,51 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<AnticipoCuentum>(entity =>
         {
-            entity.HasKey(e => e.IdAnticipoCuenta).HasName("anticipo_cuenta_pkey");
+            entity.HasKey(e => e.IdAnticipoCuenta).HasName("PRIMARY");
 
-            entity.ToTable("anticipo_cuenta");
+            entity.ToTable("anticipo_cuenta", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdAnticipo, "anticipo_cuenta_id_anticipo_fkey");
 
             entity.HasIndex(e => e.IdCuenta, "fki_cuenta_porcobrar_anticipo");
 
             entity.Property(e => e.IdAnticipoCuenta)
-                .HasDefaultValueSql("nextval('seq_anticipo_cuenta'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_anticipo_cuenta");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdAnticipo).HasColumnName("id_anticipo");
-            entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdAnticipo)
+                .HasComment("TRIAL")
+                .HasColumnName("id_anticipo");
+            entity.Property(e => e.IdCuenta)
+                .HasComment("TRIAL")
+                .HasColumnName("id_cuenta");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Valor)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("valor");
 
             entity.HasOne(d => d.IdAnticipoNavigation).WithMany(p => p.AnticipoCuenta)
@@ -216,31 +265,51 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<CategoriaProducto>(entity =>
         {
-            entity.HasKey(e => e.IdCategoriaProducto).HasName("categoria_producto_pkey");
+            entity.HasKey(e => e.IdCategoriaProducto).HasName("PRIMARY");
 
-            entity.ToTable("categoria_producto");
+            entity.ToTable("categoria_producto", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmpresa, "categoria_producto_empresa_fk");
 
             entity.Property(e => e.IdCategoriaProducto)
-                .HasDefaultValueSql("nextval('seq_categoria_producto_id'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_categoria_producto");
-            entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.Descripcion)
+                .HasComment("TRIAL")
+                .HasColumnName("descripcion");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.CategoriaProductos)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -249,30 +318,49 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Cliente>(entity =>
         {
-            entity.HasKey(e => e.IdCliente).HasName("cliente_pkey");
+            entity.HasKey(e => e.IdCliente).HasName("PRIMARY");
 
-            entity.ToTable("cliente");
+            entity.ToTable("cliente", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdPersona, "cliente_id_persona_fkey");
 
             entity.HasIndex(e => e.IdEmpresa, "fki_empresa_cliente");
 
             entity.Property(e => e.IdCliente)
-                .HasDefaultValueSql("nextval('seq_cliente'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_cliente");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdPersona).HasColumnName("id_persona");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdPersona)
+                .HasComment("TRIAL")
+                .HasColumnName("id_persona");
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Clientes)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -286,28 +374,46 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Comision>(entity =>
         {
-            entity.HasKey(e => e.IdComision).HasName("comision_pkey");
+            entity.HasKey(e => e.IdComision).HasName("PRIMARY");
 
-            entity.ToTable("comision");
+            entity.ToTable("comision", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdPaquete, "comision_id_paquete_fkey");
 
             entity.Property(e => e.IdComision)
-                .HasDefaultValueSql("nextval('seq_comision'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_comision");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdPaquete).HasColumnName("id_paquete");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdPaquete)
+                .HasComment("TRIAL")
+                .HasColumnName("id_paquete");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Valor)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("valor");
 
             entity.HasOne(d => d.IdPaqueteNavigation).WithMany(p => p.Comisions)
@@ -318,31 +424,50 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<ComisionContador>(entity =>
         {
-            entity.HasKey(e => e.IdComsionContador).HasName("comision_contador_pkey");
+            entity.HasKey(e => e.IdComsionContador).HasName("PRIMARY");
 
-            entity.ToTable("comision_contador");
+            entity.ToTable("comision_contador", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdComision, "comision_contador_id_comision_fkey");
 
             entity.Property(e => e.IdComsionContador)
-                .HasDefaultValueSql("nextval('seq_comision_contador'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_comsion_contador");
             entity.Property(e => e.Estado)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdComision).HasColumnName("id_comision");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdComision)
+                .HasComment("TRIAL")
+                .HasColumnName("id_comision");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Valor)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("valor");
 
             entity.HasOne(d => d.IdComisionNavigation).WithMany(p => p.ComisionContadors)
@@ -353,40 +478,67 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<CuentaCobrar>(entity =>
         {
-            entity.HasKey(e => e.IdCuentaCobrar).HasName("cuenta_cobrar_pkey");
+            entity.HasKey(e => e.IdCuentaCobrar).HasName("PRIMARY");
 
-            entity.ToTable("cuenta_cobrar");
+            entity.ToTable("cuenta_cobrar", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmpresa, "cuenta_cobrar_id_empresa_fkey");
+
+            entity.HasIndex(e => e.IdFactura, "cuenta_cobrar_id_factura_fkey");
 
             entity.Property(e => e.IdCuentaCobrar)
-                .HasDefaultValueSql("nextval('seq_cuenta_cobrar'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_cuenta_cobrar");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.EstadoCobro)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("estado_cobro");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdFactura)
+                .HasComment("TRIAL")
+                .HasColumnName("id_factura");
             entity.Property(e => e.Impuesto)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("impuesto");
-            entity.Property(e => e.PlazoDias).HasColumnName("plazo_dias");
+            entity.Property(e => e.PlazoDias)
+                .HasComment("TRIAL")
+                .HasColumnName("plazo_dias");
             entity.Property(e => e.PrecioUnitarioFinal)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_unitario_final");
             entity.Property(e => e.PrecioVenta)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_venta");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.CuentaCobrars)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -401,51 +553,74 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Cuentum>(entity =>
         {
-            entity.HasKey(e => e.IdCuenta).HasName("cuenta_pkey");
+            entity.HasKey(e => e.IdCuenta).HasName("PRIMARY");
 
-            entity.ToTable("cuenta");
+            entity.ToTable("cuenta", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdTipoCuenta, "cuenta_id_tipo_cuenta_fkey");
 
             entity.HasIndex(e => e.IdEmpresa, "fki_empresa_cuenta");
 
             entity.Property(e => e.IdCuenta)
-                .HasDefaultValueSql("nextval('seq_cuenta'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_cuenta");
             entity.Property(e => e.Codigo)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("codigo");
             entity.Property(e => e.Credito)
-                .HasComment("identificador de cuenta para credito")
+                .HasComment("TRIAL")
                 .HasColumnName("credito");
             entity.Property(e => e.Debito)
-                .HasComment("identificador de cuenta para debito")
+                .HasComment("TRIAL")
                 .HasColumnName("debito");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
             entity.Property(e => e.IdIdCuenta)
-                .HasComment("id de la cuenta padre")
+                .HasComment("TRIAL")
                 .HasColumnName("id_id_cuenta");
-            entity.Property(e => e.IdTipoCuenta).HasColumnName("id_tipo_cuenta");
+            entity.Property(e => e.IdTipoCuenta)
+                .HasComment("TRIAL")
+                .HasColumnName("id_tipo_cuenta");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
             entity.Property(e => e.SaldoActual)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("saldo_actual");
             entity.Property(e => e.SaldoInicial)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("saldo_inicial");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Cuenta)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -459,35 +634,59 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Despacho>(entity =>
         {
-            entity.HasKey(e => e.IdDespacho).HasName("despacho_pkey");
+            entity.HasKey(e => e.IdDespacho).HasName("PRIMARY");
 
-            entity.ToTable("despacho");
+            entity.ToTable("despacho", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmpresa, "despacho_id_empresa_fkey");
+
+            entity.HasIndex(e => e.IdSucursal, "despacho_id_sucursal_fkey");
+
+            entity.HasIndex(e => e.IdUsuario, "despacho_id_usuario_fkey");
 
             entity.Property(e => e.IdDespacho)
-                .HasDefaultValueSql("nextval('seq_despacho'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_despacho");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.EstadoDespacho)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("estado_despacho");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
-            entity.Property(e => e.IdSucursalDestino).HasColumnName("id_sucursal_destino");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdSucursal)
+                .HasComment("TRIAL")
+                .HasColumnName("id_sucursal");
+            entity.Property(e => e.IdSucursalDestino)
+                .HasComment("TRIAL")
+                .HasColumnName("id_sucursal_destino");
+            entity.Property(e => e.IdUsuario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_usuario");
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(100)
-                .HasColumnName("numero_despacho");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+                .HasComment("TRIAL")
+                .HasColumnName("numero_despacho");            
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Despachos)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -507,31 +706,56 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<DetalleDespacho>(entity =>
         {
-            entity.HasKey(e => e.IdDetalleDespacho).HasName("detalle_despacho_pkey");
+            entity.HasKey(e => e.IdDetalleDespacho).HasName("PRIMARY");
 
-            entity.ToTable("detalle_despacho");
+            entity.ToTable("detalle_despacho", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdProducto, "detalle_despacho_id_producto_fkey");
+
+            entity.HasIndex(e => e.IdUsuario, "detalle_despacho_id_usuario_fkey");
 
             entity.HasIndex(e => e.IdDespacho, "fki_despacho_detalle_fk");
 
             entity.Property(e => e.IdDetalleDespacho)
-                .HasDefaultValueSql("nextval('seq_detalle_despacho'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_detalle_despacho");
-            entity.Property(e => e.Cantidad).HasColumnName("cantidad");
+            entity.Property(e => e.Cantidad)
+                .HasComment("TRIAL")
+                .HasColumnName("cantidad");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdDespacho).HasColumnName("id_despacho");
-            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdDespacho)
+                .HasComment("TRIAL")
+                .HasColumnName("id_despacho");
+            entity.Property(e => e.IdProducto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_producto");
+            entity.Property(e => e.IdUsuario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_usuario");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdDespachoNavigation).WithMany(p => p.DetalleDespachos)
                 .HasForeignKey(d => d.IdDespacho)
@@ -550,43 +774,69 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<DetalleFactura>(entity =>
         {
-            entity.HasKey(e => e.IdDetalleFactura).HasName("detalle_factura_pkey");
+            entity.HasKey(e => e.IdDetalleFactura).HasName("PRIMARY");
 
-            entity.ToTable("detalle_factura");
+            entity.ToTable("detalle_factura", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdFactura, "detalle_factura_id_factura_fkey");
 
             entity.HasIndex(e => e.IdImpuesto, "fki_fk_impuesto_detalle");
 
             entity.HasIndex(e => e.IdProducto, "fki_p");
 
             entity.Property(e => e.IdDetalleFactura)
-                .HasDefaultValueSql("nextval('seq_detalle_factura'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_detalle_factura");
-            entity.Property(e => e.Cantidad).HasColumnName("cantidad");
+            entity.Property(e => e.Cantidad)
+                .HasComment("TRIAL")
+                .HasColumnName("cantidad");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(255)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.Descuento)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("descuento");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
-            entity.Property(e => e.IdImpuesto).HasColumnName("id_impuesto");
-            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.IdFactura)
+                .HasComment("TRIAL")
+                .HasColumnName("id_factura");
+            entity.Property(e => e.IdImpuesto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_impuesto");
+            entity.Property(e => e.IdProducto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_producto");
             entity.Property(e => e.PrecioUnitario)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_unitario");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdFacturaNavigation).WithMany(p => p.DetalleFacturas)
                 .HasForeignKey(d => d.IdFactura)
@@ -604,69 +854,104 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Emisor>(entity =>
         {
-            entity.HasKey(e => e.IdEmisor).HasName("emisor_pkey");
+            entity.HasKey(e => e.IdEmisor).HasName("PRIMARY");
 
-            entity.ToTable("emisor");
+            entity.ToTable("emisor", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmpresa, "emisor_id_empresa_fkey");
+
+            entity.HasIndex(e => e.IdUsuario, "emisor_id_usuario_fkey");
 
             entity.Property(e => e.IdEmisor)
-                .HasDefaultValueSql("nextval('seq_emisor'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_emisor");
             entity.Property(e => e.CertificadoDigital)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("certificado_digital");
             entity.Property(e => e.Clave)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("clave");
             entity.Property(e => e.CorreoElectronico)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("correo_electronico");
             entity.Property(e => e.Direccion)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("direccion");
             entity.Property(e => e.Establecimiento)
                 .HasMaxLength(10)
+                .HasComment("TRIAL")
                 .HasColumnName("establecimiento");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdUsuario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_usuario");
             entity.Property(e => e.NombreComercial)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre_comercial");
             entity.Property(e => e.NombreUsuario)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre_usuario");
             entity.Property(e => e.ObligadoContabilidad)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("obligado_contabilidad");
             entity.Property(e => e.PuntoEmision)
                 .HasMaxLength(10)
+                .HasComment("TRIAL")
                 .HasColumnName("punto_emision");
             entity.Property(e => e.RazonSocial)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("razon_social");
             entity.Property(e => e.Ruc)
                 .HasMaxLength(13)
+                .HasComment("TRIAL")
                 .HasColumnName("ruc");
             entity.Property(e => e.Secuencial)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("secuencial");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(20)
+                .HasComment("TRIAL")
                 .HasColumnName("telefono");
             entity.Property(e => e.TipoAmbiente)
                 .HasMaxLength(1)
+                .HasComment("TRIAL")
                 .HasColumnName("tipo_ambiente");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Emisors)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -681,100 +966,147 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Empresa>(entity =>
         {
-            entity.HasKey(e => e.IdEmpresa).HasName("empresa_pkey");
+            entity.HasKey(e => e.IdEmpresa).HasName("PRIMARY");
 
-            entity.ToTable("empresa");
+            entity.ToTable("empresa", tb => tb.HasComment("TRIAL"));
 
             entity.Property(e => e.IdEmpresa)
-                .HasDefaultValueSql("nextval('seq_empresa'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_empresa");
             entity.Property(e => e.Direccion)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("direccion");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.Identificacion)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("identificacion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("telefono");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
         });
 
         modelBuilder.Entity<Factura>(entity =>
         {
-            entity.HasKey(e => e.IdFactura).HasName("factura_pkey");
+            entity.HasKey(e => e.IdFactura).HasName("PRIMARY");
 
-            entity.ToTable("factura");
+            entity.ToTable("factura", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdCliente, "factura_id_cliente_fkey");
 
             entity.HasIndex(e => e.IdEmisor, "fki_fk_emisor_factura");
 
+            entity.HasIndex(e => e.IdSucursal, "sucursal_factura_fk");
+
             entity.Property(e => e.IdFactura)
-                .HasDefaultValueSql("nextval('seq_factura'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_factura");
             entity.Property(e => e.AutorizacionSri)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("autorizacion_sri");
             entity.Property(e => e.ClaveAcceso)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("clave_acceso");
             entity.Property(e => e.Credito)
-                .HasDefaultValue(true)
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("credito");
-            entity.Property(e => e.IdImpuesto)
-                 .HasColumnName("id_impuesto");
             entity.Property(e => e.DescripcionSri)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion_sri");
             entity.Property(e => e.Estado)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
-            entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.Property(e => e.Fecha)
+                .HasComment("TRIAL")
+                .HasColumnName("fecha");
             entity.Property(e => e.FechaAutorizacionSri)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_autorizacion_sri");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdCliente).HasColumnName("id_cliente");
-            entity.Property(e => e.IdEmisor).HasColumnName("id_emisor");
-            entity.Property(e => e.IdImpuesto).HasColumnName("id_impuesto");
-            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
+            entity.Property(e => e.IdCliente)
+                .HasComment("TRIAL")
+                .HasColumnName("id_cliente");
+            entity.Property(e => e.IdEmisor)
+                .HasComment("TRIAL")
+                .HasColumnName("id_emisor");
+            entity.Property(e => e.IdImpuesto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_impuesto");
+            entity.Property(e => e.IdSucursal)
+                .HasComment("TRIAL")
+                .HasColumnName("id_sucursal");
             entity.Property(e => e.MontoTotal)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("monto_total");
             entity.Property(e => e.NumeroFactura)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_factura");
             entity.Property(e => e.Subtotal)
                 .HasPrecision(15, 2)
-                .HasColumnName("subtotal");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+                .HasComment("TRIAL")
+                .HasColumnName("subtotal");           
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Xml)
-                .HasMaxLength(1000000)
+                .HasMaxLength(15)
+                .HasComment("TRIAL")
                 .HasColumnName("xml");
 
             entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Facturas)
@@ -793,70 +1125,113 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<GuiaRemision>(entity =>
         {
-            entity.HasKey(e => e.IdGuiaRemision).HasName("guia_remision_pkey");
+            entity.HasKey(e => e.IdGuiaRemision).HasName("PRIMARY");
 
-            entity.ToTable("guia_remision");
+            entity.ToTable("guia_remision", tb => tb.HasComment("TRIAL"));
 
             entity.HasIndex(e => e.FechaEmision, "idx_guia_remision_fecha");
 
             entity.HasIndex(e => e.NumeroGuia, "idx_guia_remision_numero");
 
+            entity.HasIndex(e => e.IdSucursal, "sucursal_guia_remision_fk");
+
+            entity.HasIndex(e => e.IdTransportista, "transportista_guia_remision_fk");
+
             entity.Property(e => e.IdGuiaRemision)
-                .HasDefaultValueSql("nextval('seq_guia_remision_id'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_guia_remision");
             entity.Property(e => e.AmbienteSri)
                 .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
                 .HasColumnName("ambiente_sri");
             entity.Property(e => e.ClaveAcceso)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("clave_acceso");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.EstadoSri)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("estado_sri");
             entity.Property(e => e.FechaAutorizacionSri)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_autorizacion_sri");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaEmision)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_emision");
             entity.Property(e => e.FechaFinTraslado)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_fin_traslado");
             entity.Property(e => e.FechaInicioTraslado)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_inicio_traslado");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
-            entity.Property(e => e.IdTransportista).HasColumnName("id_transportista");
+            entity.Property(e => e.IdSucursal)
+                .HasComment("TRIAL")
+                .HasColumnName("id_sucursal");
+            entity.Property(e => e.IdTransportista)
+                .HasComment("TRIAL")
+                .HasColumnName("id_transportista");
             entity.Property(e => e.MotivoTraslado)
                 .HasMaxLength(300)
+                .HasComment("TRIAL")
                 .HasColumnName("motivo_traslado");
             entity.Property(e => e.NumeroAutorizacionSri)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_autorizacion_sri");
             entity.Property(e => e.NumeroGuia)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_guia");
             entity.Property(e => e.PlacaVehiculo)
                 .HasMaxLength(10)
+                .HasComment("TRIAL")
                 .HasColumnName("placa_vehiculo");
-            entity.Property(e => e.PuntoLlegada).HasColumnName("punto_llegada");
-            entity.Property(e => e.PuntoPartida).HasColumnName("punto_partida");
-            entity.Property(e => e.RespuestaSri).HasColumnName("respuesta_sri");
-            entity.Property(e => e.Ruta).HasColumnName("ruta");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
-            entity.Property(e => e.XmlSri).HasColumnName("xml_sri");
+            entity.Property(e => e.PuntoLlegada)
+                .HasComment("TRIAL")
+                .HasColumnName("punto_llegada");
+            entity.Property(e => e.PuntoPartida)
+                .HasComment("TRIAL")
+                .HasColumnName("punto_partida");
+            entity.Property(e => e.RespuestaSri)
+                .HasComment("TRIAL")
+                .HasColumnName("respuesta_sri");
+            entity.Property(e => e.Ruta)
+                .HasComment("TRIAL")
+                .HasColumnName("ruta");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
+            entity.Property(e => e.XmlSri)
+                .HasComment("TRIAL")
+                .HasColumnName("xml_sri");
 
             entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.GuiaRemisions)
                 .HasForeignKey(d => d.IdSucursal)
@@ -870,40 +1245,67 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<GuiaRemisionDetalle>(entity =>
         {
-            entity.HasKey(e => e.IdGuiaRemisionDetalle).HasName("guia_remision_detalle_pkey");
+            entity.HasKey(e => e.IdGuiaRemisionDetalle).HasName("PRIMARY");
 
-            entity.ToTable("guia_remision_detalle");
+            entity.ToTable("guia_remision_detalle", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdGuiaRemision, "guia_remision_detalle_id_guia_remision_fkey");
+
+            entity.HasIndex(e => e.IdProducto, "producto_guia_remision_detalle_fk");
 
             entity.Property(e => e.IdGuiaRemisionDetalle)
-                .HasDefaultValueSql("nextval('seq_guia_remision_detalle_id'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_guia_remision_detalle");
             entity.Property(e => e.Cantidad)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("cantidad");
             entity.Property(e => e.CodigoAuxiliar)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("codigo_auxiliar");
             entity.Property(e => e.CodigoPrincipal)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("codigo_principal");
-            entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.Descripcion)
+                .HasComment("TRIAL")
+                .HasColumnName("descripcion");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdGuiaRemision).HasColumnName("id_guia_remision");
-            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.IdGuiaRemision)
+                .HasComment("TRIAL")
+                .HasColumnName("id_guia_remision");
+            entity.Property(e => e.IdProducto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_producto");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
             entity.Property(e => e.UnidadMedida)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("unidad_medida");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdGuiaRemisionNavigation).WithMany(p => p.GuiaRemisionDetalles)
                 .HasForeignKey(d => d.IdGuiaRemision)
@@ -918,39 +1320,64 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<HistoricoProducto>(entity =>
         {
-            entity.HasKey(e => e.IdHistoricoProducto).HasName("historico_producto_pkey");
+            entity.HasKey(e => e.IdHistoricoProducto).HasName("PRIMARY");
 
-            entity.ToTable("historico_producto");
+            entity.ToTable("historico_producto", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmpresa, "historico_producto_id_empresa_fkey");
+
+            entity.HasIndex(e => e.IdProducto, "historico_producto_id_producto_fkey");
 
             entity.Property(e => e.IdHistoricoProducto)
-                .HasDefaultValueSql("nextval('seq_historico_producto'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_historico_producto");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdProducto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_producto");
             entity.Property(e => e.Impuesto)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("impuesto");
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_despacho");
             entity.Property(e => e.PrecioUnitarioFinal)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_unitario_final");
             entity.Property(e => e.PrecioVenta)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_venta");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.HistoricoProductos)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -965,113 +1392,172 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Impuesto>(entity =>
         {
-            entity.HasKey(e => e.IdImpuesto).HasName("impuesto_pkey");
+            entity.HasKey(e => e.IdImpuesto).HasName("PRIMARY");
 
-            entity.ToTable("impuesto");
+            entity.ToTable("impuesto", tb => tb.HasComment("TRIAL"));
 
             entity.Property(e => e.IdImpuesto)
-                .HasDefaultValueSql("nextval('seq_impuesto_id'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_impuesto");
             entity.Property(e => e.CodigoPorcentajeSri)
-                .HasColumnType("character varying")
+                .HasComment("TRIAL")
                 .HasColumnName("codigo_porcentaje_sri");
             entity.Property(e => e.CodigoSri)
                 .HasMaxLength(10)
+                .HasComment("TRIAL")
                 .HasColumnName("codigo_sri");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
             entity.Property(e => e.Porcentaje)
                 .HasPrecision(5, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("porcentaje");
             entity.Property(e => e.Tipo)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("tipo");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
         });
 
         modelBuilder.Entity<Inventario>(entity =>
         {
-            entity.HasKey(e => e.IdInventario).HasName("inventario_pkey");
+            entity.HasKey(e => e.IdInventario).HasName("PRIMARY");
 
-            entity.ToTable("inventario");
+            entity.ToTable("inventario", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdProducto, "inventario_id_producto_fkey");
+
+            entity.HasIndex(e => e.IdSucursal, "sucursal_inventario_fk");
 
             entity.Property(e => e.IdInventario)
-                .HasDefaultValueSql("nextval('seq_inventario_id'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_inventario");
             entity.Property(e => e.Cantidad)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("cantidad");
-            entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.Descripcion)
+                .HasComment("TRIAL")
+                .HasColumnName("descripcion");
             entity.Property(e => e.Descuento)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("descuento");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
-            entity.Property(e => e.NumeroFactura)
+            entity.Property(e => e.FacturaNumero)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("factura_numero");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.FechaMovimiento)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_movimiento");
-            entity.Property(e => e.IdCuentaContable).HasColumnName("id_cuenta_contable");
-            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
-            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
+            entity.Property(e => e.IdCuentaContable)
+                .HasComment("TRIAL")
+                .HasColumnName("id_cuenta_contable");
+            entity.Property(e => e.IdProducto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_producto");
+            entity.Property(e => e.IdSucursal)
+                .HasComment("TRIAL")
+                .HasColumnName("id_sucursal");
             entity.Property(e => e.Iva)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("iva");
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_despacho");
             entity.Property(e => e.PrecioCalculo)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_calculo");
             entity.Property(e => e.PrecioUnitario)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_unitario");
             entity.Property(e => e.PrecioUnitarioFinal)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_unitario_final");
-            entity.Property(e => e.Stock).HasColumnName("stock");
+            entity.Property(e => e.Stock)
+                .HasComment("TRIAL")
+                .HasColumnName("stock");
             entity.Property(e => e.SubTotal)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("sub_total");
             entity.Property(e => e.Subtotal15)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("subtotal15");
             entity.Property(e => e.TipoMovimiento)
                 .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
                 .HasColumnName("tipo_movimiento");
             entity.Property(e => e.Total)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("total");
             entity.Property(e => e.TransaccionRegistrada)
-                .HasDefaultValue(false)
+                .HasDefaultValueSql("'0'")
+                .HasComment("TRIAL")
                 .HasColumnName("transaccion_registrada");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.Inventarios)
                 .HasForeignKey(d => d.IdProducto)
@@ -1084,65 +1570,100 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Menu>(entity =>
         {
-            entity.HasKey(e => e.IdMenu).HasName("menu_pkey");
+            entity.HasKey(e => e.IdMenu).HasName("PRIMARY");
 
-            entity.ToTable("menu");
+            entity.ToTable("menu", tb => tb.HasComment("TRIAL"));
 
             entity.Property(e => e.IdMenu)
-                .HasDefaultValueSql("nextval('seq_menu'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_menu");
             entity.Property(e => e.Action)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("action");
             entity.Property(e => e.Controller)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("controller");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.MenuId).HasColumnName("menu_id");
+            entity.Property(e => e.MenuId)
+                .HasComment("TRIAL")
+                .HasColumnName("menu_id");           
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("url");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
         });
 
         modelBuilder.Entity<MenuPerfil>(entity =>
         {
-            entity.HasKey(e => e.IdMenuPerfil).HasName("menu_perfil_pkey");
+            entity.HasKey(e => e.IdMenuPerfil).HasName("PRIMARY");
 
-            entity.ToTable("menu_perfil");
+            entity.ToTable("menu_perfil", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdMenu, "menu_perfil_id_menu_fkey");
+
+            entity.HasIndex(e => e.IdPerfil, "menu_perfil_id_perfil_fkey");
 
             entity.Property(e => e.IdMenuPerfil)
-                .HasDefaultValueSql("nextval('seq_menu_perfil'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_menu_perfil");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdMenu).HasColumnName("id_menu");
-            entity.Property(e => e.IdPerfil).HasColumnName("id_perfil");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdMenu)
+                .HasComment("TRIAL")
+                .HasColumnName("id_menu");
+            entity.Property(e => e.IdPerfil)
+                .HasComment("TRIAL")
+                .HasColumnName("id_perfil");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdMenuNavigation).WithMany(p => p.MenuPerfils)
                 .HasForeignKey(d => d.IdMenu)
@@ -1157,47 +1678,75 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<NotaCredito>(entity =>
         {
-            entity.HasKey(e => e.IdNotaCredito).HasName("nota_credito_pkey");
+            entity.HasKey(e => e.IdNotaCredito).HasName("PRIMARY");
 
-            entity.ToTable("nota_credito");
+            entity.ToTable("nota_credito", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmpresa, "nota_credito_id_empresa_fkey");
+
+            entity.HasIndex(e => e.IdFactura, "nota_credito_id_factura_fkey");
 
             entity.Property(e => e.IdNotaCredito)
-                .HasDefaultValueSql("nextval('seq_nota_credito'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_nota_credito");
             entity.Property(e => e.ClaveAcceso)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("clave_acceso");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaAutorizacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_autorizacion");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdFactura)
+                .HasComment("TRIAL")
+                .HasColumnName("id_factura");
             entity.Property(e => e.Motivo)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("motivo");
             entity.Property(e => e.NumeroAutorizacion)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_autorizacion");
             entity.Property(e => e.NumeroNota)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_nota");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Xml)
-                .HasMaxLength(1000000)
+                .HasMaxLength(15)
+                .HasComment("TRIAL")
                 .HasColumnName("xml");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.NotaCreditos)
@@ -1213,32 +1762,56 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Pago>(entity =>
         {
-            entity.HasKey(e => e.IdPago).HasName("pago_pkey");
+            entity.HasKey(e => e.IdPago).HasName("PRIMARY");
 
-            entity.ToTable("pago");
+            entity.ToTable("pago", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdFactura, "pago_id_factura_fkey");
+
+            entity.HasIndex(e => e.IdTipoPago, "pago_id_tipo_pago_fkey");
 
             entity.Property(e => e.IdPago)
-                .HasDefaultValueSql("nextval('seq_pago'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_pago");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
-            entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.Property(e => e.Fecha)
+                .HasComment("TRIAL")
+                .HasColumnName("fecha");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
-            entity.Property(e => e.IdTipoPago).HasColumnName("id_tipo_pago");
+            entity.Property(e => e.IdFactura)
+                .HasComment("TRIAL")
+                .HasColumnName("id_factura");
+            entity.Property(e => e.IdTipoPago)
+                .HasComment("TRIAL")
+                .HasColumnName("id_tipo_pago");
             entity.Property(e => e.Monto)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("monto");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdFacturaNavigation).WithMany(p => p.Pagos)
                 .HasForeignKey(d => d.IdFactura)
@@ -1253,60 +1826,99 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Paquete>(entity =>
         {
-            entity.HasKey(e => e.IdPaquete).HasName("paquete_pkey");
+            entity.HasKey(e => e.IdPaquete).HasName("PRIMARY");
 
-            entity.ToTable("paquete");
+            entity.ToTable("paquete", tb => tb.HasComment("TRIAL"));
 
             entity.Property(e => e.IdPaquete)
-                .HasDefaultValueSql("nextval('seq_paquete'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_paquete");
-            entity.Property(e => e.CantidadEmisores).HasColumnName("cantidad_emisores");
+            entity.Property(e => e.CantidadEmisores)
+                .HasComment("TRIAL")
+                .HasColumnName("cantidad_emisores");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Valor)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("valor");
         });
 
         modelBuilder.Entity<PaqueteContador>(entity =>
         {
-            entity.HasKey(e => e.IdPaqueteContador).HasName("paquete_contador_pkey");
+            entity.HasKey(e => e.IdPaqueteContador).HasName("PRIMARY");
 
-            entity.ToTable("paquete_contador");
+            entity.ToTable("paquete_contador", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdPaquete, "paquete_contador_id_paquete_fkey");
+
+            entity.HasIndex(e => e.IdUsuario, "paquete_contador_id_usuario_fkey");
 
             entity.Property(e => e.IdPaqueteContador)
-                .HasDefaultValueSql("nextval('seq_paquete_contador'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_paquete_contador");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdPaquete).HasColumnName("id_paquete");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdPaquete)
+                .HasComment("TRIAL")
+                .HasColumnName("id_paquete");
+            entity.Property(e => e.IdUsuario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_usuario");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdPaqueteNavigation).WithMany(p => p.PaqueteContadors)
                 .HasForeignKey(d => d.IdPaquete)
@@ -1321,34 +1933,54 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Parametro>(entity =>
         {
-            entity.HasKey(e => e.IdParametro).HasName("parametro_pkey");
+            entity.HasKey(e => e.IdParametro).HasName("PRIMARY");
 
-            entity.ToTable("parametro");
+            entity.ToTable("parametro", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmpresa, "parametro_id_empresa_fkey");
 
             entity.Property(e => e.IdParametro)
-                .HasDefaultValueSql("nextval('seq_parametro'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_parametro");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
             entity.Property(e => e.NombreParametro)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre_parametro");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Valor)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("valor");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Parametros)
@@ -1359,85 +1991,120 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Perfil>(entity =>
         {
-            entity.HasKey(e => e.IdPerfil).HasName("perfil_pkey");
+            entity.HasKey(e => e.IdPerfil).HasName("PRIMARY");
 
-            entity.ToTable("perfil");
+            entity.ToTable("perfil", tb => tb.HasComment("TRIAL"));
 
             entity.Property(e => e.IdPerfil)
-                .HasDefaultValueSql("nextval('seq_perfil'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_perfil");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(255)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
         });
 
         modelBuilder.Entity<Persona>(entity =>
         {
-            entity.HasKey(e => e.IdPersona).HasName("persona_pkey");
+            entity.HasKey(e => e.IdPersona).HasName("PRIMARY");
 
-            entity.ToTable("persona");
+            entity.ToTable("persona", tb => tb.HasComment("TRIAL"));
 
             entity.HasIndex(e => e.IdEmpresa, "fki_empresa_persona");
 
             entity.HasIndex(e => e.IdTipoIdentificacion, "fki_tipo_identiificacion_persona_fk");
 
             entity.Property(e => e.IdPersona)
-                .HasDefaultValueSql("nextval('seq_persona'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_persona");
             entity.Property(e => e.Direccion)
                 .HasMaxLength(255)
+                .HasComment("TRIAL")
                 .HasColumnName("direccion");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("email");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdTipoIdentificacion).HasColumnName("id_tipo_identificacion");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdTipoIdentificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("id_tipo_identificacion");
             entity.Property(e => e.Identificacion)
                 .HasMaxLength(13)
+                .HasComment("TRIAL")
                 .HasColumnName("identificacion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
-            entity.Property(e => e.Telefono)
-                .HasMaxLength(20)
-                .HasColumnName("telefono");
             entity.Property(e => e.RetencionIva)
                 .HasPrecision(15, 2)
-                .HasDefaultValueSql("0")
+                .HasDefaultValueSql("'0.00'")
+                .HasComment("TRIAL")
                 .HasColumnName("retencion_iva");
             entity.Property(e => e.RetencionPorcentaje)
                 .HasPrecision(15, 2)
-                .HasDefaultValueSql("0")
+                .HasDefaultValueSql("'0.00'")
+                .HasComment("TRIAL")
                 .HasColumnName("retencion_porcentaje");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(20)
+                .HasComment("TRIAL")
                 .HasColumnName("telefono");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Personas)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -1450,9 +2117,9 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Producto>(entity =>
         {
-            entity.HasKey(e => e.IdProducto).HasName("producto_pkey");
+            entity.HasKey(e => e.IdProducto).HasName("PRIMARY");
 
-            entity.ToTable("producto");
+            entity.ToTable("producto", tb => tb.HasComment("TRIAL"));
 
             entity.HasIndex(e => e.IdEmpresa, "fki_fk_producto_empresa");
 
@@ -1460,47 +2127,82 @@ public partial class ContableContext : DbContext
 
             entity.HasIndex(e => e.Codigo, "producto_codigo_key").IsUnique();
 
+            entity.HasIndex(e => e.IdCategoriaProducto, "producto_id_categoria_producto_fkey");
+
+            entity.HasIndex(e => e.IdUnidadMedida, "producto_id_unidad_medida_fkey");
+
             entity.Property(e => e.IdProducto)
-                .HasDefaultValueSql("nextval('seq_producto_id'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_producto");
             entity.Property(e => e.Codigo)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("codigo");
-            entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.Descripcion)
+                .HasComment("TRIAL")
+                .HasColumnName("descripcion");
             entity.Property(e => e.Descuento)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("descuento%");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdCategoriaProducto).HasColumnName("id_categoria_producto");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdImpuesto).HasColumnName("id_impuesto");
-            entity.Property(e => e.IdUnidadMedida).HasColumnName("id_unidad_medida");
+            entity.Property(e => e.IdCategoriaProducto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_categoria_producto");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdImpuesto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_impuesto");
+            entity.Property(e => e.IdUnidadMedida)
+                .HasComment("TRIAL")
+                .HasColumnName("id_unidad_medida");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
             entity.Property(e => e.PrecioUnitario)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_unitario");
             entity.Property(e => e.PrecioVenta)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_venta");
             entity.Property(e => e.Stock)
                 .HasPrecision(10, 2)
-                .HasDefaultValueSql("0")
+                .HasDefaultValueSql("'0.00'")
+                .HasComment("TRIAL")
                 .HasColumnName("stock");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
-            entity.Property(e => e.Utilidad).HasColumnName("utilidad%");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Utilidad)
+                .HasComment("TRIAL")
+                .HasColumnName("utilidad%");
 
             entity.HasOne(d => d.IdCategoriaProductoNavigation).WithMany(p => p.Productos)
                 .HasForeignKey(d => d.IdCategoriaProducto)
@@ -1521,32 +2223,54 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<ProductoProveedor>(entity =>
         {
-            entity.HasKey(e => e.IdProductoProveedor).HasName("producto_proveedor_pkey");
+            entity.HasKey(e => e.IdProductoProveedor).HasName("PRIMARY");
 
-            entity.ToTable("producto_proveedor");
+            entity.ToTable("producto_proveedor", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdProducto, "producto_proveedor_id_producto_fkey");
 
             entity.Property(e => e.IdProductoProveedor)
-                .HasDefaultValueSql("nextval('seq_producto_proveedor_id'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_producto_proveedor");
-            entity.Property(e => e.Cantidad).HasColumnName("cantidad");
+            entity.Property(e => e.Cantidad)
+                .HasComment("TRIAL")
+                .HasColumnName("cantidad");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
-            entity.Property(e => e.IdProveedor).HasColumnName("id_proveedor");
+            entity.Property(e => e.IdProducto)
+                .HasComment("TRIAL")
+                .HasColumnName("id_producto");
+            entity.Property(e => e.IdProveedor)
+                .HasComment("TRIAL")
+                .HasColumnName("id_proveedor");
             entity.Property(e => e.PrecioCompra)
                 .HasPrecision(10, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("precio_compra");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.ProductoProveedors)
                 .HasForeignKey(d => d.IdProducto)
@@ -1555,50 +2279,72 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Proveedor>(entity =>
         {
-            entity.HasKey(e => e.IdProveedor).HasName("proveedor_pkey");
+            entity.HasKey(e => e.IdProveedor).HasName("PRIMARY");
 
-            entity.ToTable("proveedor");
+            entity.ToTable("proveedor", tb => tb.HasComment("TRIAL"));
 
             entity.HasIndex(e => e.IdEmpresa, "fki_empresa_proveedor");
 
             entity.Property(e => e.IdProveedor)
-                .HasDefaultValueSql("nextval('seq_proveedor'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_proveedor");
             entity.Property(e => e.Direccion)
                 .HasMaxLength(255)
+                .HasComment("TRIAL")
                 .HasColumnName("direccion");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("email");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
             entity.Property(e => e.Identificacion)
                 .HasMaxLength(15)
+                .HasComment("TRIAL")
                 .HasColumnName("identificacion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
             entity.Property(e => e.RetencionIva)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("retencion_iva");
             entity.Property(e => e.RetencionPorcentaje)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("retencion_porcentaje");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(20)
+                .HasComment("TRIAL")
                 .HasColumnName("telefono");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Proveedors)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -1607,64 +2353,97 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Retencion>(entity =>
         {
-            entity.HasKey(e => e.IdRetencion).HasName("retencion_pkey");
+            entity.HasKey(e => e.IdRetencion).HasName("PRIMARY");
 
-            entity.ToTable("retencion");
+            entity.ToTable("retencion", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmpresa, "retencion_id_empresa_fkey");
 
             entity.Property(e => e.IdRetencion)
-                .HasDefaultValueSql("nextval('seq_retencion'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_retencion");
             entity.Property(e => e.BaseImponible)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("base_imponible");
             entity.Property(e => e.ClaveAcceso)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("clave_acceso");
             entity.Property(e => e.ComprobanteRetencion)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("comprobante_retencion");
             entity.Property(e => e.EjercicioFiscal)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("ejercicio_fiscal");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaAutorizacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_autorizacion");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
-            entity.Property(e => e.IdProveedor).HasColumnName("id_proveedor");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdFactura)
+                .HasComment("TRIAL")
+                .HasColumnName("id_factura");
+            entity.Property(e => e.IdProveedor)
+                .HasComment("TRIAL")
+                .HasColumnName("id_proveedor");
             entity.Property(e => e.Impuesto)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("impuesto");
             entity.Property(e => e.NumeroAutorizacion)
                 .HasMaxLength(200)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_autorizacion");
             entity.Property(e => e.NumeroFactura)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_factura");
             entity.Property(e => e.PorcentajeRetencion)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("porcentaje_retencion");
             entity.Property(e => e.TipoContribuyente)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("tipo_contribuyente");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
             entity.Property(e => e.ValorRetenido)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("valor_retenido");
             entity.Property(e => e.Xml)
-                .HasMaxLength(1000000)
+                .HasMaxLength(15)
+                .HasComment("TRIAL")
                 .HasColumnName("xml");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Retencions)
@@ -1675,48 +2454,76 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Sucursal>(entity =>
         {
-            entity.HasKey(e => e.IdSucursal).HasName("sucursal_pkey");
+            entity.HasKey(e => e.IdSucursal).HasName("PRIMARY");
 
-            entity.ToTable("sucursal");
+            entity.ToTable("sucursal", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdEmisor, "sucursal_id_emisor_fkey");
+
+            entity.HasIndex(e => e.IdUsuario, "sucursal_id_usuario_fkey");
 
             entity.Property(e => e.IdSucursal)
-                .HasDefaultValueSql("nextval('seq_sucursal'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_sucursal");
             entity.Property(e => e.Clave)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("clave");
             entity.Property(e => e.DireccionSucursal)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("direccion_sucursal");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmisor).HasColumnName("id_emisor");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+            entity.Property(e => e.IdEmisor)
+                .HasComment("TRIAL")
+                .HasColumnName("id_emisor");
+            entity.Property(e => e.IdUsuario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_usuario");
             entity.Property(e => e.NombreSucursal)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre_sucursal");
             entity.Property(e => e.PuntoEmision)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("punto_emision");
             entity.Property(e => e.Secuencial)
                 .HasMaxLength(20)
+                .HasComment("TRIAL")
                 .HasColumnName("secuencial");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(13)
+                .HasComment("TRIAL")
                 .HasColumnName("telefono");
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
             entity.Property(e => e.Usuario)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("usuario");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmisorNavigation).WithMany(p => p.Sucursals)
                 .HasForeignKey(d => d.IdEmisor)
@@ -1731,27 +2538,48 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<SucursalFactura>(entity =>
         {
-            entity.HasKey(e => e.IdSucursalFactura).HasName("sucursal_factura_pkey");
+            entity.HasKey(e => e.IdSucursalFactura).HasName("PRIMARY");
 
-            entity.ToTable("sucursal_factura");
+            entity.ToTable("sucursal_factura", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdFactura, "sucursal_factura_id_factura_fkey");
+
+            entity.HasIndex(e => e.IdSucursal, "sucursal_factura_id_sucursal_fkey");
 
             entity.Property(e => e.IdSucursalFactura)
-                .HasDefaultValueSql("nextval('seq_sucursal_factura'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_sucursal_factura");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdFactura).HasColumnName("id_factura");
-            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdFactura)
+                .HasComment("TRIAL")
+                .HasColumnName("id_factura");
+            entity.Property(e => e.IdSucursal)
+                .HasComment("TRIAL")
+                .HasColumnName("id_sucursal");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdFacturaNavigation).WithMany(p => p.SucursalFacturas)
                 .HasForeignKey(d => d.IdFactura)
@@ -1766,27 +2594,48 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<SucursalInventario>(entity =>
         {
-            entity.HasKey(e => e.IdSucursalInventario).HasName("sucursal_inventario_pkey");
+            entity.HasKey(e => e.IdSucursalInventario).HasName("PRIMARY");
 
-            entity.ToTable("sucursal_inventario");
+            entity.ToTable("sucursal_inventario", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdInventario, "sucursal_inventario_id_inventario_fkey");
+
+            entity.HasIndex(e => e.IdSucursal, "sucursal_inventario_id_sucursal_fkey");
 
             entity.Property(e => e.IdSucursalInventario)
-                .HasDefaultValueSql("nextval('seq_sucursal_inventario'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_sucursal_inventario");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdInventario).HasColumnName("id_inventario");
-            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdInventario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_inventario");
+            entity.Property(e => e.IdSucursal)
+                .HasComment("TRIAL")
+                .HasColumnName("id_sucursal");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdInventarioNavigation).WithMany(p => p.SucursalInventarios)
                 .HasForeignKey(d => d.IdInventario)
@@ -1801,110 +2650,180 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<TipoIdentificacion>(entity =>
         {
-            entity.HasKey(e => e.IdTipoIdemtificacion).HasName("tipo_identificacion_pkey");
+            entity.HasKey(e => e.IdTipoIdemtificacion).HasName("PRIMARY");
 
-            entity.ToTable("tipo_identificacion");
+            entity.ToTable("tipo_identificacion", tb => tb.HasComment("TRIAL"));
 
             entity.Property(e => e.IdTipoIdemtificacion)
-                .HasDefaultValueSql("nextval('seq_tipo_identificacion'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_tipo_idemtificacion");
             entity.Property(e => e.CodigoSri)
                 .HasMaxLength(10)
+                .HasComment("TRIAL")
                 .HasColumnName("codigo_sri");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
         });
 
         modelBuilder.Entity<TipoPago>(entity =>
         {
-            entity.HasKey(e => e.IdTipoPago).HasName("tipo_pago_pkey");
+            entity.HasKey(e => e.IdTipoPago).HasName("PRIMARY");
 
-            entity.ToTable("tipo_pago");
+            entity.ToTable("tipo_pago", tb => tb.HasComment("TRIAL"));
 
-            entity.Property(e => e.IdTipoPago).HasColumnName("id_tipo_pago");
+            entity.Property(e => e.IdTipoPago)
+                .HasComment("TRIAL")
+                .HasColumnName("id_tipo_pago");
             entity.Property(e => e.CodigoSri)
                 .HasMaxLength(10)
+                .HasComment("TRIAL")
                 .HasColumnName("codigo_sri");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
         });
 
         modelBuilder.Entity<TipoTransaccion>(entity =>
         {
-            entity.HasKey(e => e.IdTipoTransaccion).HasName("tipo_transaccion_pkey");
+            entity.HasKey(e => e.IdTipoTransaccion).HasName("PRIMARY");
 
-            entity.ToTable("tipo_transaccion");
+            entity.ToTable("tipo_transaccion", tb => tb.HasComment("TRIAL"));
 
-            entity.Property(e => e.IdTipoTransaccion).HasColumnName("id_tipo_transaccion");
+            entity.Property(e => e.IdTipoTransaccion)
+                .HasComment("TRIAL")
+                .HasColumnName("id_tipo_transaccion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
         });
 
         modelBuilder.Entity<Tipocuentum>(entity =>
         {
-            entity.HasKey(e => e.IdTipoCuenta).HasName("tipocuenta_pkey");
+            entity.HasKey(e => e.IdTipoCuenta).HasName("PRIMARY");
 
-            entity.ToTable("tipocuenta");
+            entity.ToTable("tipocuenta", tb => tb.HasComment("TRIAL"));
 
-            entity.Property(e => e.IdTipoCuenta).HasColumnName("id_tipo_cuenta");
+            entity.Property(e => e.IdTipoCuenta)
+                .HasComment("TRIAL")
+                .HasColumnName("id_tipo_cuenta");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
         });
 
         modelBuilder.Entity<Transaccion>(entity =>
         {
-            entity.HasKey(e => e.IdTransaccion).HasName("transaccion_pkey");
+            entity.HasKey(e => e.IdTransaccion).HasName("PRIMARY");
 
-            entity.ToTable("transaccion");
+            entity.ToTable("transaccion", tb => tb.HasComment("TRIAL"));
 
             entity.HasIndex(e => e.IdEmpresa, "fki_empresa_transaccion");
 
+            entity.HasIndex(e => e.IdCuenta, "transaccion_id_cuenta_fkey");
+
+            entity.HasIndex(e => e.IdTipoTransaccion, "transaccion_id_tipo_transaccion_fkey");
+
             entity.Property(e => e.IdTransaccion)
-                .HasDefaultValueSql("nextval('seq_transaccion'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_transaccion");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(255)
+                .HasComment("TRIAL")
                 .HasColumnName("descripcion");
             entity.Property(e => e.EsDebito)
-                .HasDefaultValue(false)
+                .HasDefaultValueSql("'0'")
+                .HasComment("TRIAL")
                 .HasColumnName("esdebito");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
-            entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.Property(e => e.Fecha)
+                .HasComment("TRIAL")
+                .HasColumnName("fecha");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdInventario).HasColumnName("id_inventario");
-            entity.Property(e => e.IdTipoTransaccion).HasColumnName("id_tipo_transaccion");
+            entity.Property(e => e.IdCuenta)
+                .HasComment("TRIAL")
+                .HasColumnName("id_cuenta");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdInventario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_inventario");
+            entity.Property(e => e.IdTipoTransaccion)
+                .HasComment("TRIAL")
+                .HasColumnName("id_tipo_transaccion");
             entity.Property(e => e.Monto)
                 .HasPrecision(15, 2)
+                .HasComment("TRIAL")
                 .HasColumnName("monto");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdCuentaNavigation).WithMany(p => p.Transaccions)
                 .HasForeignKey(d => d.IdCuenta)
@@ -1923,114 +2842,168 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<Transportistum>(entity =>
         {
-            entity.HasKey(e => e.IdTransportista).HasName("transportista_pkey");
+            entity.HasKey(e => e.IdTransportista).HasName("PRIMARY");
 
-            entity.ToTable("transportista");
+            entity.ToTable("transportista", tb => tb.HasComment("TRIAL"));
 
             entity.HasIndex(e => new { e.TipoIdentificacion, e.NumeroIdentificacion }, "uk_transportista_identificacion").IsUnique();
 
             entity.Property(e => e.IdTransportista)
-                .HasDefaultValueSql("nextval('seq_transportista'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_transportista");
-            entity.Property(e => e.Direccion).HasColumnName("direccion");
+            entity.Property(e => e.Direccion)
+                .HasComment("TRIAL")
+                .HasColumnName("direccion");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("email");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.FechaRegistro)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_registro");
             entity.Property(e => e.NumeroIdentificacion)
                 .HasMaxLength(13)
+                .HasComment("TRIAL")
                 .HasColumnName("numero_identificacion");
             entity.Property(e => e.PlacaVehiculo)
                 .HasMaxLength(10)
+                .HasComment("TRIAL")
                 .HasColumnName("placa_vehiculo");
             entity.Property(e => e.RazonSocial)
                 .HasMaxLength(300)
+                .HasComment("TRIAL")
                 .HasColumnName("razon_social");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(20)
+                .HasComment("TRIAL")
                 .HasColumnName("telefono");
             entity.Property(e => e.TipoIdentificacion)
                 .HasMaxLength(20)
+                .HasComment("TRIAL")
                 .HasColumnName("tipo_identificacion");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
             entity.Property(e => e.UsuarioModificacion)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("usuario_modificacion");
             entity.Property(e => e.UsuarioRegistro)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("usuario_registro");
         });
 
         modelBuilder.Entity<UnidadMedidum>(entity =>
         {
-            entity.HasKey(e => e.IdUnidadMedida).HasName("unidad_medida_pkey");
+            entity.HasKey(e => e.IdUnidadMedida).HasName("PRIMARY");
 
-            entity.ToTable("unidad_medida");
+            entity.ToTable("unidad_medida", tb => tb.HasComment("TRIAL"));
 
             entity.Property(e => e.IdUnidadMedida)
-                .HasDefaultValueSql("nextval('seq_unidad_medida_id'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_unidad_medida");
             entity.Property(e => e.Abreviatura)
                 .HasMaxLength(10)
+                .HasComment("TRIAL")
                 .HasColumnName("abreviatura");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
         });
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.IdUsuario).HasName("usuario_pkey");
+            entity.HasKey(e => e.IdUsuario).HasName("PRIMARY");
 
-            entity.ToTable("usuario");
+            entity.ToTable("usuario", tb => tb.HasComment("TRIAL"));
 
             entity.HasIndex(e => e.IdEmpresa, "fki_empresa_usuario");
 
+            entity.HasIndex(e => e.IdPersona, "usuario_id_persona_fkey");
+
             entity.Property(e => e.IdUsuario)
-                .HasDefaultValueSql("nextval('seq_usuario'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_usuario");
             entity.Property(e => e.Clave)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("clave");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdEmpresa).HasColumnName("id_empresa");
-            entity.Property(e => e.IdPersona).HasColumnName("id_persona");
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("TRIAL")
+                .HasColumnName("id_empresa");
+            entity.Property(e => e.IdPersona)
+                .HasComment("TRIAL")
+                .HasColumnName("id_persona");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
+                .HasComment("TRIAL")
                 .HasColumnName("nombre");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Usuarios)
                 .HasForeignKey(d => d.IdEmpresa)
@@ -2044,28 +3017,49 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<UsuarioPerfil>(entity =>
         {
-            entity.HasKey(e => e.IdUsuarioPerfil).HasName("usuario_perfil_pkey");
+            entity.HasKey(e => e.IdUsuarioPerfil).HasName("PRIMARY");
 
-            entity.ToTable("usuario_perfil");
+            entity.ToTable("usuario_perfil", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdPerfil, "usuario_perfil_id_perfil_fkey");
+
+            entity.HasIndex(e => e.IdUsuario, "usuario_perfil_id_usuario_fkey");
 
             entity.Property(e => e.IdUsuarioPerfil)
-                .HasDefaultValueSql("nextval('seq_usuario_perfil'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_usuario_perfil");
             entity.Property(e => e.Estado)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdPerfil).HasColumnName("id_perfil");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdPerfil)
+                .HasComment("TRIAL")
+                .HasColumnName("id_perfil");
+            entity.Property(e => e.IdUsuario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_usuario");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdPerfilNavigation).WithMany(p => p.UsuarioPerfils)
                 .HasForeignKey(d => d.IdPerfil)
@@ -2080,27 +3074,48 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<UsuarioSucursal>(entity =>
         {
-            entity.HasKey(e => e.IdUsuarioSucursal).HasName("usuario_sucursal_pkey");
+            entity.HasKey(e => e.IdUsuarioSucursal).HasName("PRIMARY");
 
-            entity.ToTable("usuario_sucursal");
+            entity.ToTable("usuario_sucursal", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdSucursal, "usuario_sucursal_id_sucursal_fkey");
+
+            entity.HasIndex(e => e.IdUsuario, "usuario_sucursal_id_usuario_fkey");
 
             entity.Property(e => e.IdUsuarioSucursal)
-                .HasDefaultValueSql("nextval('seq_usuario_sucursal'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_usuario_sucursal");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdSucursal).HasColumnName("id_sucursal");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdSucursal)
+                .HasComment("TRIAL")
+                .HasColumnName("id_sucursal");
+            entity.Property(e => e.IdUsuario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_usuario");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.UsuarioSucursals)
                 .HasForeignKey(d => d.IdSucursal)
@@ -2115,27 +3130,48 @@ public partial class ContableContext : DbContext
 
         modelBuilder.Entity<VentaPaquete>(entity =>
         {
-            entity.HasKey(e => e.IdVentaPaquete).HasName("venta_paquete_pkey");
+            entity.HasKey(e => e.IdVentaPaquete).HasName("PRIMARY");
 
-            entity.ToTable("venta_paquete");
+            entity.ToTable("venta_paquete", tb => tb.HasComment("TRIAL"));
+
+            entity.HasIndex(e => e.IdPaquete, "venta_paquete_id_paquete_fkey");
+
+            entity.HasIndex(e => e.IdUsuario, "venta_paquete_id_usuario_fkey");
 
             entity.Property(e => e.IdVentaPaquete)
-                .HasDefaultValueSql("nextval('seq_venta_paquete'::regclass)")
+                .HasComment("TRIAL")
                 .HasColumnName("id_venta_paquete");
             entity.Property(e => e.EstadoBoolean)
-                .HasDefaultValue(true)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
                 .HasColumnName("estado_boolean");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_creacion");
             entity.Property(e => e.FechaModificacion)
-                .HasColumnType("timestamp without time zone")
+                .HasComment("TRIAL")
+                .HasColumnType("datetime")
                 .HasColumnName("fecha_modificacion");
-            entity.Property(e => e.IdPaquete).HasColumnName("id_paquete");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
-            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
-            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.IdPaquete)
+                .HasComment("TRIAL")
+                .HasColumnName("id_paquete");
+            entity.Property(e => e.IdUsuario)
+                .HasComment("TRIAL")
+                .HasColumnName("id_usuario");
+            entity.Property(e => e.Trial492)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial492");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("TRIAL")
+                .HasColumnName("usuario_modificacion");
 
             entity.HasOne(d => d.IdPaqueteNavigation).WithMany(p => p.VentaPaquetes)
                 .HasForeignKey(d => d.IdPaquete)
@@ -2147,52 +3183,6 @@ public partial class ContableContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("venta_paquete_id_usuario_fkey");
         });
-        modelBuilder.HasSequence("seq_anticipo");
-        modelBuilder.HasSequence("seq_anticipo_cuenta");
-        modelBuilder.HasSequence("seq_categoria_producto_id");
-        modelBuilder.HasSequence("seq_cliente");
-        modelBuilder.HasSequence("seq_comision");
-        modelBuilder.HasSequence("seq_comision_contador");
-        modelBuilder.HasSequence("seq_cuenta");
-        modelBuilder.HasSequence("seq_cuenta_cobrar");
-        modelBuilder.HasSequence("seq_despacho");
-        modelBuilder.HasSequence("seq_detalle_despacho");
-        modelBuilder.HasSequence("seq_detalle_factura");
-        modelBuilder.HasSequence("seq_emisor");
-        modelBuilder.HasSequence("seq_empresa");
-        modelBuilder.HasSequence("seq_factura");
-        modelBuilder.HasSequence("seq_guia_remision_detalle_id").HasMax(2147483647L);
-        modelBuilder.HasSequence("seq_guia_remision_id").HasMax(2147483647L);
-        modelBuilder.HasSequence("seq_historico_producto");
-        modelBuilder.HasSequence("seq_impuesto_id");
-        modelBuilder.HasSequence("seq_inventario_id");
-        modelBuilder.HasSequence("seq_menu");
-        modelBuilder.HasSequence("seq_menu_perfil");
-        modelBuilder.HasSequence("seq_nota_credito");
-        modelBuilder.HasSequence("seq_pago");
-        modelBuilder.HasSequence("seq_paquete");
-        modelBuilder.HasSequence("seq_paquete_contador");
-        modelBuilder.HasSequence("seq_parametro");
-        modelBuilder.HasSequence("seq_perfil");
-        modelBuilder.HasSequence("seq_persona");
-        modelBuilder.HasSequence("seq_producto_id");
-        modelBuilder.HasSequence("seq_producto_proveedor_id");
-        modelBuilder.HasSequence("seq_proveedor");
-        modelBuilder.HasSequence("seq_retencion");
-        modelBuilder.HasSequence("seq_sucursal");
-        modelBuilder.HasSequence("seq_sucursal_factura");
-        modelBuilder.HasSequence("seq_sucursal_inventario");
-        modelBuilder.HasSequence("seq_tipo_cuenta");
-        modelBuilder.HasSequence("seq_tipo_identificacion");
-        modelBuilder.HasSequence("seq_tipo_pago");
-        modelBuilder.HasSequence("seq_tipo_transaccion");
-        modelBuilder.HasSequence("seq_transaccion");
-        modelBuilder.HasSequence("seq_transportista");
-        modelBuilder.HasSequence("seq_unidad_medida_id");
-        modelBuilder.HasSequence("seq_usuario");
-        modelBuilder.HasSequence("seq_usuario_perfil");
-        modelBuilder.HasSequence("seq_usuario_sucursal");
-        modelBuilder.HasSequence("seq_venta_paquete");
 
         OnModelCreatingPartial(modelBuilder);
     }

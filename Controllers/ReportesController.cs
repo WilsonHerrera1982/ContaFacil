@@ -118,26 +118,26 @@ namespace ContaFacil.Controllers
                     worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
                     worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
                     // Manejo especial para Anticipos de clientes y Cuentas por cobrar
-                    if (transaccion.IdCuentaNavigation.Codigo == "1.1.4" && transaccion.EsDebito)
+                    if (transaccion.IdCuentaNavigation.Codigo == "1.1.4" && transaccion.EsDebito.GetValueOrDefault())
                     {
                         worksheet.Cell(currentRow, 6).Value = 0; // Debe
                         worksheet.Cell(currentRow, 7).Value = -Math.Abs(transaccion.Monto); // Haber
                         worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
                     }
-                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.2.1" && transaccion.EsDebito)
+                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.2.1" && transaccion.EsDebito.GetValueOrDefault())
                     {
                         worksheet.Cell(currentRow, 6).Value = Math.Abs(transaccion.Monto); // Debe
                         worksheet.Cell(currentRow, 7).Value = 0; // Haber
                         worksheet.Cell(currentRow, 8).Value = Math.Abs(transaccion.Monto); // Movimiento negativo
                     }
                    
-                    else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.2.")&& transaccion.EsDebito)
+                    else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.2.")&& transaccion.EsDebito.GetValueOrDefault())
                     {
                         worksheet.Cell(currentRow, 6).Value = Math.Abs(transaccion.Monto); // Debe
                         worksheet.Cell(currentRow, 7).Value = 0; // Haber
                         worksheet.Cell(currentRow, 8).Value = Math.Abs(transaccion.Monto); // Movimiento negativo
                     }
-                    else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.2.") && !transaccion.EsDebito)
+                    else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.2.") && !transaccion.EsDebito.GetValueOrDefault())
                     {
                         worksheet.Cell(currentRow, 6).Value = 0; // Debe
                         worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
@@ -174,7 +174,7 @@ namespace ContaFacil.Controllers
                         worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
                         worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
                     }
-                    else if (transaccion.IdCuentaNavigation.Codigo.Contains( "2.1.3.") && transaccion.EsDebito)
+                    else if (transaccion.IdCuentaNavigation.Codigo.Contains( "2.1.3.") && transaccion.EsDebito.GetValueOrDefault())
                     {
                         worksheet.Cell(currentRow, 6).Value = 0; // Debe
                         worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
@@ -721,7 +721,7 @@ namespace ContaFacil.Controllers
                 .Select(g => new {
                     g.Key.Codigo,
                     g.Key.Nombre,
-                    Movimiento = g.Sum(t => t.EsDebito ? -t.Monto : t.Monto)
+                    Movimiento = g.Sum(t => t.EsDebito.GetValueOrDefault() ? -t.Monto : t.Monto)
                 })
                 .OrderBy(g => g.Codigo);
 
@@ -735,20 +735,20 @@ namespace ContaFacil.Controllers
                 {
                     var saldoInicial = transacciones
                         .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta && t.Descripcion.Contains("Saldo inicial"))
-                        .Sum(t => t.EsDebito ? t.Monto : t.Monto);
+                        .Sum(t => t.EsDebito.GetValueOrDefault() ? t.Monto : t.Monto);
                     var compras = transacciones
                         .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta && t.Descripcion.Contains("Compra"))
-                        .Sum(t => t.EsDebito ? t.Monto : t.Monto);
+                        .Sum(t => t.EsDebito.GetValueOrDefault() ? t.Monto : t.Monto);
                     var ventas = transacciones
                         .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta && t.Descripcion.Contains("Venta"))
-                        .Sum(t => t.EsDebito ? -t.Monto : t.Monto);
+                        .Sum(t => t.EsDebito.GetValueOrDefault() ? -t.Monto : t.Monto);
                     movimiento = saldoInicial + compras - ventas;
                 }
                 else if (codigoCuenta.StartsWith("2.1.1.1")) // Proveedores
                 {
                     var saldoInicial = transacciones
                         .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta)
-                        .Sum(t => !t.EsDebito ? t.Monto : t.Monto);
+                        .Sum(t => !t.EsDebito.GetValueOrDefault() ? t.Monto : t.Monto);
                    
                     movimiento = saldoInicial;
                 }
@@ -756,7 +756,7 @@ namespace ContaFacil.Controllers
                 {
                     var saldoInicial = transacciones
                         .Where(t => t.IdCuentaNavigation.Codigo.Contains(codigoCuenta))
-                        .Sum(t => !t.EsDebito ? t.Monto : t.Monto);
+                        .Sum(t => !t.EsDebito.GetValueOrDefault() ? t.Monto : t.Monto);
 
                     movimiento = saldoInicial;
                 }
@@ -1048,7 +1048,7 @@ namespace ContaFacil.Controllers
             Cuentum cuenta = transaccion.IdCuentaNavigation;
             string codigoCuenta = cuenta.Codigo.Split('.')[0];
             string nombreCuenta = cuenta.Nombre.ToLower();
-            if (cuenta.Nombre.Equals("Anticipo de clientes") && transaccion.EsDebito)
+            if (cuenta.Nombre.Equals("Anticipo de clientes") && transaccion.EsDebito.GetValueOrDefault())
             {
                 codigoCuenta = "5";
             }

@@ -71,7 +71,7 @@ namespace ContaFacil.Controllers
         {
             var balance = _context.Transaccions
      .Where(t => t.IdCuenta == idCuenta)
-     .Sum(t => t.EsDebito ? Math.Abs(t.Monto) : -Math.Abs(t.Monto));
+     .Sum(t => t.EsDebito.GetValueOrDefault() ? Math.Abs(t.Monto) : -Math.Abs(t.Monto));
 
             return Json(balance);
         }

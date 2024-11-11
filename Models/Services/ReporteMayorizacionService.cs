@@ -200,7 +200,7 @@ namespace ContaFacil.Models.Services
             worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
             worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
             decimal montoAbs = Math.Abs(transaccion.Monto);
-            if (transaccion.IdCuentaNavigation.Debito)
+            if (transaccion.IdCuentaNavigation.Debito.GetValueOrDefault())
             {
                 saldoInicial = montoAbs;
                 worksheet.Cell(currentRow, 6).Value = saldoInicial;
@@ -208,7 +208,7 @@ namespace ContaFacil.Models.Services
                 worksheet.Cell(currentRow, 8).Value = saldoInicial;
                 totalMovimiento = saldoInicial;
             }
-            else if (transaccion.IdCuentaNavigation.Credito)
+            else if (transaccion.IdCuentaNavigation.Credito.GetValueOrDefault())
             {
                 worksheet.Cell(currentRow, 6).Value = 0;
                 worksheet.Cell(currentRow, 7).Value = montoAbs;

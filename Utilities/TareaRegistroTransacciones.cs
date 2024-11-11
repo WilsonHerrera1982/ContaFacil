@@ -30,7 +30,7 @@ namespace ContaFacil.Utilities
         public async Task RegistrarTransacciones()
         {
             var inventariosNoRegistrados = await _context.Inventarios
-                .Where(i => !i.TransaccionRegistrada)
+                .Where(i => !i.TransaccionRegistrada.GetValueOrDefault())
                 .Include(i => i.IdProductoNavigation)
                 .ToListAsync();
             foreach (var inventario in inventariosNoRegistrados)
@@ -133,7 +133,7 @@ namespace ContaFacil.Utilities
                 }
             }
             inventariosNoRegistrados = await _context.Inventarios
-                .Where(i => !i.TransaccionRegistrada)
+                .Where(i => !i.TransaccionRegistrada.GetValueOrDefault())
                 .Include(i => i.IdProductoNavigation)
                 .ToListAsync();
             foreach (var inventario in inventariosNoRegistrados)

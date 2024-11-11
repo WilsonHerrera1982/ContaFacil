@@ -4,14 +4,26 @@ using System.ComponentModel;
 
 namespace ContaFacil.Models;
 
+/// <summary>
+/// TRIAL
+/// </summary>
 public partial class Anticipo
 {
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int IdAnticipo { get; set; }
     [DisplayName("Cliente")]
     public int IdCliente { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int IdEmpresa { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public decimal Valor { get; set; }
     [DisplayName("Número Comprobante")]
     public string? NumeroComprobante { get; set; }
@@ -26,14 +38,29 @@ public partial class Anticipo
     [DisplayName("Fecha Cheque")]
     public DateTime FechaCheque { get; set; }
     [DisplayName("Activo/Inactivo")]
-    public bool EstadoBoolean { get; set; }
+     /// <summary>
+    /// TRIAL
+    /// </summary>
+    public bool? EstadoBoolean { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public DateTime FechaCreacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public DateTime? FechaModificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int UsuarioCreacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? UsuarioModificacion { get; set; }
     [DisplayName("Tipo Pago")]
     public string TipoPago {  get; set; }

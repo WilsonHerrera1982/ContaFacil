@@ -3,27 +3,59 @@ using System.Collections.Generic;
 using System.ComponentModel;
 namespace ContaFacil.Models;
 
+/// <summary>
+/// TRIAL
+/// </summary>
 public partial class Empresa
 {
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int IdEmpresa { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string Nombre { get; set; } = null!;
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string Direccion { get; set; } = null!;
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string Telefono { get; set; } = null!;
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string Identificacion { get; set; } = null!;
 
-    public bool Estado { get; set; }
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public bool? Estado { get; set; }
 
     [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 
     [DisplayName("Fecha Modificación")]  public DateTime FechaModificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int UsuarioCreacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int UsuarioModificacion { get; set; }
+
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public string? Trial482 { get; set; }
 
     public virtual ICollection<Anticipo> Anticipos { get; set; } = new List<Anticipo>();
 

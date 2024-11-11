@@ -80,7 +80,7 @@ namespace ContaFacil.Controllers
             }
 
             var inventarios = await _context.Inventarios
-                .Where(i => i.NumeroFactura == numeroFactura)
+                .Where(i => i.FacturaNumero == numeroFactura)
                 .ToListAsync();
 
             if (!inventarios.Any())
@@ -123,7 +123,7 @@ namespace ContaFacil.Controllers
                 Retencion ret = _context.Retencions.Where(r => r.IdEmpresa == empresa.IdEmpresa).OrderByDescending(r => r.FechaCreacion).FirstOrDefault();
                 List<Retencion> retencions=new List<Retencion>();
                  ContableContext ctx = new ContableContext();
-                    Inventario inventario = ctx.Inventarios.FirstOrDefault(i => i.NumeroFactura.Equals(factura.NumeroFactura));
+                    Inventario inventario = ctx.Inventarios.FirstOrDefault(i => i.FacturaNumero.Equals(factura.NumeroFactura));
                     var retencionXml = new RetencionXmlClienteGenerator(_configuration);
                 string numeroRetencion = "";
                 if (ret != null)
@@ -158,7 +158,7 @@ namespace ContaFacil.Controllers
                         
                         await ctx.Retencions.AddAsync(retencionRenta);
                         
-                        cliente.IdPersonaNavigation.RetencionPorcentaje = Math.Truncate(cliente.IdPersonaNavigation.RetencionPorcentaje);
+                        cliente.IdPersonaNavigation.RetencionPorcentaje = Math.Truncate(cliente.IdPersonaNavigation.RetencionPorcentaje??0m);
                         Cuentum cuent = ctx.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IR") && c.Nombre.Contains(cliente.IdPersonaNavigation.RetencionPorcentaje.ToString()) && c.Codigo.Contains("1.1.3."));
                         var tipoTransaccion = await ctx.TipoTransaccions
                         .FirstOrDefaultAsync(t => t.Nombre == "Venta");
@@ -188,7 +188,7 @@ namespace ContaFacil.Controllers
                         };
                         
                         await ctx.Retencions.AddAsync(retencionIva);
-                        cliente.IdPersonaNavigation.RetencionPorcentaje = Math.Truncate(cliente.IdPersonaNavigation.RetencionPorcentaje);
+                        cliente.IdPersonaNavigation.RetencionPorcentaje = Math.Truncate(cliente.IdPersonaNavigation.RetencionPorcentaje??0m);
                         Cuentum cuent = ctx.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IVA") && c.Nombre.Contains(cliente.IdPersonaNavigation.RetencionPorcentaje.ToString()) && c.Codigo.Contains("1.1.3."));
                         var tipoTransaccion = await ctx.TipoTransaccions
                         .FirstOrDefaultAsync(t => t.Nombre == "Venta");

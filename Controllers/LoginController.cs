@@ -47,7 +47,7 @@ namespace ContaFacil.Controllers
                     MaxDepth = 256 // Aumenta la profundidad máxima si es necesario
                 };
 
-                if (!usuario.Estado)
+                if (!usuario.Estado.GetValueOrDefault())
                 {
                     Notificacion("Usuario desactivado.", NotificacionTipo.Warning);
                     return View();

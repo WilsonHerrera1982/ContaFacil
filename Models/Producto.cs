@@ -5,36 +5,72 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ContaFacil.Models;
 
+/// <summary>
+/// TRIAL
+/// </summary>
 public partial class Producto
 {
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int IdProducto { get; set; }
     [DisplayName("Código")]
     public string Codigo { get; set; } = null!;
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string Nombre { get; set; } = null!;
     [DisplayName("Descripción")]
     public string? Descripcion { get; set; }
     [DisplayName("Subtotal")]
     public decimal PrecioUnitario { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? IdCategoriaProducto { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? IdUnidadMedida { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public decimal? Stock { get; set; }
 
-    public bool EstadoBoolean { get; set; }
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public bool? EstadoBoolean { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public DateTime FechaCreacion { get; set; }
 
     [DisplayName("Fecha Modificación")]  public DateTime FechaModificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int UsuarioCreacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int UsuarioModificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? IdEmpresa { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? IdImpuesto { get; set; }
     [DisplayName("Precio Venta")]
     public decimal? PrecioVenta { get; set; }
@@ -54,6 +90,11 @@ public partial class Producto
         }
     }
     public decimal? Descuento { get; set; }
+
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public string? Trial485 { get; set; }
 
     public virtual ICollection<DetalleDespacho> DetalleDespachos { get; set; } = new List<DetalleDespacho>();
 

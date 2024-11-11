@@ -14,7 +14,7 @@
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox"
                                id="debito_@subcuenta.IdCuenta"
-                        @(subcuenta.Debito ? "checked" : "")
+                        @(subcuenta.Debito.GetValueOrDefault() ? "checked" : "")
                                disabled>
                         <label class="form-check-label" for="debito_@subcuenta.IdCuenta">
                             Débito
@@ -23,7 +23,7 @@
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox"
                                id="credito_@subcuenta.IdCuenta"
-                        @(subcuenta.Credito ? "checked" : "")
+                        @(subcuenta.Credito.GetValueOrDefault() ? "checked" : "")
                                disabled>
                         <label class="form-check-label" for="credito_@subcuenta.IdCuenta">
                             Crédito

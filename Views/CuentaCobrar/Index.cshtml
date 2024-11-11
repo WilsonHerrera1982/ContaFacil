@@ -42,7 +42,7 @@
                     <td>@item.EstadoCobro</td>
                     <td>@item.PrecioVenta.ToString("C")</td>
                     <td>@saldoPendiente.ToString("C")</td>
-                    <td>@(item.EstadoBoolean ? "Activo" : "Inactivo")</td>
+                            <td>@(item.EstadoBoolean.GetValueOrDefault() ? "Activo" : "Inactivo")</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@item.IdCuentaCobrar">Editar</a> |
                         <a asp-action="Details" asp-route-id="@item.IdCuentaCobrar">Details</a> |

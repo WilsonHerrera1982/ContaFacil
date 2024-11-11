@@ -1,37 +1,92 @@
 ﻿using System;
-using System.Collections.Generic;  
-using System.ComponentModel;
+using System.Collections.Generic;
+
 namespace ContaFacil.Models;
 
+/// <summary>
+/// TRIAL
+/// </summary>
 public partial class Persona
 {
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int IdPersona { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string Nombre { get; set; } = null!;
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string? Direccion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string? Telefono { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string? Email { get; set; }
 
-    public bool Estado { get; set; }
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public bool? Estado { get; set; }
 
-    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public DateTime FechaCreacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public DateTime? FechaModificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int UsuarioCreacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? UsuarioModificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public string? Identificacion { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? IdEmpresa { get; set; }
 
+    /// <summary>
+    /// TRIAL
+    /// </summary>
     public int? IdTipoIdentificacion { get; set; }
-    public decimal RetencionIva {  get; set; }
-    public decimal RetencionPorcentaje {  get; set; }
+
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public decimal? RetencionIva { get; set; }
+
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public decimal? RetencionPorcentaje { get; set; }
+
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public string? Trial482 { get; set; }
 
     public virtual ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
 

@@ -215,7 +215,7 @@ namespace ContaFacil.Controllers
                     inv.PrecioUnitarioFinal = inventario.precioUnitarioFinal;
                     inv.Iva = inventario.iva;
                     inv.Total = inventario.total;
-                    inv.NumeroFactura = inventario.numeroFactura;
+                    inv.FacturaNumero = inventario.numeroFactura;
                     if (ultimoMovimiento != null)
                     {
                         inv.Stock = ultimoMovimiento.Stock + inventario.cantidad;
@@ -320,7 +320,7 @@ namespace ContaFacil.Controllers
                             Cuentum cuent2 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IR") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.4."));
                             var tipoTransaccion2 = await _context.TipoTransaccions
                             .FirstOrDefaultAsync(t => t.Nombre == "Compra");
-                            string descripcion2 = producto.Nombre + " " + inv.NumeroFactura;
+                            string descripcion2 = producto.Nombre + " " + inv.FacturaNumero;
                             await CrearTransaccion(cuent2.Codigo, numeroAsiento + " Compra de " + descripcion2,retencionRenta.ValorRetenido ?? 0, tipoTransaccion2, empresa, usuario, true);
 
                         }
@@ -362,7 +362,7 @@ namespace ContaFacil.Controllers
                             Cuentum cuent1 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IVA") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.4.2"));
                             var tipoTransaccion1 = await _context.TipoTransaccions
                             .FirstOrDefaultAsync(t => t.Nombre == "Compra");
-                            string descripcion1 = producto.Nombre + " " + inv.NumeroFactura;
+                            string descripcion1 = producto.Nombre + " " + inv.FacturaNumero;
                             await CrearTransaccion(cuent1.Codigo, numeroAsiento + " Compra de " + descripcion1, retencionIva.ValorRetenido ?? 0, tipoTransaccion1, empresa, usuario, true);
                         }
 
@@ -391,7 +391,7 @@ namespace ContaFacil.Controllers
                         Cuentum cuent = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Proveedores nacionales"));
                         var tipoTransaccion = await _context.TipoTransaccions
                         .FirstOrDefaultAsync(t => t.Nombre == "Compra");
-                        string descripcion = producto.Nombre + " " + inv.NumeroFactura;
+                        string descripcion = producto.Nombre + " " + inv.FacturaNumero;
                         await CrearTransaccion(cuent.Codigo, numeroAsiento + " Pago a proveedor " + descripcion, sumaRetencion ?? 0, tipoTransaccion, empresa, usuario, true);
                         // Guardar los cambios en todas las retenciones
                         await _context.SaveChangesAsync();
@@ -916,7 +916,7 @@ namespace ContaFacil.Controllers
                     Inventario inventario=new Inventario();
                     inventario.Cantidad=producto.Cantidad;
                     inventario.Descripcion = "INGRESO CARGA INICIAL";
-                    inventario.NumeroFactura = producto.FacturaNro;
+                    inventario.FacturaNumero = producto.FacturaNro;
                     inventario.NumeroDespacho = ObtenerNumeroDes("E");
                     inventario.IdCuentaContable = idCuenta;
                     inventario.IdProducto=pro.IdProducto;
@@ -1024,7 +1024,7 @@ namespace ContaFacil.Controllers
                             DescripcionProducto = pro.Descripcion,
                             CodigoCuenta = cue.Codigo,
                             UnidadMedida = um.Abreviatura,
-                            NumeroFactura = inv.NumeroFactura,
+                            NumeroFactura = inv.FacturaNumero,
                             FechaMovimiento = inv.FechaMovimiento,
                             Cantidad = inv.Cantidad,
                             PrecioUnitario=inv.PrecioUnitario,
@@ -1284,7 +1284,7 @@ namespace ContaFacil.Controllers
                             saldoValorUnitario = (saldoValorUnitario + mov.PrecioUnitarioFinal) / 2 ?? 0;
                         }
 
-                        saldoCantidad += mov.Cantidad ?? 0;
+                        saldoCantidad += mov.Cantidad;
                         saldoValorTotal = saldoCantidad * saldoValorUnitario;
                     }
                     else if (tipoMovimiento == "VENTA")
@@ -1293,7 +1293,7 @@ namespace ContaFacil.Controllers
                         worksheet.Cell(currentRow, 9).Value = saldoValorUnitario;
                         worksheet.Cell(currentRow, 10).Value = mov.Cantidad * saldoValorUnitario;
 
-                        saldoCantidad -= mov.Cantidad ?? 0;
+                        saldoCantidad -= mov.Cantidad;
                         saldoValorTotal = saldoCantidad * saldoValorUnitario;
                     }
 

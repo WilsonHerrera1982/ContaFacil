@@ -146,7 +146,7 @@ namespace ContaFacil.Controllers
                  _context.SaveChanges();
                 Inventario inventario = new Inventario();
                 inventario.TipoMovimiento = "E";
-                inventario.Cantidad = producto.Stock;
+                inventario.Cantidad = producto.Stock??0m;
                 inventario.FechaCreacion= new DateTime();
                 inventario.UsuarioCreacion= int.Parse(idUsuario);
                 inventario.IdProducto=product.IdProducto;
