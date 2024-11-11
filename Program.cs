@@ -36,7 +36,13 @@ var connectionString = builder.Configuration.GetConnectionString("ContableContex
 Console.WriteLine($"ConnectionString: {connectionString}");
 builder.Services.AddDbContext<ContableContext>(options =>
 {
-    options.UseNpgsql("Host=localhost;Database=contable;Username=postgres;Password=postgres");
+    options.UseMySql(
+                "Server=localhost;Database=contable;Uid=root;Pwd=ROOT;AllowZeroDateTime=true;ConvertZeroDateTime=true;",
+                new MySqlServerVersion(new Version(8, 0, 30)), // Ajusta la versión según tu servidor MySQL
+                options =>
+                {
+                    options.MigrationsAssembly("MyProject");
+                }); 
 });
 
 builder.Services.AddTransient<FacturaController>();

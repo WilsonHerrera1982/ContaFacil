@@ -70,23 +70,37 @@ namespace ContaFacil.Controllers
         {
             try
             {
-
                 string idUsuario = HttpContext.Session.GetString("_idUsuario");
+
+                if (string.IsNullOrEmpty(idUsuario))
+                {
+                    Notificacion("Usuario no encontrado en la sesión", NotificacionTipo.Error);
+                    return View(menu);
+                }
+
                 menu.Url = "#";
                 menu.UsuarioCreacion = int.Parse(idUsuario);
-                menu.FechaCreacion = new DateTime();
-                _context.Add(menu);
+                menu.FechaCreacion = DateTime.Now;
+                menu.Estado = true;
+                menu.FechaModificacion= DateTime.Now;
+                _context.Menus.Add(menu);
                 await _context.SaveChangesAsync();
-                Notificacion("Registro guardardo con exito", NotificacionTipo.Success);
+
+                Notificacion("Registro guardado con éxito", NotificacionTipo.Success);
                 return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException dbEx)
+            {
+                Notificacion("Error en la base de datos: " + dbEx.InnerException?.Message, NotificacionTipo.Error);
+                return View(menu);
             }
             catch (Exception e)
             {
-                Notificacion("Error al guardar el Registro "+e.Message, NotificacionTipo.Error);
+                Notificacion("Error al guardar el registro: " + e.Message, NotificacionTipo.Error);
                 return View(menu);
             }
-           
         }
+
 
         // GET: Menus/Edit/5
         public async Task<IActionResult> Edit(int? id)

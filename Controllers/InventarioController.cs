@@ -317,7 +317,7 @@ namespace ContaFacil.Controllers
                             await _context.Retencions.AddAsync(retencionRenta);
                             retencions.Add(retencionRenta);
                             proveedor.RetencionPorcentaje = Math.Truncate(proveedor.RetencionPorcentaje??0);
-                            Cuentum cuent2 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IR") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.3."));
+                            Cuentum cuent2 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IR") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.4."));
                             var tipoTransaccion2 = await _context.TipoTransaccions
                             .FirstOrDefaultAsync(t => t.Nombre == "Compra");
                             string descripcion2 = producto.Nombre + " " + inv.NumeroFactura;
@@ -359,7 +359,7 @@ namespace ContaFacil.Controllers
                             retencions.Add(retencionIva);
                             
                             proveedor.RetencionPorcentaje = Math.Truncate(proveedor.RetencionPorcentaje ?? 0);
-                            Cuentum cuent1 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IVA") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.3."));
+                            Cuentum cuent1 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IVA") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.4.2"));
                             var tipoTransaccion1 = await _context.TipoTransaccions
                             .FirstOrDefaultAsync(t => t.Nombre == "Compra");
                             string descripcion1 = producto.Nombre + " " + inv.NumeroFactura;
