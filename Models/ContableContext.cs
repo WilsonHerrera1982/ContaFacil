@@ -60,6 +60,8 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<NotaCredito> NotaCreditos { get; set; }
 
+    public virtual DbSet<OpcionCliente> OpcionClientes { get; set; }
+
     public virtual DbSet<Pago> Pagos { get; set; }
 
     public virtual DbSet<Paquete> Paquetes { get; set; }
@@ -110,7 +112,7 @@ public partial class ContableContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("Server=localhost;Database=contable;User=root;Password=ROOT;ConvertZeroDateTime=True;", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
+      => optionsBuilder.UseMySql("Server=localhost;Database=contable;User=root;Password=ROOT;ConvertZeroDateTime=True;", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -180,7 +182,8 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.TipoPago)
                 .HasMaxLength(10)
                 .HasComment("TRIAL")
-                .HasColumnName("tipo_pago");            
+                .HasColumnName("tipo_pago");
+           
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -680,7 +683,8 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.NumeroDespacho)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
-                .HasColumnName("numero_despacho");            
+                .HasColumnName("numero_despacho");
+            
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1097,7 +1101,8 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Subtotal)
                 .HasPrecision(15, 2)
                 .HasComment("TRIAL")
-                .HasColumnName("subtotal");           
+                .HasColumnName("subtotal");
+           
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1607,9 +1612,7 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.MenuId)
                 .HasComment("TRIAL")
                 .HasColumnName("menu_id");
-            entity.Property(e => e.Orden)
-                .HasComment("TRIAL")
-                .HasColumnName("orden");
+            entity.Property(e => e.Orden).HasColumnName("orden");           
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
@@ -1761,6 +1764,37 @@ public partial class ContableContext : DbContext
                 .HasForeignKey(d => d.IdFactura)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("nota_credito_id_factura_fkey");
+        });
+
+        modelBuilder.Entity<OpcionCliente>(entity =>
+        {
+            entity.HasKey(e => e.OpcionId).HasName("PRIMARY");
+
+            entity.ToTable("opcion_cliente", tb => tb.HasComment("tabla para registrar el acceso a opciones de cliente"));
+
+            entity.HasIndex(e => e.EmpresaId, "FK_empresa_opcion");
+
+            entity.Property(e => e.OpcionId).HasColumnName("opcion_id");
+            entity.Property(e => e.EmpresaId).HasColumnName("empresa_id");
+            entity.Property(e => e.Estado).HasColumnName("estado");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("datetime")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.FechaResgitro)
+                .HasColumnType("datetime")
+                .HasColumnName("fecha_resgitro");
+            entity.Property(e => e.OpcionDescripcion)
+                .HasMaxLength(200)
+                .HasColumnName("opcion_descripcion");
+            entity.Property(e => e.OpcionNombre)
+                .HasMaxLength(100)
+                .HasColumnName("opcion_nombre");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.Empresa).WithMany(p => p.OpcionClientes)
+                .HasForeignKey(d => d.EmpresaId)
+                .HasConstraintName("FK_empresa_opcion");
         });
 
         modelBuilder.Entity<Pago>(entity =>
@@ -2445,7 +2479,7 @@ public partial class ContableContext : DbContext
                 .HasComment("TRIAL")
                 .HasColumnName("valor_retenido");
             entity.Property(e => e.Xml)
-                .HasMaxLength(15)
+                .HasMaxLength(15000)
                 .HasComment("TRIAL")
                 .HasColumnName("xml");
 

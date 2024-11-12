@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+
 namespace ContaFacil.Models;
 
 /// <summary>
@@ -38,9 +38,15 @@ public partial class Empresa
     /// </summary>
     public bool? Estado { get; set; }
 
-    [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public DateTime FechaCreacion { get; set; }
 
-    [DisplayName("Fecha Modificación")]  public DateTime FechaModificacion { get; set; }
+    /// <summary>
+    /// TRIAL
+    /// </summary>
+    public DateTime FechaModificacion { get; set; }
 
     /// <summary>
     /// TRIAL
@@ -74,6 +80,8 @@ public partial class Empresa
     public virtual ICollection<HistoricoProducto> HistoricoProductos { get; set; } = new List<HistoricoProducto>();
 
     public virtual ICollection<NotaCredito> NotaCreditos { get; set; } = new List<NotaCredito>();
+
+    public virtual ICollection<OpcionCliente> OpcionClientes { get; set; } = new List<OpcionCliente>();
 
     public virtual ICollection<Parametro> Parametros { get; set; } = new List<Parametro>();
 

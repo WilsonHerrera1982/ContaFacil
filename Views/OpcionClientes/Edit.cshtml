@@ -1,0 +1,67 @@
+﻿@model ContaFacil.Models.OpcionCliente
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>OpcionCliente</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="OpcionId" />
+            <div class="form-group">
+                <label asp-for="OpcionNombre" class="control-label"></label>
+                <input asp-for="OpcionNombre" class="form-control" />
+                <span asp-validation-for="OpcionNombre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="OpcionDescripcion" class="control-label"></label>
+                <input asp-for="OpcionDescripcion" class="form-control" />
+                <span asp-validation-for="OpcionDescripcion" class="text-danger"></span>
+            </div>
+           
+            <div class="form-group">
+                <label asp-for="EmpresaId" class="control-label"></label>
+                <select asp-for="EmpresaId" class="form-control" asp-items="ViewBag.EmpresaId"></select>
+                <span asp-validation-for="EmpresaId" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input"
+                           id="estadoCheckbox"
+                           onchange="updateEstadoValue(this)" />
+                    <input type="hidden" name="Estado" id="estadoHidden" value="0" />
+                    Activo/Inactivo
+                </label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts
+{
+    <script>
+        function updateEstadoValue(checkbox) {
+            document.getElementById('estadoHidden').value = checkbox.checked ? 1 : 0;
+        }
+
+        // Para mantener el estado al cargar la página
+        document.addEventListener('DOMContentLoaded', function () {
+            var estadoInicial = @(Model?.Estado ?? 0);
+            document.getElementById('estadoCheckbox').checked = estadoInicial === 1;
+            document.getElementById('estadoHidden').value = estadoInicial;
+        });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

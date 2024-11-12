@@ -19,11 +19,13 @@ namespace ContaFacil.Controllers
         private readonly ContableContext _context;
         private readonly IConfiguration _configuration;
         private readonly IMenuService _menuService;
-        public InventarioController(ContableContext context, IConfiguration configuration, IMenuService menuService)
+        private readonly IOpcionCliente _opcionCliente;
+        public InventarioController(ContableContext context, IConfiguration configuration, IMenuService menuService, IOpcionCliente opcionCliente)
         {
             _context = context;
             _configuration = configuration;
             _menuService = menuService;
+            _opcionCliente = opcionCliente;
         }
 
         // GET: Inventario
@@ -41,8 +43,8 @@ namespace ContaFacil.Controllers
              .Include(i => i.SucursalInventarios)
              .Where(i => i.SucursalInventarios.Any(s => s.IdSucursal == usuarioSucursal.IdSucursal))
              .AsQueryable();
-            UsuarioPerfil perfil = usuario.UsuarioPerfils.FirstOrDefault();
-            List<Menu> menusOpciones = _menuService.GetMenusByPerfilId(perfil.IdPerfil);
+            List<OpcionCliente> opcionClientes = _opcionCliente.GetOpcionClientes(usuario.IdEmpresa??0);
+            ViewBag.OpcionClientes = opcionClientes;
 
             if (idSucursal.HasValue)
             {
