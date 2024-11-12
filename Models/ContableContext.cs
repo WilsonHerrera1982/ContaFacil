@@ -28,6 +28,8 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<ComisionContador> ComisionContadors { get; set; }
 
+    public virtual DbSet<ConstatacionFisica> ConstatacionFisicas { get; set; }
+
     public virtual DbSet<CuentaCobrar> CuentaCobrars { get; set; }
 
     public virtual DbSet<Cuentum> Cuenta { get; set; }
@@ -477,6 +479,48 @@ public partial class ContableContext : DbContext
                 .HasForeignKey(d => d.IdComision)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("comision_contador_id_comision_fkey");
+        });
+
+        modelBuilder.Entity<ConstatacionFisica>(entity =>
+        {
+            entity.HasKey(e => e.ConstatacionId).HasName("PRIMARY");
+
+            entity.ToTable("constatacion_fisica", tb => tb.HasComment("tabla para el registro de constatacion fisica de productos por empresa"));
+
+            entity.HasIndex(e => e.EmpresaId, "FK_empresa_constatacion");
+
+            entity.HasIndex(e => e.ProductoId, "FK_producto_constatacion");
+
+            entity.Property(e => e.ConstatacionId).HasColumnName("constatacion_id");
+            entity.Property(e => e.CantidadFisica).HasColumnName("cantidad_fisica");
+            entity.Property(e => e.ConstatacionDescripcion)
+                .HasMaxLength(200)
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("constatacion_descripcion");
+            entity.Property(e => e.EmpresaId).HasColumnName("empresa_id");
+            entity.Property(e => e.Estado)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("estado");
+            entity.Property(e => e.FechaCreacion)
+                .HasColumnType("datetime")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("datetime")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.ProductoId).HasColumnName("producto_id");
+            entity.Property(e => e.ProductoStockActual).HasColumnName("producto_stock_actual");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.Empresa).WithMany(p => p.ConstatacionFisicas)
+                .HasForeignKey(d => d.EmpresaId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_empresa_constatacion");
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.ConstatacionFisicas)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_producto_constatacion");
         });
 
         modelBuilder.Entity<CuentaCobrar>(entity =>
@@ -1612,7 +1656,12 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.MenuId)
                 .HasComment("TRIAL")
                 .HasColumnName("menu_id");
-            entity.Property(e => e.Orden).HasColumnName("orden");           
+            entity.Property(e => e.Orden).HasColumnName("orden");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")

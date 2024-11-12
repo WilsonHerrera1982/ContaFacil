@@ -96,6 +96,8 @@ public partial class Producto
     /// </summary>
     public string? Trial485 { get; set; }
 
+    public virtual ICollection<ConstatacionFisica> ConstatacionFisicas { get; set; } = new List<ConstatacionFisica>();
+
     public virtual ICollection<DetalleDespacho> DetalleDespachos { get; set; } = new List<DetalleDespacho>();
 
     public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();

@@ -69,6 +69,8 @@ public partial class Empresa
 
     public virtual ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
 
+    public virtual ICollection<ConstatacionFisica> ConstatacionFisicas { get; set; } = new List<ConstatacionFisica>();
+
     public virtual ICollection<Cuentum> Cuenta { get; set; } = new List<Cuentum>();
 
     public virtual ICollection<CuentaCobrar> CuentaCobrars { get; set; } = new List<CuentaCobrar>();
