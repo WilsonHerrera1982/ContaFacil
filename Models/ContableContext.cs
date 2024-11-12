@@ -1606,7 +1606,10 @@ public partial class ContableContext : DbContext
                 .HasColumnName("fecha_modificacion");
             entity.Property(e => e.MenuId)
                 .HasComment("TRIAL")
-                .HasColumnName("menu_id");           
+                .HasColumnName("menu_id");
+            entity.Property(e => e.Orden)
+                .HasComment("TRIAL")
+                .HasColumnName("orden");
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")

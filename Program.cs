@@ -9,6 +9,8 @@ using Quartz;
 using OfficeOpenXml;
 using ContaFacil.Models.Interfaces;
 using ContaFacil.Models.Services;
+using ContaFacil.Services.Impl;
+using ContaFacil.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +79,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.MaxDepth = 64; // Aumenta la profundidad máxima si es necesario
 });
 builder.Services.AddScoped<TareaRegistroTransacciones>();
+builder.Services.AddScoped<IMenuService, MenuService>();
+
 var app = builder.Build();
 
 var supportedCultures = new[]

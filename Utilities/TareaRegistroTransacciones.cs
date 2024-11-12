@@ -30,9 +30,9 @@ namespace ContaFacil.Utilities
         public async Task RegistrarTransacciones()
         {
             var inventariosNoRegistrados = await _context.Inventarios
-                .Where(i => !i.TransaccionRegistrada.GetValueOrDefault())
-                .Include(i => i.IdProductoNavigation)
-                .ToListAsync();
+    .Where(i => i.TransaccionRegistrada == null || i.TransaccionRegistrada == false)
+    .Include(i => i.IdProductoNavigation)
+    .ToListAsync();
             foreach (var inventario in inventariosNoRegistrados)
             {
                 if (inventario.TipoMovimiento == "E")
@@ -133,7 +133,7 @@ namespace ContaFacil.Utilities
                 }
             }
             inventariosNoRegistrados = await _context.Inventarios
-                .Where(i => !i.TransaccionRegistrada.GetValueOrDefault())
+                .Where(i => i.TransaccionRegistrada==false)
                 .Include(i => i.IdProductoNavigation)
                 .ToListAsync();
             foreach (var inventario in inventariosNoRegistrados)
@@ -187,7 +187,7 @@ namespace ContaFacil.Utilities
                     transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.SubTotal ?? 0, $"Compra de {producto.Nombre}", "Compra",true));
                 }
                 
-                transacciones.Add(CrearTransaccion("1.1.3.3", inventario.Iva ?? 0, $"IVA en compra de {producto.Nombre}", "Compra", false));
+                transacciones.Add(CrearTransaccion("1.1.4.3", inventario.Iva ?? 0, $"IVA en compra de {producto.Nombre}", "Compra", false));
                
                 transacciones.Add(CrearTransaccion("2.1.1.1", -(inventario.Total ?? 0), $"Pago a proveedor por {producto.Nombre}", "Compra", false));
             }

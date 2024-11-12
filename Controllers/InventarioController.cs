@@ -11,17 +11,19 @@ using ClosedXML.Excel;
 using ContaFacil.Utilities;
 using System.Xml.Linq;
 using System.Xml;
+using ContaFacil.Services;
 namespace ContaFacil.Controllers
 {
     public class InventarioController : NotificacionClass
     {
         private readonly ContableContext _context;
         private readonly IConfiguration _configuration;
-
-        public InventarioController(ContableContext context, IConfiguration configuration)
+        private readonly IMenuService _menuService;
+        public InventarioController(ContableContext context, IConfiguration configuration, IMenuService menuService)
         {
             _context = context;
             _configuration = configuration;
+            _menuService = menuService;
         }
 
         // GET: Inventario
@@ -39,6 +41,8 @@ namespace ContaFacil.Controllers
              .Include(i => i.SucursalInventarios)
              .Where(i => i.SucursalInventarios.Any(s => s.IdSucursal == usuarioSucursal.IdSucursal))
              .AsQueryable();
+            UsuarioPerfil perfil = usuario.UsuarioPerfils.FirstOrDefault();
+            List<Menu> menusOpciones = _menuService.GetMenusByPerfilId(perfil.IdPerfil);
 
             if (idSucursal.HasValue)
             {
@@ -179,11 +183,13 @@ namespace ContaFacil.Controllers
                 Cuentum cuentum = new Cuentum();
                
                 Inventario ultimoMovimiento=new Inventario();
-                
-                    ultimoMovimiento = _context.Inventarios
-                     .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T" || i.TipoMovimiento == "C" || i.TipoMovimiento == "V") & i.IdProducto == inventario.idProducto & i.IdSucursal == usuarioSucursal.IdSucursal)
-                     .OrderByDescending(i => i.FechaCreacion)
-                     .FirstOrDefault();
+
+                ultimoMovimiento = _context.Inventarios
+                    .Where(i => (i.TipoMovimiento == "S" || i.TipoMovimiento == "E" || i.TipoMovimiento == "T" || i.TipoMovimiento == "C" || i.TipoMovimiento == "V")
+                                && i.IdProducto == inventario.idProducto
+                                && i.IdSucursal == usuarioSucursal.IdSucursal)
+                    .OrderByDescending(i => i.FechaCreacion)
+                    .FirstOrDefault();
                 cuentum = _context.Cuenta.Where(c => c.Nombre==producto.IdCategoriaProductoNavigation.Nombre).FirstOrDefault();
                 
                 
@@ -194,9 +200,11 @@ namespace ContaFacil.Controllers
                     ProductoProveedor productoProveedor = new ProductoProveedor();
 
                     movimientoIngreso = _context.Inventarios
-                     .Where(i => (i.TipoMovimiento == "E" || i.TipoMovimiento == "C") & i.IdProducto == inventario.idProducto & i.IdSucursal == usuarioSucursal.IdSucursal)
-                     .OrderByDescending(i => i.FechaCreacion)
-                     .FirstOrDefault();
+     .Where(i => (i.TipoMovimiento == "E" || i.TipoMovimiento == "C")
+                 && i.IdProducto == inventario.idProducto
+                 && i.IdSucursal == usuarioSucursal.IdSucursal)
+     .OrderByDescending(i => i.FechaCreacion)
+     .FirstOrDefault();
 
                     inv.IdProducto = inventario.idProducto;
                     inv.TipoMovimiento = inventario.tipoMovimiento;
@@ -812,7 +820,7 @@ namespace ContaFacil.Controllers
                     }
                     else
                     {
-                        codigo = "1.1.2.1";
+                        codigo = "1.1.3.1";
                     }
                     Tipocuentum tipocuentum = _context.Tipocuenta.FirstOrDefault(c=>c.Nombre== "ACTIVOS");
                     int idCuenta = 0;
@@ -828,6 +836,8 @@ namespace ContaFacil.Controllers
                         cuen.UsuarioCreacion = int.Parse(idUsuario);
                         cuen.IdEmpresa = emp.IdEmpresa;
                         cuen.IdTipoCuenta = tipocuentum.IdTipoCuenta;
+                        cuen.Debito = true;
+                        cuen.Credito = false;
                         _context.Add(cuen);
                         _context.SaveChanges();
                         idCuenta = cuen.IdCuenta;
@@ -844,6 +854,8 @@ namespace ContaFacil.Controllers
                         cuen.UsuarioCreacion = int.Parse(idUsuario);
                         cuen.IdEmpresa = emp.IdEmpresa;
                         cuen.IdTipoCuenta = tipocuentum.IdTipoCuenta;
+                        cuen.Debito = false;
+                        cuen.Credito = true;
                         _context.Add(cuen);
                         _context.SaveChanges();
                         //Crear cuenta de costo por categoria
@@ -859,6 +871,8 @@ namespace ContaFacil.Controllers
                         cuen.UsuarioCreacion = int.Parse(idUsuario);
                         cuen.IdEmpresa = emp.IdEmpresa;
                         cuen.IdTipoCuenta = tipocuentum.IdTipoCuenta;
+                        cuen.Debito = true;
+                        cuen.Credito = false;
                         _context.Add(cuen);
                         _context.SaveChanges();
                     }

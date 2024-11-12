@@ -74,7 +74,7 @@ namespace ContaFacil.Controllers
         {
             List<Menu> menusPrincipales = (from m in _context.Menus
                                            where m.MenuPerfils.Any((MenuPerfil mp) => mp.IdPerfil == perfilId & mp.Estado==true)
-                                           orderby m.IdMenu
+                                           orderby m.Orden
                                            select m).ToList();
             foreach (Menu menuPrincipal in menusPrincipales)
             {

@@ -49,6 +49,7 @@ public partial class Menu
     /// TRIAL
     /// </summary>
     public string? Action { get; set; }
+    public int? Orden {  get; set; }
 
     /// <summary>
     /// TRIAL
