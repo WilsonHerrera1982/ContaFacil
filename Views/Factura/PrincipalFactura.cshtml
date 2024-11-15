@@ -93,10 +93,17 @@
                     <i class="fas fa-percent fa-3x mb-3 text-warning"></i>
                     <h5 class="card-title">Listado Retenciones</h5>
                     <p class="card-text"Listado retenciones de proveedores y clientes.</p>
-                    <a asp-action="Index" asp-controller="Factura" class="btn btn-success mt-auto">Ver Listado</a>
+                    <a asp-action="Index" asp-controller="Retencion" class="btn btn-success mt-auto">Ver Listado</a>
 
-                    <form asp-controller="Retencion" asp-action="Index" method="post">
-                        
+                    <form asp-controller="Retencion" asp-action="ListadoRetencion" method="post">
+                        <div class="form-group">
+                            <label for="tipoRetencion">Tipo de Retención:</label>
+                            <select id="tipoRetencion" name="tipoRetencion" class="form-control" required>
+                                <option value="todos">Todos</option>
+                                <option value="proveedor">Proveedores</option>
+                                <option value="cliente">Clientes</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label for="fechaInicioBal">Fecha Inicio:</label>
                             <input type="date" id="fechaInicioBal" name="fechaInicio" class="form-control" required />
@@ -107,6 +114,8 @@
                         </div>
                         <button type="submit" class="btn btn-primary mt-3">Generar Reporte Retenciones</button>
                     </form>
+
+
                 </div>
             </div>
         </div>

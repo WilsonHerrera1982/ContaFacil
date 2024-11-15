@@ -116,7 +116,7 @@ public partial class Retencion
     /// <summary>
     /// TRIAL
     /// </summary>
-    public string? Trial492 { get; set; }
+    public string? Proveedor { get; set; }
 
     public virtual Empresa IdEmpresaNavigation { get; set; } = null!;
 }

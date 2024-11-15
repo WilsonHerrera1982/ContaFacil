@@ -1,0 +1,67 @@
+﻿@* Views/ConstatacionFisica/Index.cshtml *@
+@model IEnumerable<ContaFacil.Models.ConstatacionFisica>
+
+<div class="container-fluid">
+    <h2>Listado de Constataciones Físicas</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Fecha Inicio</label>
+                    <input type="date" name="fechaInicio" class="form-control" value="@ViewBag.FechaInicio?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Fecha Fin</label>
+                    <input type="date" name="fechaFin" class="form-control" value="@ViewBag.FechaFin?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a href="@Url.Action("Nueva")" class="btn btn-success">Nueva Constatación</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Stock Sistema</th>
+                    <th>Cantidad Física</th>
+                    <th>Diferencia</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.FechaCreacion?.ToString("dd/MM/yyyy")</td>
+                        <td>@item.Producto.Codigo</td>
+                        <td>@item.Producto.Nombre</td>
+                        <td>@item.ProductoStockActual</td>
+                        <td>@item.CantidadFisica</td>
+                        <td>@(item.CantidadFisica - item.ProductoStockActual)</td>
+                        <td>@item.ConstatacionDescripcion</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <nav>
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
+            {
+                <li class="page-item @(i == ViewBag.PaginaActual ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pagina = i, fechaInicio = ViewBag.FechaInicio, fechaFin = ViewBag.FechaFin })">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+

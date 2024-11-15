@@ -10,6 +10,7 @@ using ContaFacil.Utilities;
 using System.Xml.Linq;
 using ContaFacil.Logica;
 using ContaFacil.Models.ViewModel;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace ContaFacil.Controllers
 {
@@ -23,13 +24,26 @@ namespace ContaFacil.Controllers
             _configuration = configuration;
         }
 
-        // GET: Retencion
-        public async Task<IActionResult> Index()
+        // GET: Retencion       
+        public async Task<IActionResult> ListadoRetencion(DateTime fechaInicio, DateTime fechaFin, string tipoRetencion)
         {
-            var contableContext = _context.Retencions.Include(r => r.IdEmpresaNavigation);
-            return View(await contableContext.ToListAsync());
-        }
+            var retenciones = await _context.Retencions
+                .Include(r => r.IdEmpresaNavigation)
+                .Where(r => r.FechaCreacion >= fechaInicio && r.FechaCreacion <= fechaFin)
+                .ToListAsync();
 
+            switch (tipoRetencion?.ToLower())
+            {
+                case "cliente":
+                    retenciones = retenciones.Where(r => r.Proveedor.Equals("N")).ToList();
+                    break;
+                case "proveedor":
+                    retenciones = retenciones.Where(r => r.Proveedor.Equals("S")).ToList();
+                    break;
+            }
+
+            return View("ListadoRetencion", retenciones);
+        }
         // GET: Retencion/Details/5
         public async Task<IActionResult> Details(int? id)
         {

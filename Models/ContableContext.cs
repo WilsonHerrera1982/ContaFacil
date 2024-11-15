@@ -1656,12 +1656,7 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.MenuId)
                 .HasComment("TRIAL")
                 .HasColumnName("menu_id");
-            entity.Property(e => e.Orden).HasColumnName("orden");
-            entity.Property(e => e.Trial489)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial489");
+            entity.Property(e => e.Orden).HasColumnName("orden");           
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
@@ -2512,11 +2507,11 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
                 .HasColumnName("tipo_contribuyente");
-            entity.Property(e => e.Trial492)
+            entity.Property(e => e.Proveedor)
                 .HasMaxLength(1)
                 .IsFixedLength()
                 .HasComment("TRIAL")
-                .HasColumnName("trial492");
+                .HasColumnName("proveedor");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
