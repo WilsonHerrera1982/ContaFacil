@@ -1089,7 +1089,6 @@ public partial class ContableContext : DbContext
                 .HasComment("TRIAL")
                 .HasColumnName("clave_acceso");
             entity.Property(e => e.Credito)
-                .HasDefaultValueSql("'1'")
                 .HasComment("TRIAL")
                 .HasColumnName("credito");
             entity.Property(e => e.DescripcionSri)
@@ -2222,6 +2221,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Descripcion)
                 .HasComment("TRIAL")
                 .HasColumnName("descripcion");
+            entity.Property(e => e.CantidadMinima)
+                .HasComment("TRIAL")
+                .HasColumnName("cantidad_minima");
             entity.Property(e => e.Descuento)
                 .HasPrecision(10, 2)
                 .HasComment("TRIAL")

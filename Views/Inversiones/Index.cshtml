@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Principal Inversiones";
+    var opcionClientes = (List<OpcionCliente>)ViewBag.OpcionClientes;
+
+    bool TienePermiso(string opcionNombre)
+    {
+        return opcionClientes?.Any(o => o.OpcionNombre.Trim().Equals(opcionNombre.Trim(),
+        StringComparison.OrdinalIgnoreCase)) ?? false;
+    }
+}
+
+<style>
+    .form-group {
+        width: 400px;
+    }
+
+    .row {
+        justify-content: left;
+    }
+
+    .card.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        font-size: 1.2em;
+        z-index: 1;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- Anteriores opciones... (mantener las existentes) -->
+        <!-- Nueva opción: TABLAS DE AMORTIZACION -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("TABLA AMORTIZACION") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("TABLA AMORTIZACION"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-file-invoice-dollar fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Tabla de Amortización</h5>
+                    <p class="card-text">Gestión de tablas de amotización.</p>
+                    <a asp-action="Index" asp-controller="Caja" class="btn btn-primary mt-auto">Tablas de Amortización</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Mantener los scripts existentes -->
+    <script>
+        $(document).ready(function () {
+            $('.card.disabled a').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

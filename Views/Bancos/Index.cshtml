@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "Principal Bancos";
+    var opcionClientes = (List<OpcionCliente>)ViewBag.OpcionClientes;
+
+    bool TienePermiso(string opcionNombre)
+    {
+        return opcionClientes?.Any(o => o.OpcionNombre.Trim().Equals(opcionNombre.Trim(),
+        StringComparison.OrdinalIgnoreCase)) ?? false;
+    }
+}
+
+<style>
+    .form-group {
+        width: 400px;
+    }
+
+    .row {
+        justify-content: left;
+    }
+
+    .card.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        font-size: 1.2em;
+        z-index: 1;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- Anteriores opciones... (mantener las existentes) -->
+        <!-- Nueva opción: Caja -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("CAJA") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("CAJA"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-cash-register fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Caja</h5>
+                    <p class="card-text">Gestión de movimientos de caja.</p>
+                    <a asp-action="Index" asp-controller="Caja" class="btn btn-primary mt-auto">Ir a Caja</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva opción: Conciliaciones Bancarias -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("CONCILIACIONES BANCARIAS") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("CONCILIACIONES BANCARIAS"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-balance-scale fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">Conciliaciones Bancarias</h5>
+                    <p class="card-text">Realizar conciliaciones bancarias.</p>
+                    <a asp-action="Index" asp-controller="Conciliacion" class="btn btn-primary mt-auto">Conciliar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva opción: Estados de Cuenta -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("ESTADOS DE CUENTA") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("ESTADOS DE CUENTA"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-file-alt fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Estados de Cuenta</h5>
+                    <p class="card-text">Consulta y gestión de estados de cuenta.</p>
+                    <a asp-action="Index" asp-controller="EstadoCuenta" class="btn btn-primary mt-auto">Ver Estados</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva opción: Tarjetas de Crédito -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("TARJETAS CREDITO") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("TARJETAS CREDITO"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-credit-card fa-3x mb-3 text-warning"></i>
+                    <h5 class="card-title">Tarjetas de Crédito</h5>
+                    <p class="card-text">Gestión de tarjetas de crédito.</p>
+                    <a asp-action="Index" asp-controller="TarjetaCredito" class="btn btn-primary mt-auto">Administrar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva opción: Configuración -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("CONFIGURACION BANCOS") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("CONFIGURACION BANCOS"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-cog fa-3x mb-3 text-secondary"></i>
+                    <h5 class="card-title">Configuración</h5>
+                    <p class="card-text">Configuraciones de bancos y cuentas.</p>
+                    <a asp-action="Configuracion" asp-controller="Banco" class="btn btn-primary mt-auto">Configurar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Mantener los scripts existentes -->
+    <script>
+        $(document).ready(function () {
+            $('.card.disabled a').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

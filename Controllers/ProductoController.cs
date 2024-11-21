@@ -138,6 +138,7 @@ namespace ContaFacil.Controllers
                 product.UsuarioCreacion = int.Parse(idUsuario);
                 product.IdEmpresa = empresa.IdEmpresa;
                 product.IdImpuesto=producto.IdImpuesto;
+                product.CantidadMinima=producto.CantidadMinima;
                 if (producto.Descuento == null)
                 {
                     product.Descuento = 0;

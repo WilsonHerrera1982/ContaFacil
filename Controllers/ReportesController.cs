@@ -11,6 +11,8 @@ using System;
 using System.Text.RegularExpressions;
 using ContaFacil.Models.Interfaces;
 using ContaFacil.Models.Dto;
+using ContaFacil.Models.Services;
+using ContaFacil.Services;
 
 namespace ContaFacil.Controllers
 {
@@ -18,193 +20,58 @@ namespace ContaFacil.Controllers
     {
         private readonly ContableContext _context;
         private readonly IReporteMayorizacionService _reporteMayorizacionService;
-        public ReportesController(ContableContext context, IReporteMayorizacionService reporteMayorizacionService)
+        private readonly ILibroDiarioService _libroDiarioService;
+        private readonly IOpcionCliente _opcionCliente;
+        public ReportesController(ContableContext context, IReporteMayorizacionService reporteMayorizacionService,ILibroDiarioService libroDiarioService,IOpcionCliente opcionCliente )
         {
             _context = context;
             _reporteMayorizacionService = reporteMayorizacionService;
+            _libroDiarioService = libroDiarioService;
+            _opcionCliente = opcionCliente;
         }
 
         public IActionResult Index()
         {
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            string idEmpresa = HttpContext.Session.GetString("_empresa");
+            Usuario usuario = new Usuario();
+            usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
+            List<OpcionCliente> opcionClientes = _opcionCliente.GetOpcionClientes(usuario.IdEmpresa ?? 0);
+            ViewBag.OpcionClientes = opcionClientes;
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> ExportarLibroDiarioExcel(DateTime fechaInicio, DateTime fechaFin)
         {
-            string idUsuario = HttpContext.Session.GetString("_idUsuario");
-            Usuario usuario = new Usuario();
-            usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).FirstOrDefault();
-            UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.FirstOrDefault(u => u.IdUsuario == usuario.IdUsuario);
-            ContaFacil.Models.Sucursal sucursal = _context.Sucursals.FirstOrDefault(s => s.IdSucursal == usuarioSucursal.IdSucursal);
-            Persona persona = new Persona();
-            persona = _context.Personas.Where(p => p.IdPersona == usuario.IdPersona).FirstOrDefault();
-            Emisor emisor = new Emisor();
-            emisor = _context.Emisors.Where(e => e.Ruc == persona.Identificacion).FirstOrDefault();
-            Empresa empresa = _context.Empresas.FirstOrDefault(e => e.Identificacion == emisor.Ruc);
-
-            if (fechaInicio == default || fechaFin == default)
+            try
             {
-                TempData["Error"] = "Las fechas de inicio y fin son obligatorias.";
+                if (fechaInicio == default || fechaFin == default)
+                {
+                    TempData["Error"] = "Las fechas de inicio y fin son obligatorias.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var parametros = new LibroDiarioParametros
+                {
+                    FechaInicio = fechaInicio,
+                    FechaFin = fechaFin,
+                    UsuarioString = HttpContext.Session.GetString("_idUsuario")
+                };
+
+                var excelBytes = await _libroDiarioService.GenerarLibroDiario(parametros);
+                return File(
+                    excelBytes,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "LibroDiario.xlsx");
+            }
+            catch (Exception ex)
+            {
+                // Considera usar un servicio de logging aquí
+                TempData["Error"] = "Ocurrió un error al generar el reporte.";
                 return RedirectToAction(nameof(Index));
             }
-
-            var transacciones = await _context.Transaccions
-                .Where(t => t.FechaCreacion >= fechaInicio && t.FechaCreacion <= fechaFin && t.IdEmpresa == empresa.IdEmpresa)
-                .OrderBy(t => t.Fecha)
-                .ThenBy(t => t.IdTransaccion)
-                .Include(t => t.IdCuentaNavigation)
-                .ToListAsync();
-
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Libro Diario");
-                var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
-                var logo = worksheet.AddPicture(logoPath)
-                    .MoveTo(worksheet.Cell("A1"))
-                    .Scale(0.25);
-
-                // Agregar encabezado
-                worksheet.Cell("C1").Value = "LIBRO DIARIO";
-                worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";
-                worksheet.Cell("C3").Value = $"RUC: {empresa.Identificacion}";
-                worksheet.Cell("C4").Value = $"Sucursal: {sucursal.NombreSucursal}";
-
-                // Encabezados de la tabla
-                int currentRow = 8;
-                worksheet.Cell(currentRow, 1).Value = "Fecha";
-                worksheet.Cell(currentRow, 2).Value = "No. Asiento";
-                worksheet.Cell(currentRow, 3).Value = "Código";
-                worksheet.Cell(currentRow, 4).Value = "Cuenta";
-                worksheet.Cell(currentRow, 5).Value = "Detalle";
-                worksheet.Cell(currentRow, 6).Value = "Debe";
-                worksheet.Cell(currentRow, 7).Value = "Haber";
-                worksheet.Cell(currentRow, 8).Value = "Movimiento";
-
-                // Estilo para encabezados
-                var headerRange = worksheet.Range(currentRow, 1, currentRow, 8);
-                headerRange.Style.Font.Bold = true;
-                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
-
-                currentRow++;
-
-                Cuentum cue2 = _context.Cuenta.FirstOrDefault(c => c.Nombre == "Relacionadas por pagar");
-                string lastAsiento = "";
-                var compras = transacciones.Where(t => !t.Descripcion.ToLower().Contains("venta") && t.IdCuenta != cue2.IdCuenta);
-                var ventas = transacciones
-                    .Where(t => t.Descripcion.ToLower().Contains("venta") &&
-                                !t.Descripcion.ToLower().Contains("saldo inicial inventarios"))
-                    .OrderBy(t => t.FechaCreacion)
-                    .ToList();
-
-                var inicial = transacciones.Where(t => t.Descripcion.ToLower().Contains("inicial")).ToList();
-
-                // Procesar todas las transacciones en orden cronológico
-                foreach (var transaccion in compras.Concat(ventas).Concat(inicial).OrderBy(t => t.FechaCreacion))
-                {
-                    if (transaccion.Descripcion.Split(' ')[0] != lastAsiento)
-                    {
-                        if (lastAsiento != "")
-                        {
-                            currentRow++; // Agregar fila vacía después de cada asiento completo
-                        }
-                        lastAsiento = transaccion.Descripcion.Split(' ')[0];
-                    }
-
-                    currentRow++;
-                    worksheet.Cell(currentRow, 1).Value = transaccion.FechaCreacion;
-                    worksheet.Cell(currentRow, 2).Value = transaccion.Descripcion.Split(' ')[0];
-                    worksheet.Cell(currentRow, 3).Value = transaccion.IdCuentaNavigation.Codigo;
-                    worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
-                    worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
-                    // Manejo especial para Anticipos de clientes y Cuentas por cobrar
-                    if (transaccion.IdCuentaNavigation.Codigo == "1.1.4" && transaccion.EsDebito.GetValueOrDefault())
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
-                        worksheet.Cell(currentRow, 7).Value = -Math.Abs(transaccion.Monto); // Haber
-                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.2.1" && transaccion.EsDebito.GetValueOrDefault())
-                    {
-                        worksheet.Cell(currentRow, 6).Value = Math.Abs(transaccion.Monto); // Debe
-                        worksheet.Cell(currentRow, 7).Value = 0; // Haber
-                        worksheet.Cell(currentRow, 8).Value = Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                   
-                    else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.2.")&& transaccion.EsDebito.GetValueOrDefault())
-                    {
-                        worksheet.Cell(currentRow, 6).Value = Math.Abs(transaccion.Monto); // Debe
-                        worksheet.Cell(currentRow, 7).Value = 0; // Haber
-                        worksheet.Cell(currentRow, 8).Value = Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    else if (transaccion.IdCuentaNavigation.Codigo.Contains("1.1.2.") && !transaccion.EsDebito.GetValueOrDefault())
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
-                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
-                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.3.1")
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
-                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
-                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.5.1")
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
-                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
-                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    // Manejo especial para Anticipos de clientes y Cuentas por cobrar
-                    else if (transaccion.IdCuentaNavigation.Codigo == "2.1.2.1")
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
-                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
-                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    else if (transaccion.IdCuentaNavigation.Codigo == "1.1.4")
-                    {
-                        worksheet.Cell(currentRow, 6).Value = Math.Abs(transaccion.Monto); // Debe
-                        worksheet.Cell(currentRow, 7).Value = 0; // Haber
-                        worksheet.Cell(currentRow, 8).Value = Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    else if (transaccion.IdCuentaNavigation.Codigo != "4.1.1" && transaccion.IdCuentaNavigation.Codigo.Contains("4.1."))
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
-                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
-                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    else if (transaccion.IdCuentaNavigation.Codigo.Contains( "2.1.3.") && transaccion.EsDebito.GetValueOrDefault())
-                    {
-                        worksheet.Cell(currentRow, 6).Value = 0; // Debe
-                        worksheet.Cell(currentRow, 7).Value = Math.Abs(transaccion.Monto); // Haber
-                        worksheet.Cell(currentRow, 8).Value = -Math.Abs(transaccion.Monto); // Movimiento negativo
-                    }
-                    else
-                    {
-                        // Manejo normal para otras cuentas
-                        worksheet.Cell(currentRow, 6).Value = transaccion.Monto > 0 ? transaccion.Monto : 0; // Debe
-                        worksheet.Cell(currentRow, 7).Value = transaccion.Monto < 0 ? Math.Abs(transaccion.Monto) : 0; // Haber
-                        worksheet.Cell(currentRow, 8).Value = transaccion.Monto; // Movimiento
-                    }
-                }
-
-                // Ajustar anchos de columna
-                worksheet.Columns().AdjustToContents();
-
-                // Formato para columnas numéricas
-                var rangeNumerica = worksheet.Range(8, 6, currentRow, 8);
-                rangeNumerica.Style.NumberFormat.Format = "#,##0.00";
-
-                using (var stream = new MemoryStream())
-                {
-                    workbook.SaveAs(stream);
-                    var content = stream.ToArray();
-                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "LibroDiario.xlsx");
-                }
-            }
         }
-
         [HttpPost]
         public async Task<IActionResult> ExportarMayorizacionExcel(DateTime fechaInicio, DateTime fechaFin)
         {

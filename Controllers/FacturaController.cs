@@ -21,6 +21,7 @@ using Irony.Parsing;
 using DocumentFormat.OpenXml.Office2013.Excel;
 using ContaFacil.Models.Dto;
 using Newtonsoft.Json;
+using ContaFacil.Services;
 namespace ContaFacil.Controllers
 {
     public class FacturaController : NotificacionClass
@@ -28,14 +29,15 @@ namespace ContaFacil.Controllers
         private readonly ContableContext _context;
         private readonly IConfiguration _configuration;
         private readonly TareaRegistroTransacciones _tareaRegistroTransacciones;
-
+        private readonly IOpcionCliente _opcionCliente;
         string idUsuario ="";
         string idEmpresa="";
-        public FacturaController(ContableContext context, IConfiguration configuration, TareaRegistroTransacciones tareaRegistroTransacciones)
+        public FacturaController(ContableContext context, IConfiguration configuration, TareaRegistroTransacciones tareaRegistroTransacciones,IOpcionCliente opcionCliente)
         {            
             _context = context;
             _configuration = configuration;
             _tareaRegistroTransacciones= tareaRegistroTransacciones;
+            _opcionCliente= opcionCliente;
         }
         // GET: Factura
         public async Task<IActionResult> Index()
@@ -84,7 +86,7 @@ namespace ContaFacil.Controllers
             usuarioSucursal = _context.UsuarioSucursals.Where(e => e.IdUsuario==usuario.IdUsuario).FirstOrDefault();
             
             List<SucursalInventario> sucursalInventario = _context.SucursalInventarios.Where(s => s.IdSucursal == usuarioSucursal.IdSucursal).
-                Include(i=>i.IdInventarioNavigation).Where(i=> (i.IdInventarioNavigation.TipoMovimiento == "S" || i.IdInventarioNavigation.TipoMovimiento == "E") & i.IdInventarioNavigation.Stock >= 0).ToList();
+                Include(i=>i.IdInventarioNavigation).Where(i=> (i.IdInventarioNavigation.TipoMovimiento == "S" || i.IdInventarioNavigation.TipoMovimiento == "E") && i.IdInventarioNavigation.Stock >= 0).ToList();
             // Obtener la lista de IdProducto de sucursalInventario
             // Obtener la lista de IdProducto de sucursalInventario, filtrando los valores nulos
             List<int> idProductos = sucursalInventario
@@ -165,7 +167,14 @@ namespace ContaFacil.Controllers
                     {
                         factura.NumeroFactura = emisor.Establecimiento + "-" + sucursalInventario.IdSucursalNavigation.PuntoEmision + "-" + emisor.Secuencial;
                     }
-
+                    if (factura.Credito)
+                    {
+                        factura.Credito= true;
+                    }
+                    else
+                    {
+                        factura.Credito = false;
+                    }
                     factura.Fecha = DateOnly.FromDateTime(DateTime.Now);
                     factura.FechaCreacion = DateTime.Now;
                     factura.UsuarioCreacion = int.Parse(idUsuario);
@@ -173,10 +182,8 @@ namespace ContaFacil.Controllers
                     factura.EstadoBoolean = true;
                     factura.IdEmisor = emisor.IdEmisor;
                     factura.IdSucursal = sucursalInventario.IdSucursal;
-
-                    _context.Facturas.Add(factura);
+                    _context.Add(factura);
                     await _context.SaveChangesAsync();
-
                     foreach (var detalle in detalles)
                     {
                         var inventario = new Inventario();
@@ -742,9 +749,14 @@ namespace ContaFacil.Controllers
         }
         public IActionResult PrincipalFactura()
         {
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            string idEmpresa = HttpContext.Session.GetString("_empresa");
+            Usuario usuario = new Usuario();
+            usuario = _context.Usuarios.Where(u => u.IdUsuario == int.Parse(idUsuario)).Include(p => p.IdPersonaNavigation).FirstOrDefault();
             // Aquí puedes agregar cualquier lógica adicional que necesites antes de devolver la vista
             // Por ejemplo, podrías cargar algunos datos desde la base de datos y pasarlos a la vista
-
+            List<OpcionCliente> opcionClientes = _opcionCliente.GetOpcionClientes(usuario.IdEmpresa ?? 0);
+            ViewBag.OpcionClientes = opcionClientes;
             return View(); // Esto devolverá la vista PrincipalProducto.cshtml
         }
         [HttpPost]
@@ -989,10 +1001,10 @@ namespace ContaFacil.Controllers
             string descripcion = factura.NumeroFactura;
 
             // Transacción descuento
-            await CrearTransaccion("Descuento en ventas", numeroAsiento + " Venta de " + descripcion, des, tipoTransaccion, empresa, usuario);
+            await CrearTransaccion("Descuento en ventas", numeroAsiento + " Venta de " + descripcion, des, tipoTransaccion, empresa, usuario,false);
 
             // Transacción IVA
-            await CrearTransaccion("IVA por pagar", numeroAsiento + " IVA por pagar en venta de " + descripcion, iva, tipoTransaccion, empresa, usuario);
+            await CrearTransaccion("IVA por pagar", numeroAsiento + " IVA por pagar en venta de " + descripcion, iva, tipoTransaccion, empresa, usuario,true);
 
 
             if (!factura.Credito)
@@ -1008,7 +1020,7 @@ namespace ContaFacil.Controllers
                         _ => throw new ArgumentException("Tipo de pago no reconocido")
                     };
 
-                    await CrearTransaccion(cuentaCodigo, numeroAsiento + " Venta de " + descripcion, pag.Monto, tipoTransaccion, empresa, usuario);
+                    await CrearTransaccion(cuentaCodigo, numeroAsiento + " Venta de " + descripcion, pag.Monto, tipoTransaccion, empresa, usuario,true);
                 }
             }
             else
@@ -1024,7 +1036,7 @@ namespace ContaFacil.Controllers
                 cuentaCobrar.IdEmpresa = empresa.IdEmpresa;
                  context.Add(cuentaCobrar);
                 context.SaveChanges();
-                await CrearTransaccion(cuentum.Codigo, numeroAsiento + " Cuenta por cobrar " + desc, factura.MontoTotal, tipoTransaccion, empresa, usuario);
+                await CrearTransaccion(cuentum.Codigo, numeroAsiento + " Cuenta por cobrar " + desc, factura.MontoTotal, tipoTransaccion, empresa, usuario,true);
             }
             // Transacciones por categoría
             foreach (var cat in listaCategorias)
@@ -1036,7 +1048,7 @@ namespace ContaFacil.Controllers
                 decimal totalCategoria = inventariosFiltrados.Sum(i => i.Total) ?? 0;
                 decimal descuentoFiltrado = inventariosFiltrados.Sum(i => i.Descuento) ?? 0;
 
-                await CrearTransaccion("Ingreso " + cat.Nombre, numeroAsiento + " Venta de " + cat.Nombre + " " + descripcion, totalCategoria + descuentoFiltrado, tipoTransaccion, empresa, usuario);
+                await CrearTransaccion("Ingreso " + cat.Nombre, numeroAsiento + " Venta de " + cat.Nombre + " " + descripcion, totalCategoria + descuentoFiltrado, tipoTransaccion, empresa, usuario,true);
                 
                 //calculo de  valor desde ultimo ingreso del kardex
                // List<DetalleFactura> detalles = factura.DetalleFacturas;
@@ -1051,8 +1063,8 @@ namespace ContaFacil.Controllers
                 decimal precioCalculo = inventario.PrecioCalculo ?? 0;
                 decimal cantidad = det.Cantidad;
                 decimal valor = precioCalculo * cantidad;
-                await CrearTransaccion("Costo " + inventario.IdProductoNavigation.IdCategoriaProductoNavigation.Nombre, numeroAsiento + " Venta de mercadería " + inventario.IdProductoNavigation.Nombre + " " + descripcion, valor, tipoTransaccion, empresa, usuario);
-                await CrearTransaccion(inventario.IdProductoNavigation.IdCategoriaProductoNavigation.Nombre, numeroAsiento + " Venta de mercadería " + inventario.IdProductoNavigation.Nombre + " " + descripcion, valor, tipoTransaccion, empresa, usuario);
+                await CrearTransaccion("Costo " + inventario.IdProductoNavigation.IdCategoriaProductoNavigation.Nombre, numeroAsiento + " Venta de mercadería " + inventario.IdProductoNavigation.Nombre + " " + descripcion, valor, tipoTransaccion, empresa, usuario,true);
+                await CrearTransaccion(inventario.IdProductoNavigation.IdCategoriaProductoNavigation.Nombre, numeroAsiento + " Venta de mercadería " + inventario.IdProductoNavigation.Nombre + " " + descripcion, valor, tipoTransaccion, empresa, usuario,false);
             }
         }
 

@@ -145,6 +145,20 @@
                 </div>
             </div>
         </div>
+         <div class="col">
+            <div class="card h-100 @(!TienePermiso("CONSTATACION FISICA") ? "disabled" : "")">
+                @if (!TienePermiso("CONSTATACION FISICA"))
+                {
+                    <i class="fas fa-lock lock-icon"></i>
+                }
+                <div class="card-body text-center">
+                    <i class="fas fa-file-signature fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">Constatacion Física</h5>
+                    <p class="card-text">Gestiona el registro de constatacion física.</p>
+                    <a asp-action="Index" asp-controller="ConstatacionFisica" class="btn btn-info mt-auto">Constatación Física</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

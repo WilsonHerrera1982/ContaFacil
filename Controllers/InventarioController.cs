@@ -20,12 +20,14 @@ namespace ContaFacil.Controllers
         private readonly IConfiguration _configuration;
         private readonly IMenuService _menuService;
         private readonly IOpcionCliente _opcionCliente;
-        public InventarioController(ContableContext context, IConfiguration configuration, IMenuService menuService, IOpcionCliente opcionCliente)
+        private readonly TareaRegistroTransacciones _tareaRegistroTransacciones;
+        public InventarioController(ContableContext context, IConfiguration configuration, IMenuService menuService, IOpcionCliente opcionCliente, TareaRegistroTransacciones tareaRegistroTransacciones)
         {
             _context = context;
             _configuration = configuration;
             _menuService = menuService;
             _opcionCliente = opcionCliente;
+            _tareaRegistroTransacciones = tareaRegistroTransacciones;
         }
 
         // GET: Inventario
@@ -128,7 +130,7 @@ namespace ContaFacil.Controllers
             "NombreDescripcion"
         );
 
-            ViewData["IdSucursal"] = new SelectList(_context.Sucursals.Where(s => s.IdEmisor == emisor.IdEmisor & !s.NombreSucursal.Equals("Sucursal Principal")), "IdSucursal", "NombreSucursal");
+            ViewData["IdSucursal"] = new SelectList(_context.Sucursals.Where(s => s.IdEmisor == emisor.IdEmisor & !s.NombreSucursal.Equals("Matriz")), "IdSucursal", "NombreSucursal");
             return View();
         }
 
@@ -286,6 +288,19 @@ namespace ContaFacil.Controllers
                     sucursalInventario.UsuarioCreacion = int.Parse(idUsuario);
                     _context.Add(sucursalInventario);
                     await _context.SaveChangesAsync();
+                    string numeroAsiento = ObtenerSiguienteNumeroAsiento();
+                    var tipoTransaccion2 = await _context.TipoTransaccions
+                            .FirstOrDefaultAsync(t => t.Nombre == "Compra");
+                    if (inv.Descuento > 0)
+                    {
+                        await CrearTransaccion(cuentum.Codigo, numeroAsiento +$" Compra de {producto.Nombre}",  inv.Subtotal15 ?? 0, tipoTransaccion2, empresa, usuario,  true);
+                     }
+                    else
+                    {
+                          await CrearTransaccion(cuentum.Codigo, numeroAsiento + $" Compra de {producto.Nombre}", inv.SubTotal ?? 0, tipoTransaccion2, empresa, usuario, true);
+                    }
+                    await CrearTransaccion(cuentum.Codigo, numeroAsiento + $" IVA en compra de {producto.Nombre}", inv.Iva ?? 0, tipoTransaccion2, empresa, usuario, true);
+                   
                     // Generar retención si es aplicable
                     List<Retencion> retencions = new List<Retencion>();
                     if (proveedor.RetencionPorcentaje > 0 || proveedor.RetencionIva > 0)
@@ -293,7 +308,7 @@ namespace ContaFacil.Controllers
                         Retencion ret = _context.Retencions.Where(r => r.IdEmpresa == empresa.IdEmpresa).OrderByDescending(r => r.FechaCreacion).FirstOrDefault();
 
                         var retencionXml = new RetencionXmlGenerator(_configuration);
-                        string numeroAsiento = ObtenerSiguienteNumeroAsiento();
+                        
                         if (proveedor.RetencionPorcentaje > 0)
                         {
                             String numeroRetencion = "";
@@ -328,10 +343,10 @@ namespace ContaFacil.Controllers
                             retencions.Add(retencionRenta);
                             proveedor.RetencionPorcentaje = Math.Truncate(proveedor.RetencionPorcentaje??0);
                             Cuentum cuent2 = _context.Cuenta.FirstOrDefault(c => c.Nombre.Contains("Retención IR") && c.Nombre.Contains(proveedor.RetencionPorcentaje.ToString()) && c.Codigo.Contains("2.1.4."));
-                            var tipoTransaccion2 = await _context.TipoTransaccions
+                            var tipoTransaccion3 = await _context.TipoTransaccions
                             .FirstOrDefaultAsync(t => t.Nombre == "Compra");
                             string descripcion2 = producto.Nombre + " " + inv.FacturaNumero;
-                            await CrearTransaccion(cuent2.Codigo, numeroAsiento + " Compra de " + descripcion2,retencionRenta.ValorRetenido ?? 0, tipoTransaccion2, empresa, usuario, true);
+                            await CrearTransaccion(cuent2.Codigo, numeroAsiento + " Compra de " + descripcion2,retencionRenta.ValorRetenido ?? 0, tipoTransaccion3, empresa, usuario, false);
 
                         }
 
@@ -373,7 +388,7 @@ namespace ContaFacil.Controllers
                             var tipoTransaccion1 = await _context.TipoTransaccions
                             .FirstOrDefaultAsync(t => t.Nombre == "Compra");
                             string descripcion1 = producto.Nombre + " " + inv.FacturaNumero;
-                            await CrearTransaccion(cuent1.Codigo, numeroAsiento + " Compra de " + descripcion1, retencionIva.ValorRetenido ?? 0, tipoTransaccion1, empresa, usuario, true);
+                            await CrearTransaccion(cuent1.Codigo, numeroAsiento + " Compra de " + descripcion1, retencionIva.ValorRetenido ?? 0, tipoTransaccion1, empresa, usuario, false);
                         }
 
                         await _context.SaveChangesAsync();
@@ -402,7 +417,12 @@ namespace ContaFacil.Controllers
                         var tipoTransaccion = await _context.TipoTransaccions
                         .FirstOrDefaultAsync(t => t.Nombre == "Compra");
                         string descripcion = producto.Nombre + " " + inv.FacturaNumero;
-                        await CrearTransaccion(cuent.Codigo, numeroAsiento + " Pago a proveedor " + descripcion, sumaRetencion ?? 0, tipoTransaccion, empresa, usuario, true);
+                       
+                       // await CrearTransaccion(cuent.Codigo, numeroAsiento + " Pago a proveedor " + descripcion, sumaRetencion ?? 0, tipoTransaccion, empresa, usuario, true);
+                        var pagoTotal = inv.Total - sumaRetencion;
+                        await CrearTransaccion(cuentum.Codigo, numeroAsiento + $" Compra de "+ descripcion, pagoTotal??0, tipoTransaccion2, empresa, usuario, false);
+                        inv.TransaccionRegistrada = true;
+                        _context.Update(inv);
                         // Guardar los cambios en todas las retenciones
                         await _context.SaveChangesAsync();
 
@@ -765,7 +785,8 @@ namespace ContaFacil.Controllers
                                 Descuento = decimal.Parse(worksheet.Cells[row, 10].Value?.ToString()),
                                 Subtotal = decimal.Parse(worksheet.Cells[row, 11].Value?.ToString()),
                                 IVA = decimal.Parse(worksheet.Cells[row, 12].Value?.ToString()),
-                                Total = decimal.Parse(worksheet.Cells[row, 13].Value?.ToString())
+                                Total = decimal.Parse(worksheet.Cells[row, 13].Value?.ToString()),
+                                FechaCreacion= DateTime.Now,
                             };
 
                             listProductosRegistrados.Add(producto);

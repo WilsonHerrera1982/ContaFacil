@@ -69,7 +69,7 @@ Detalles
     </dl>
 </div>
 <div>
-    @if (!Model.NombreSucursal.Equals("Sucursal Principal"))
+    @if (!Model.NombreSucursal.Equals("Matriz"))
     {
         <a asp-action="Edit" asp-route-id="@Model?.IdSucursal">Editar</a> <span> | </span>
     }

@@ -80,6 +80,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 builder.Services.AddScoped<TareaRegistroTransacciones>();
 builder.Services.AddScoped<IMenuService, MenuService>();
+builder.Services.AddScoped<ILibroDiarioService, LibroDiarioService>();
+
 builder.Services.AddScoped<IOpcionCliente, OpcionClienteImpl>();
 var app = builder.Build();
 

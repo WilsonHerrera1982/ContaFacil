@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Principal Proveedores";
+    var opcionClientes = (List<OpcionCliente>)ViewBag.OpcionClientes;
+    bool TienePermiso(string opcionNombre)
+    {
+        return opcionClientes?.Any(o => o.OpcionNombre.Trim().Equals(opcionNombre.Trim(),
+        StringComparison.OrdinalIgnoreCase)) ?? false;
+    }
+}
+
+<style>
+    .form-group {
+        width: 400px;
+    }
+
+    .row {
+        justify-content: left;
+    }
+
+    .card.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        font-size: 1.2em;
+        z-index: 1;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- Registro de Activos Fijos -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("LISTADO PROVEEDOR") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("LISTADO PROVEEDOR"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-boxes fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Listado de prooveedores</h5>
+                    <p class="card-text">Listar y gestionar proveedores de la empresa.</p>
+                    <a asp-action="Index" asp-controller="Proveedor" class="btn btn-primary mt-auto">Listar Proveedores</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Depreciación -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("ANTICIPO PROVEEDORES") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("ANTICIPO PROVEEDORES"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-chart-line fa-3x mb-3 text-secondary"></i>
+                    <h5 class="card-title">Antiticipo Proveedores</h5>
+                    <p class="card-text">Gestionar anticipos proveedores.</p>
+                    <a asp-action="CalcularDepreciacion" class="btn btn-secondary mt-auto">Anticipo Proveedores</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("PAGO PROVEEDORES") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("PAGO PROVEEDORES"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-cogs fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">Pago Proveedores</h5>
+                    <p class="card-text">Gestionar los pagos de proveedores.</p>
+                    <a asp-action="Configurar" class="btn btn-info mt-auto">Pago Proveedores</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.card.disabled a').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -39,11 +39,11 @@
                 }
                 else
                 {
-                    @if (ViewBag.NombreSucursal.Equals("Sucursal Principal")) { 
+                    @if (ViewBag.NombreSucursal.Equals("Matriz")) { 
                     <a asp-action="Edit" asp-route-id="@item.IdDespacho">Editar</a> <span>|</span>
                     }
                     <a asp-action="Details" asp-route-id="@item.IdDespacho">Detalles</a> <span>|</span>
-                    @if (ViewBag.NombreSucursal.Equals("Sucursal Principal"))
+                    @if (ViewBag.NombreSucursal.Equals("Matriz"))
                     {
                         <a asp-action="Delete" asp-route-id="@item.IdDespacho">Borrar</a>
                     }

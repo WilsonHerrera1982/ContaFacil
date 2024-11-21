@@ -1,7 +1,14 @@
 ﻿@{
     ViewData["Title"] = "Principal Cliente";
-}
+    var opcionClientes = (List<OpcionCliente>
+    )ViewBag.OpcionClientes;
 
+    bool TienePermiso(string opcionNombre)
+    {
+        return opcionClientes?.Any(o => o.OpcionNombre.Trim().Equals(opcionNombre.Trim(),
+        StringComparison.OrdinalIgnoreCase)) ?? false;
+    }
+}
 <style>
     .form-group {
         width: 400px;
@@ -10,6 +17,21 @@
     .row {
         justify-content: left;
     }
+
+    .card.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        font-size: 1.2em;
+        z-index: 1;
+    }
 </style>
 
 <div class="container mt-4">
@@ -17,8 +39,12 @@
     <div class="row row-cols-1 row-cols-md-2 g-4">
         <!-- Crear Cliente -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("CREAR CLIENTE") ? "disabled" : "")">
                 <div class="card-body text-center">
+                     @if (!TienePermiso("CREAR CLIENTE"))
+         {
+             <i class="fas fa-lock lock-icon"></i>
+         }
                     <i class="fas fa-user-plus fa-3x mb-3 text-primary"></i>
                     <h5 class="card-title">Crear Cliente</h5>
                     <p class="card-text">Registra un nuevo cliente en el sistema.</p>
@@ -29,8 +55,12 @@
 
         <!-- Listado de Clientes -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("LISTADO CLIENTES") ? "disabled" : "")">
                 <div class="card-body text-center">
+                     @if (!TienePermiso("LISTADO CLIENTES"))
+         {
+             <i class="fas fa-lock lock-icon"></i>
+         }
                     <i class="fas fa-list-ul fa-3x mb-3 text-success"></i>
                     <h5 class="card-title">Listado de Clientes</h5>
                     <p class="card-text">Ver y gestionar todos los clientes registrados.</p>
@@ -41,8 +71,12 @@
 
         <!-- Anticipos -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("ANTICIPO CLIENTES") ? "disabled" : "")">
                 <div class="card-body text-center">
+                     @if (!TienePermiso("ANTICIPO CLIENTES"))
+         {
+             <i class="fas fa-lock lock-icon"></i>
+         }
                     <i class="fas fa-hand-holding-usd fa-3x mb-3 text-info"></i>
                     <h5 class="card-title">Anticipos</h5>
                     <p class="card-text">Gestiona los anticipos de los clientes.</p>
@@ -53,8 +87,12 @@
 
         <!-- Cuentas Por Cobrar -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("CUENTAS COBRAR") ? "disabled" : "")">
                 <div class="card-body text-center">
+                     @if (!TienePermiso("CUENTAS COBRAR"))
+         {
+             <i class="fas fa-lock lock-icon"></i>
+         }
                     <i class="fas fa-file-invoice-dollar fa-3x mb-3 text-warning"></i>
                     <h5 class="card-title">Cuentas Por Cobrar</h5>
                     <p class="card-text">Administra las cuentas por cobrar de los clientes.</p>
@@ -64,3 +102,33 @@
         </div>
     </div>
 </div>
+
+             @section Scripts {
+    <script src="~/js/jquery-3.6.0.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/js/bootstrap.js"></script>
+    <script src="~/js/inventario.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.card.disabled a').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

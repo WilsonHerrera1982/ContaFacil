@@ -1,6 +1,15 @@
 ﻿@{
-    ViewData["Title"] = "Principal Facturación";
+    ViewData["Title"] = "Principal Facturacion";
+    var opcionClientes = (List<OpcionCliente>
+    )ViewBag.OpcionClientes;
+
+    bool TienePermiso(string opcionNombre)
+    {
+        return opcionClientes?.Any(o => o.OpcionNombre.Trim().Equals(opcionNombre.Trim(),
+        StringComparison.OrdinalIgnoreCase)) ?? false;
+    }
 }
+
 
 <style>
     .form-group {
@@ -10,12 +19,31 @@
     .row {
         justify-content: left;
     }
+
+    .card.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        font-size: 1.2em;
+        z-index: 1;
+    }
 </style>
 <div class="container mt-4">
     <div class="row row-cols-1 row-cols-md-3 g-4">
         <!-- Nueva Factura -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("CREAR FACTURA") ? "disabled" : "")">
+                @if (!TienePermiso("CREAR FACTURA"))
+                        {
+                            <i class="fas fa-lock lock-icon"></i>
+                        }
                 <div class="card-body text-center">
                     <i class="fas fa-file-invoice-dollar fa-3x mb-3 text-primary"></i>
                     <h5 class="card-title">Nueva Factura</h5>
@@ -29,8 +57,12 @@
 
         <!-- Reporte Facturación -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("REPORTE FACTURACION") ? "disabled" : "")">
                 <div class="card-body text-center">
+                    @if (!TienePermiso("REPORTE FACTURACION"))
+{
+    <i class="fas fa-lock lock-icon"></i>
+}
                     <i class="fas fa-chart-line fa-3x mb-3 text-info"></i>
                     <h5 class="card-title">Reporte Facturación</h5>
                     <p class="card-text">Genera reportes de facturación detallados.</p>
@@ -54,8 +86,12 @@
 
         <!-- Reporte Notas de Crédito -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("REPORTE NC") ? "disabled" : "")">
                 <div class="card-body text-center">
+                    @if (!TienePermiso("REPORTE NC"))
+{
+    <i class="fas fa-lock lock-icon"></i>
+}
                     <i class="fas fa-receipt fa-3x mb-3 text-warning"></i>
                     <h5 class="card-title">Reporte Notas de Crédito</h5>
                     <p class="card-text">Genera reportes de notas de crédito.</p>
@@ -77,8 +113,12 @@
         </div>
         <!-- Registrar Retenciones -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("CREAR RETENCION") ? "disabled" : "")">
                 <div class="card-body text-center">
+                    @if (!TienePermiso("CREAR RETENCION"))
+{
+    <i class="fas fa-lock lock-icon"></i>
+}
                     <i class="fas fa-file-invoice-dollar fa-3x mb-3 text-primary"></i>
                     <h5 class="card-title">Registrar Retención de Clientes</h5>
                     <p class="card-text">Registrar una nueva retención en el sistema.</p>
@@ -88,8 +128,12 @@
         </div>
         <!-- Reporte Retenciones -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("LISTADO RETENCIONES") ? "disabled" : "")">
                 <div class="card-body text-center">
+                    @if (!TienePermiso("LISTADO RETENCIONES"))
+{
+    <i class="fas fa-lock lock-icon"></i>
+}
                     <i class="fas fa-percent fa-3x mb-3 text-warning"></i>
                     <h5 class="card-title">Listado Retenciones</h5>
                     <p class="card-text"Listado retenciones de proveedores y clientes.</p>
@@ -121,8 +165,12 @@
         </div>
          <!-- Configuracion impuestos -->
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 @(!TienePermiso("CONFIGURACION IMPUESTOS") ? "disabled" : "")">
                 <div class="card-body text-center">
+                    @if (!TienePermiso("CONFIGURACION IMPUESTOS"))
+{
+    <i class="fas fa-lock lock-icon"></i>
+}
                     <i class="fas fa-percent fa-3x mb-3 text-secondary"></i>
                     <h5 class="card-title">Configuración Impuestos</h5>
                     <p class="card-text">Registrar un nuevo impuesto en el sistema.</p>
@@ -134,3 +182,32 @@
 
     </div>
 </div>
+@section Scripts {
+    <script src="~/js/jquery-3.6.0.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/js/bootstrap.js"></script>
+    <script src="~/js/inventario.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.card.disabled a').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

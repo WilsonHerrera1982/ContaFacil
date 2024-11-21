@@ -77,11 +77,11 @@ else
             </td>
           
             <td>
-                    @if(!item.NombreSucursal.Equals("Sucursal Principal")){
+                    @if(!item.NombreSucursal.Equals("Matriz")){
                         <a asp-action="Edit" asp-route-id="@item.IdSucursal">Editar</a> <span> | </span>
                     }
                 <a asp-action="Details" asp-route-id="@item.IdSucursal">Detalles</a> |
-                    @if (!item.NombreSucursal.Equals("Sucursal Principal"))
+                    @if (!item.NombreSucursal.Equals("Matriz"))
                     {
                 <a asp-action="Delete" asp-route-id="@item.IdSucursal">Borrar</a>
                     }

@@ -73,18 +73,18 @@ namespace ContaFacil.Controllers
         public List<Menu> ObtenerMenusPorPerfil(int perfilId)
         {
             List<Menu> menusPrincipales = (from m in _context.Menus
-                                           where m.MenuPerfils.Any((MenuPerfil mp) => mp.IdPerfil == perfilId & mp.Estado==true)
+                                           where m.MenuPerfils.Any(mp => mp.IdPerfil == perfilId && mp.Estado == true)
                                            orderby m.Orden
                                            select m).ToList();
+
             foreach (Menu menuPrincipal in menusPrincipales)
             {
                 menuPrincipal.subMenus = (from m in _context.Menus
-                                          where m.MenuId == (int?)menuPrincipal.IdMenu
-                                          orderby m.IdMenu
+                                          where m.MenuId == menuPrincipal.IdMenu // Cambié a usar la relación original
+                                          orderby m.Orden
                                           select m).ToList();
-                
             }
-           
+
             return menusPrincipales;
         }
         public IActionResult Logout()

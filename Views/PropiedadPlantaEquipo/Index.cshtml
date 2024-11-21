@@ -1,0 +1,107 @@
+﻿@{
+    ViewData["Title"] = "Propiedad Planta y Equipo";
+    var opcionClientes = (List<OpcionCliente>)ViewBag.OpcionClientes;
+
+    bool TienePermiso(string opcionNombre)
+    {
+        return opcionClientes?.Any(o => o.OpcionNombre.Trim().Equals(opcionNombre.Trim(),
+        StringComparison.OrdinalIgnoreCase)) ?? false;
+    }
+}
+
+<style>
+    .form-group {
+        width: 400px;
+    }
+
+    .row {
+        justify-content: left;
+    }
+
+    .card.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        font-size: 1.2em;
+        z-index: 1;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- Registro de Activos Fijos -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("REGISTRO ACTIVOS FIJOS") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("REGISTRO ACTIVOS FIJOS"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-building fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Registro de Activos Fijos</h5>
+                    <p class="card-text">Registrar y gestionar activos fijos de la empresa.</p>
+                    <a asp-action="Index" asp-controller="ActivoFijo" class="btn btn-primary mt-auto">Registrar Activo</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Depreciación -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("DEPRECIACION") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("DEPRECIACION"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-chart-line fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Depreciación</h5>
+                    <p class="card-text">Calcular y gestionar depreciaciones de activos.</p>
+                    <a asp-action="Calcular" asp-controller="Depreciacion" class="btn btn-primary mt-auto">Calcular Depreciación</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración -->
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("CONFIGURACION ACTIVOS FIJOS") ? "disabled" : "")">
+                <div class="card-body text-center">
+                    @if (!TienePermiso("CONFIGURACION ACTIVOS FIJOS"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-cog fa-3x mb-3 text-secondary"></i>
+                    <h5 class="card-title">Configuración</h5>
+                    <p class="card-text">Configuraciones de activos fijos y depreciación.</p>
+                    <a asp-action="Configuracion" asp-controller="ActivoFijo" class="btn btn-primary mt-auto">Configurar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.card.disabled a').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -14,5 +14,6 @@
         public int? IdImpuesto { get; set; }
         public string? NumeroDespacho { get; set; } = "E-000001";
         public decimal? Descuento { get; set; }
+        public int? CantidadMinima { get; set; }
     }
 }

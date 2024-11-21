@@ -65,6 +65,10 @@
                         <span asp-validation-for="Descuento" class="text-danger"></span>
                     </div>
                     <div class="form-group">
+                        <label asp-for="CantidadMinima" class="control-label"></label>
+                        <input type="number" asp-for="CantidadMinima" class="form-control" />
+                    </div>
+                    <div class="form-group">
                         <label asp-for="PrecioVenta" class="control-label"></label>
                         <input readonly asp-for="PrecioVenta" class="form-control" />
                     </div>
@@ -73,7 +77,7 @@
                         <input readonly asp-for="IdEmpresaNavigation.Nombre" class="form-control" />
                     </div>
                     <div class="form-group">
-                        <label asp-for="IdEmpresa" class="control-label"></label>
+                        <label asp-for="IdImpuestoNavigation.Porcentaje" class="control-label"></label>
                         <input readonly asp-for="IdImpuestoNavigation.Porcentaje" class="form-control" />
                     </div>
                     <div class="form-group form-check">

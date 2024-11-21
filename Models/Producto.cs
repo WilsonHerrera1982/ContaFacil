@@ -51,7 +51,7 @@ public partial class Producto
     /// </summary>
     public DateTime FechaCreacion { get; set; }
 
-    [DisplayName("Fecha Modificación")]  public DateTime FechaModificacion { get; set; }
+    [DisplayName("Fecha Modificación")] public DateTime FechaModificacion { get; set; }
 
     /// <summary>
     /// TRIAL
@@ -67,6 +67,7 @@ public partial class Producto
     /// TRIAL
     /// </summary>
     public int? IdEmpresa { get; set; }
+   
 
     /// <summary>
     /// TRIAL
@@ -74,6 +75,8 @@ public partial class Producto
     public int? IdImpuesto { get; set; }
     [DisplayName("Precio Venta")]
     public decimal? PrecioVenta { get; set; }
+    [DisplayName("Cantidad Minima")]
+    public int? CantidadMinima { get; set; }
     [DisplayName("IVA")]
     [NotMapped]
     public decimal? Iva { get; set; }

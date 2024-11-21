@@ -5,36 +5,40 @@
 }
 
 <h1>Crear</h1>
-
 <h4>Cliente</h4>
-
 <hr />
+
 <div class="form-container">
-    <div class="row">
-        <div class="col-md-4">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row">
+            <!-- Primera Columna -->
+            <div class="col-md-6">
+                <div class="form-group mb-3">
                     <label asp-for="Nombre" class="control-label"></label>
                     <input asp-for="Nombre" class="form-control uppercase-input" />
                     <span asp-validation-for="Nombre" class="text-danger"></span>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label asp-for="Direccion" class="control-label">Dirección</label>
                     <input asp-for="Direccion" class="form-control uppercase-input" />
                     <span asp-validation-for="Direccion" class="text-danger"></span>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label asp-for="Telefono" class="control-label">Teléfono</label>
-                    <input asp-for="Telefono" class="form-control" type="text" inputmode="numeric" pattern="\d*"/>
+                    <input asp-for="Telefono" class="form-control" type="text" inputmode="numeric" pattern="\d*" />
                     <span asp-validation-for="Telefono" class="text-danger"></span>
                 </div>
-                <div class="form-group">
+            </div>
+
+            <!-- Segunda Columna -->
+            <div class="col-md-6">
+                <div class="form-group mb-3">
                     <label asp-for="Email" class="control-label"></label>
-                    <input asp-for="Email" class="form-control" type="email"/>
+                    <input asp-for="Email" class="form-control" type="email" />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label asp-for="IdTipoIdentificacion" class="control-label">Tipo de Identificación</label>
                     @if (ViewBag.TipoIdentificacionError != null)
                     {
@@ -46,65 +50,52 @@
                     }
                     <span asp-validation-for="IdTipoIdentificacion" class="text-danger"></span>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label asp-for="Identificacion" class="control-label">Identificación</label>
-                    <input asp-for="Identificacion" class="form-control" type="text" inputmode="numeric" pattern="\d*"/>
+                    <input asp-for="Identificacion" class="form-control" type="text" inputmode="numeric" pattern="\d*" />
                     <span asp-validation-for="Identificacion" class="text-danger"></span>
                 </div>
-                <div class="form-group">
-                    <input type="checkbox" id="chkRetencionIva" name="chkRetencionIva" />
-                    <label for="chkRetencionIva">Retención IVA</label>
-                </div>
-                <div class="form-group" id="divRetencionIva" style="display:none;">
-                    <label asp-for="RetencionIva" class="control-label"></label>
-                    <select asp-for="RetencionIva" class="form-control" asp-items="@(new SelectList(ViewBag.IdImpuesto, "Value", "Text", 0))">
-                        <option value="0">Seleccione una opción</option>
-                    </select>
-                    <span asp-validation-for="RetencionIva" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <input type="checkbox" id="chkRetencionFuente" name="chkRetencionFuente" />
-                    <label for="chkRetencionFuente">Retención en la Fuente</label>
-                </div>
-                <div class="form-group" id="divRetencionFuente" style="display:none;">
-                    <label asp-for="RetencionPorcentaje" class="control-label"></label>
-                    <select asp-for="RetencionPorcentaje" class="form-control" asp-items="@(new SelectList(ViewBag.IdRetencionF, "Value", "Text", 0))">
-                        <option value="0">Seleccione una opción</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <center><button class="button" type="submit">Crear</button></center>
-                </div>
-            </form>
-            
+            </div>
         </div>
-    </div>
+
+        <!-- Botones centrados debajo de las columnas -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <button class="btn btn-primary me-2" type="submit">Crear</button>
+                <a class="btn btn-secondary" asp-action="Index">Volver a la Lista</a>
+            </div>
+        </div>
+    </form>
 </div>
 
-<div>
-    <a asp-action="Index">Volver a la Lista</a>
-</div>
+<style>
+    .form-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .btn {
+        min-width: 120px;
+    }
+</style>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 
     <script>
         $(document).ready(function () {
-            $('#Identificacion').on('input', function () {
+            $('#Identificacion, #Telefono').on('input', function () {
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
         });
-    </script>
-    <script>
-        $(document).ready(function () {
-            $('#Telefono').on('input', function () {
-                this.value = this.value.replace(/[^0-9]/g, '');
-            });
-        });
-    </script>
-    <partial name="_ValidationScriptsPartial" />
-    <script>
+
         document.addEventListener('DOMContentLoaded', function () {
             var uppercaseInputs = document.querySelectorAll('.uppercase-input');
 
@@ -114,30 +105,17 @@
                 });
             });
 
-            // Ensure uppercase on form submission
             document.querySelector('form').addEventListener('submit', function () {
                 uppercaseInputs.forEach(function (input) {
                     input.value = input.value.toUpperCase();
                 });
             });
         });
-    </script>
-    <script>
-        $(document).ready(function () {
-            $("#chkRetencionIva").change(function () {
-                if (this.checked) {
-                    $("#divRetencionIva").show();
-                } else {
-                    $("#divRetencionIva").hide();
-                }
-            });
 
-            $("#chkRetencionFuente").change(function () {
-                if (this.checked) {
-                    $("#divRetencionFuente").show();
-                } else {
-                    $("#divRetencionFuente").hide();
-                }
+        $(document).ready(function () {
+            $("#chkRetencionIva, #chkRetencionFuente").change(function () {
+                var divId = this.id === "chkRetencionIva" ? "#divRetencionIva" : "#divRetencionFuente";
+                $(divId).toggle(this.checked);
             });
         });
     </script>

@@ -375,6 +375,16 @@
             }
         });
 
+        $(document).on("change", ".tipo-pago", function () {
+            let selectedPaymentType = $(this).find("option:selected").text().trim();
+            if (selectedPaymentType === "TARJETA CREDITO" || selectedPaymentType === "TRANSFERENCIA") {
+                $(".form-check").hide();
+                $("#Credito").prop("checked", false);  // Uncheck the checkbox
+            } else {
+                $(".form-check").show();
+            }
+        });
+       
     </script>
     
 }

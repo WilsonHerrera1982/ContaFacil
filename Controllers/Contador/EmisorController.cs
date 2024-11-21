@@ -121,7 +121,7 @@ namespace ContaFacil.Controllers.Contador
                 _context.Add(emisor);
                 _context.SaveChanges();
                 ContaFacil.Models.Sucursal sucursal = new ContaFacil.Models.Sucursal();
-                sucursal.NombreSucursal = "Sucursal Principal";
+                sucursal.NombreSucursal = "Matriz";
                 sucursal.IdEmisor = emisor.IdEmisor;
                 sucursal.Usuario = emisor.NombreUsuario;
                 sucursal.Clave = emisor.Clave;
