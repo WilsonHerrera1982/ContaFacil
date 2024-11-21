@@ -79,5 +79,7 @@ public partial class Proveedor
     /// </summary>
     public string? Trial492 { get; set; }
 
+    public virtual ICollection<AnticiposProveedor> AnticiposProveedors { get; set; } = new List<AnticiposProveedor>();
+
     public virtual Empresa? IdEmpresaNavigation { get; set; }
 }

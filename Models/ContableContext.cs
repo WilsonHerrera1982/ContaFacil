@@ -18,7 +18,11 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<Anticipo> Anticipos { get; set; }
 
+    public virtual DbSet<AnticipoCuentaPagar> AnticipoCuentaPagars { get; set; }
+
     public virtual DbSet<AnticipoCuentum> AnticipoCuenta { get; set; }
+
+    public virtual DbSet<AnticiposProveedor> AnticiposProveedors { get; set; }
 
     public virtual DbSet<CategoriaProducto> CategoriaProductos { get; set; }
 
@@ -31,6 +35,8 @@ public partial class ContableContext : DbContext
     public virtual DbSet<ConstatacionFisica> ConstatacionFisicas { get; set; }
 
     public virtual DbSet<CuentaCobrar> CuentaCobrars { get; set; }
+
+    public virtual DbSet<CuentasPorPagar> CuentasPorPagars { get; set; }
 
     public virtual DbSet<Cuentum> Cuenta { get; set; }
 
@@ -185,7 +191,11 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(10)
                 .HasComment("TRIAL")
                 .HasColumnName("tipo_pago");
-           
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -206,6 +216,40 @@ public partial class ContableContext : DbContext
                 .HasForeignKey(d => d.IdEmpresa)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("anticipo_id_empresa_fkey");
+        });
+
+        modelBuilder.Entity<AnticipoCuentaPagar>(entity =>
+        {
+            entity.HasKey(e => e.IdRelacion).HasName("PRIMARY");
+
+            entity
+                .ToTable("anticipo_cuenta_pagar")
+                .UseCollation("utf8mb4_unicode_ci");
+
+            entity.HasIndex(e => e.IdAnticipo, "idx_anticipo");
+
+            entity.HasIndex(e => e.IdCuentaPorPagar, "idx_cuenta_por_pagar");
+
+            entity.HasIndex(e => new { e.IdAnticipo, e.IdCuentaPorPagar }, "uk_anticipo_cuenta").IsUnique();
+
+            entity.Property(e => e.IdRelacion).HasColumnName("id_relacion");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.IdAnticipo).HasColumnName("id_anticipo");
+            entity.Property(e => e.IdCuentaPorPagar).HasColumnName("id_cuenta_por_pagar");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+
+            entity.HasOne(d => d.IdAnticipoNavigation).WithMany(p => p.AnticipoCuentaPagars)
+                .HasForeignKey(d => d.IdAnticipo)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_anticipo");
+
+            entity.HasOne(d => d.IdCuentaPorPagarNavigation).WithMany(p => p.AnticipoCuentaPagars)
+                .HasForeignKey(d => d.IdCuentaPorPagar)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_cuenta_por_pagar");
         });
 
         modelBuilder.Entity<AnticipoCuentum>(entity =>
@@ -266,6 +310,59 @@ public partial class ContableContext : DbContext
                 .HasForeignKey(d => d.IdCuenta)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("cuenta_porcobrar_anticipo");
+        });
+
+        modelBuilder.Entity<AnticiposProveedor>(entity =>
+        {
+            entity.HasKey(e => e.IdAnticipo).HasName("PRIMARY");
+
+            entity
+                .ToTable("anticipos_proveedor")
+                .UseCollation("utf8mb4_unicode_ci");
+
+            entity.HasIndex(e => e.IdProveedor, "fk_anticipo_proveedor");
+
+            entity.HasIndex(e => e.Estado, "idx_estado");
+
+            entity.HasIndex(e => e.FechaAnticipo, "idx_fecha_anticipo");
+
+            entity.Property(e => e.IdAnticipo).HasColumnName("id_anticipo");
+            entity.Property(e => e.Descripcion)
+                .HasColumnType("text")
+                .HasColumnName("descripcion");
+            entity.Property(e => e.Estado)
+                .HasDefaultValueSql("'VIGENTE'")
+                .HasColumnType("enum('VIGENTE','APLICADO','ANULADO')")
+                .HasColumnName("estado");
+            entity.Property(e => e.FechaAnticipo).HasColumnName("fecha_anticipo");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.FormaPago)
+                .HasColumnType("enum('EFECTIVO','TRANSFERENCIA','CHEQUE','OTRO')")
+                .HasColumnName("forma_pago");
+            entity.Property(e => e.IdProveedor).HasColumnName("id_proveedor");
+            entity.Property(e => e.MontoAnticipo)
+                .HasPrecision(12, 2)
+                .HasColumnName("monto_anticipo");
+            entity.Property(e => e.NumeroAnticipo)
+                .HasMaxLength(50)
+                .HasColumnName("numero_anticipo");
+            entity.Property(e => e.NumeroReferencia)
+                .HasMaxLength(100)
+                .HasColumnName("numero_referencia");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdProveedorNavigation).WithMany(p => p.AnticiposProveedors)
+                .HasForeignKey(d => d.IdProveedor)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_anticipo_proveedor");
         });
 
         modelBuilder.Entity<CategoriaProducto>(entity =>
@@ -598,6 +695,92 @@ public partial class ContableContext : DbContext
                 .HasConstraintName("cuenta_cobrar_id_factura_fkey");
         });
 
+        modelBuilder.Entity<CuentasPorPagar>(entity =>
+        {
+            entity.HasKey(e => e.IdCuenta).HasName("PRIMARY");
+
+            entity
+                .ToTable("cuentas_por_pagar")
+                .UseCollation("utf8mb4_unicode_ci");
+
+            entity.HasIndex(e => e.Estado, "idx_estado");
+
+            entity.HasIndex(e => e.FechaEmision, "idx_fecha_emision");
+
+            entity.HasIndex(e => e.FechaVencimiento, "idx_fecha_vencimiento");
+
+            entity.HasIndex(e => e.RazonSocial, "idx_proveedor");
+
+            entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+            entity.Property(e => e.Categoria)
+                .HasMaxLength(100)
+                .HasColumnName("categoria");
+            entity.Property(e => e.CentroCosto)
+                .HasMaxLength(100)
+                .HasColumnName("centro_costo");
+            entity.Property(e => e.Descripcion)
+                .HasColumnType("text")
+                .HasColumnName("descripcion");
+            entity.Property(e => e.Descuentos)
+                .HasPrecision(12, 2)
+                .HasDefaultValueSql("'0.00'")
+                .HasColumnName("descuentos");
+            entity.Property(e => e.Estado)
+                .HasDefaultValueSql("'PENDIENTE'")
+                .HasColumnType("enum('PENDIENTE','PAGADO','PARCIAL','VENCIDO','ANULADO')")
+                .HasColumnName("estado");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaEmision).HasColumnName("fecha_emision");
+            entity.Property(e => e.FechaModificacion)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.FechaVencimiento).HasColumnName("fecha_vencimiento");
+            entity.Property(e => e.FormaPago)
+                .HasColumnType("enum('EFECTIVO','TRANSFERENCIA','CHEQUE','TARJETA','OTRO')")
+                .HasColumnName("forma_pago");
+            entity.Property(e => e.Impuestos)
+                .HasPrecision(12, 2)
+                .HasDefaultValueSql("'0.00'")
+                .HasColumnName("impuestos");
+            entity.Property(e => e.MontoPendiente)
+                .HasPrecision(12, 2)
+                .HasColumnName("monto_pendiente");
+            entity.Property(e => e.MontoTotal)
+                .HasPrecision(12, 2)
+                .HasColumnName("monto_total");
+            entity.Property(e => e.NumeroDocumento)
+                .HasMaxLength(50)
+                .HasColumnName("numero_documento");
+            entity.Property(e => e.NumeroReferencia)
+                .HasMaxLength(100)
+                .HasColumnName("numero_referencia");
+            entity.Property(e => e.Proyecto)
+                .HasMaxLength(100)
+                .HasColumnName("proyecto");
+            entity.Property(e => e.RazonSocial)
+                .HasMaxLength(200)
+                .HasColumnName("razon_social");
+            entity.Property(e => e.RucIdentificacion)
+                .HasMaxLength(20)
+                .HasColumnName("ruc_identificacion");
+            entity.Property(e => e.TipoDocumento)
+                .HasColumnType("enum('FACTURA','RECIBO','NOTA_CREDITO','SERVICIO','OTRO')")
+                .HasColumnName("tipo_documento");
+            entity.Property(e => e.TipoProveedor)
+                .HasColumnType("enum('PROVEEDOR','SERVICIO_PUBLICO','SERVICIO_PRIVADO','OTROS')")
+                .HasColumnName("tipo_proveedor");
+            entity.Property(e => e.UsuarioCreacion)
+                .HasMaxLength(50)
+                .HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion)
+                .HasMaxLength(50)
+                .HasColumnName("usuario_modificacion");
+        });
+
         modelBuilder.Entity<Cuentum>(entity =>
         {
             entity.HasKey(e => e.IdCuenta).HasName("PRIMARY");
@@ -728,7 +911,11 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
                 .HasColumnName("numero_despacho");
-            
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1089,6 +1276,7 @@ public partial class ContableContext : DbContext
                 .HasComment("TRIAL")
                 .HasColumnName("clave_acceso");
             entity.Property(e => e.Credito)
+                .HasDefaultValueSql("'1'")
                 .HasComment("TRIAL")
                 .HasColumnName("credito");
             entity.Property(e => e.DescripcionSri)
@@ -1145,7 +1333,11 @@ public partial class ContableContext : DbContext
                 .HasPrecision(15, 2)
                 .HasComment("TRIAL")
                 .HasColumnName("subtotal");
-           
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1153,7 +1345,7 @@ public partial class ContableContext : DbContext
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Xml)
-                .HasMaxLength(15)
+                .HasMaxLength(15000)
                 .HasComment("TRIAL")
                 .HasColumnName("xml");
 
@@ -1655,7 +1847,12 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.MenuId)
                 .HasComment("TRIAL")
                 .HasColumnName("menu_id");
-            entity.Property(e => e.Orden).HasColumnName("orden");           
+            entity.Property(e => e.Orden).HasColumnName("orden");
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
@@ -1794,7 +1991,7 @@ public partial class ContableContext : DbContext
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_modificacion");
             entity.Property(e => e.Xml)
-                .HasMaxLength(15)
+                .HasMaxLength(15000)
                 .HasComment("TRIAL")
                 .HasColumnName("xml");
 
@@ -2214,6 +2411,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdProducto)
                 .HasComment("TRIAL")
                 .HasColumnName("id_producto");
+            entity.Property(e => e.CantidadMinima)
+                .HasComment("cantidad minima de porductos")
+                .HasColumnName("cantidad_minima");
             entity.Property(e => e.Codigo)
                 .HasMaxLength(50)
                 .HasComment("TRIAL")
@@ -2221,9 +2421,6 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.Descripcion)
                 .HasComment("TRIAL")
                 .HasColumnName("descripcion");
-            entity.Property(e => e.CantidadMinima)
-                .HasComment("TRIAL")
-                .HasColumnName("cantidad_minima");
             entity.Property(e => e.Descuento)
                 .HasPrecision(10, 2)
                 .HasComment("TRIAL")
@@ -2505,15 +2702,15 @@ public partial class ContableContext : DbContext
                 .HasPrecision(15, 2)
                 .HasComment("TRIAL")
                 .HasColumnName("porcentaje_retencion");
-            entity.Property(e => e.TipoContribuyente)
-                .HasMaxLength(100)
-                .HasComment("TRIAL")
-                .HasColumnName("tipo_contribuyente");
             entity.Property(e => e.Proveedor)
                 .HasMaxLength(1)
                 .IsFixedLength()
                 .HasComment("TRIAL")
                 .HasColumnName("proveedor");
+            entity.Property(e => e.TipoContribuyente)
+                .HasMaxLength(100)
+                .HasComment("TRIAL")
+                .HasColumnName("tipo_contribuyente");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
