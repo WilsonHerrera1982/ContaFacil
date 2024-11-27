@@ -17,8 +17,10 @@
         [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
         public decimal Cantidad { get; set; }
         public decimal ValorUnitario { get; set; }
+        public decimal ValorUnitarioFinal { get; set; }
         public decimal Descuento { get; set; }
         public decimal Subtotal { get; set; }
+        public decimal SubtotalDescuento { get; set; }
         public decimal IVA { get; set; }
         public decimal Total { get; set; }
         public bool CargaInicial { get; set; }

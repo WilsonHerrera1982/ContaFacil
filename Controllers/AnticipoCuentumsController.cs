@@ -51,7 +51,16 @@ namespace ContaFacil.Controllers
         public IActionResult Create()
         {
             ViewData["IdAnticipo"] = new SelectList(_context.Anticipos, "IdAnticipo", "IdAnticipo");
-            ViewData["IdCuenta"] = new SelectList(_context.CuentaCobrars, "IdCuentaCobrar", "IdCuentaCobrar");
+            // Para CuentasPorPagar - Agregando ToList() antes de crear el SelectList
+            var cuentasPendientes = _context.CuentasPorPagars
+                .Where(c => c.Estado.Equals("PENDIENTE") || c.Estado.Equals("PARCIAL"))
+                .Select(c => new { c.IdCuenta, c.Descripcion })
+                .ToList();
+
+
+            ViewData["IdCuenta"] = new SelectList(cuentasPendientes, "IdCuenta", "Descripcion");
+
+
             return View();
         }
 
@@ -255,5 +264,32 @@ namespace ContaFacil.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult GetCuentaDetails(int id)
+        {
+            try
+            {
+                var cuenta = _context.CuentasPorPagars
+                    .Where(c => c.IdCuenta == id)
+                    .Select(c => new
+                    {
+                        numeroDocumento = c.NumeroDocumento,
+                        montoTotal = c.MontoTotal,
+                        montoPendiente = c.MontoPendiente
+                    })
+                    .FirstOrDefault();
+
+                if (cuenta == null)
+                {
+                    return NotFound();
+                }
+
+                return Json(cuenta);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 }

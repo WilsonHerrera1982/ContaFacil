@@ -1,0 +1,151 @@
+﻿@model IEnumerable<ContaFacil.Models.CuentasPorPagar>
+@using ContaFacil.Models.Enum
+@{
+    ViewData["Title"] = "Cuentas por Pagar";
+    var tiposDocumento = Enum.GetValues(typeof(TipoDocumento)).Cast<TipoDocumento>();
+    var tiposProveedor = Enum.GetValues(typeof(TipoProveedor)).Cast<TipoProveedor>();
+    var formasPago = Enum.GetValues(typeof(FormaPagoEnum)).Cast<FormaPagoEnum>();
+    var estados = Enum.GetValues(typeof(EstadoPagoEnum)).Cast<EstadoPagoEnum>();
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h1 class="h3">Cuentas por Pagar</h1>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Filtros de Búsqueda</h6>
+            <a asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Crear Nuevo
+            </a>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-row">
+                <div class="col-md-3 mb-2">
+                    <label>Tipo Documento</label>
+                    <select name="tipoDocumento" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var tipo in tiposDocumento)
+                        {
+                            <option value="@tipo">@tipo.ToString().Replace("_", " ")</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label>Tipo Proveedor</label>
+                    <select name="tipoProveedor" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var tipo in tiposProveedor)
+                        {
+                            <option value="@tipo">@tipo.ToString().Replace("_", " ")</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label>Estado</label>
+                    <select name="estado" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var estado in estados)
+                        {
+                            <option value="@estado">@estado.ToString().Replace("_", " ")</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label>Forma Pago</label>
+                    <select name="formaPago" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var forma in formasPago)
+                        {
+                            <option value="@forma">@forma.ToString().Replace("_", " ")</option>
+                        }
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Tipo Documento</th>
+                            <th>Tipo Proveedor</th>
+                            <th>Razón Social</th>
+                            <th>RUC/Identificación</th>
+                            <th>Número Documento</th>
+                            <th>Fecha Emisión</th>
+                            <th>Fecha Vencimiento</th>
+                            <th>Monto Total</th>
+                            <th>Monto Pendiente</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.TipoDocumento</td>
+                                <td>@item.TipoProveedor</td>
+                                <td>@item.RazonSocial</td>
+                                <td>@item.RucIdentificacion</td>
+                                <td>@item.NumeroDocumento</td>
+                                <td>@item.FechaEmision.ToString("dd/MM/yyyy")</td>
+                                <td>@item.FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                                <td>@item.MontoTotal.ToString("C")</td>
+                                <td>@item.MontoPendiente.ToString("C")</td>
+                                <td>@item.Estado</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Edit" asp-route-id="@item.IdCuenta" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.IdCuenta" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.IdCuenta" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/jquery-3.6.0.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/DataTables/datatables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#dataTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
+                },
+                "order": [[5, "desc"]] // Ordenar por fecha de emisión por defecto
+            });
+
+            // Filtros
+            $('select[name="tipoDocumento"], select[name="tipoProveedor"], select[name="estado"], select[name="formaPago"]').on('change', function () {
+                var tipoDocumento = $('select[name="tipoDocumento"]').val();
+                var tipoProveedor = $('select[name="tipoProveedor"]').val();
+                var estado = $('select[name="estado"]').val();
+                var formaPago = $('select[name="formaPago"]').val();
+
+                // Aquí deberías agregar la lógica de filtrado
+                // Puedes usar AJAX para filtrar en el servidor o usar DataTables
+            });
+        });
+    </script>
+}

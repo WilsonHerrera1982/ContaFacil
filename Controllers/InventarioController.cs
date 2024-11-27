@@ -347,7 +347,24 @@ namespace ContaFacil.Controllers
                             .FirstOrDefaultAsync(t => t.Nombre == "Compra");
                             string descripcion2 = producto.Nombre + " " + inv.FacturaNumero;
                             await CrearTransaccion(cuent2.Codigo, numeroAsiento + " Compra de " + descripcion2,retencionRenta.ValorRetenido ?? 0, tipoTransaccion3, empresa, usuario, false);
-
+                            CuentasPorPagar cuentasPorPagar=new CuentasPorPagar();
+                            cuentasPorPagar.Descripcion=inv.Descripcion + " "+ descripcion2;
+                            cuentasPorPagar.Descuentos = inv.Descuento;
+                            cuentasPorPagar.Impuestos = inv.Iva;
+                            cuentasPorPagar.TipoDocumento = "FACTURA";
+                            cuentasPorPagar.NumeroDocumento = inv.FacturaNumero;
+                            cuentasPorPagar.Estado = "PENDIENTE";
+                            cuentasPorPagar.FechaCreacion = DateTime.Now;
+                            cuentasPorPagar.FechaEmision = new DateOnly();
+                            cuentasPorPagar.MontoTotal = inv.SubTotal??0;
+                            cuentasPorPagar.MontoPendiente = inv.SubTotal??0;
+                            cuentasPorPagar.RazonSocial = proveedor.Nombre;
+                            cuentasPorPagar.RucIdentificacion = proveedor.Identificacion;
+                            cuentasPorPagar.TipoProveedor = "PROVEEDOR";
+                            cuentasPorPagar.FormaPago = "OTRO";
+                            cuentasPorPagar.UsuarioCreacion = inv.UsuarioCreacion.ToString();
+                            _context.Add(cuentasPorPagar);
+                            _context.SaveChanges();
                         }
 
                         if (proveedor.RetencionIva > 0)
@@ -759,12 +776,14 @@ namespace ContaFacil.Controllers
                                 UnidadMedida = worksheet.Cells[row, 5].Value?.ToString(),
                                 FacturaNro = worksheet.Cells[row, 6].Value?.ToString(),
                                 Proveedor = worksheet.Cells[row, 7].Value?.ToString(),
-                                Cantidad = decimal.Parse(worksheet.Cells[row, 8].Value?.ToString()),
-                                ValorUnitario = decimal.Parse(worksheet.Cells[row, 9].Value?.ToString()),
-                                Descuento = decimal.Parse(worksheet.Cells[row, 10].Value?.ToString()),
-                                Subtotal = decimal.Parse(worksheet.Cells[row, 11].Value?.ToString()),
-                                IVA = decimal.Parse(worksheet.Cells[row, 12].Value?.ToString()),
-                                Total = decimal.Parse(worksheet.Cells[row, 13].Value?.ToString())
+                                Cantidad = decimal.Parse(worksheet.Cells[row, 9].Value?.ToString()),
+                                ValorUnitario = decimal.Parse(worksheet.Cells[row, 10].Value?.ToString()),                               
+                                Descuento = decimal.Parse(worksheet.Cells[row, 11].Value?.ToString()),
+                                ValorUnitarioFinal = decimal.Parse(worksheet.Cells[row, 12].Value?.ToString()),
+                                Subtotal = decimal.Parse(worksheet.Cells[row, 13].Value?.ToString()),
+                                SubtotalDescuento = decimal.Parse(worksheet.Cells[row, 14].Value?.ToString()),
+                                IVA = decimal.Parse(worksheet.Cells[row, 15].Value?.ToString()),
+                                Total = decimal.Parse(worksheet.Cells[row, 16].Value?.ToString())
                             };
 
                             listProductos.Add(producto);
@@ -773,20 +792,22 @@ namespace ContaFacil.Controllers
                         {
                             var producto = new ProductoDTO
                             {
-                                Categoria= worksheet.Cells[row, 1].Value?.ToString(),
+                                Categoria = worksheet.Cells[row, 1].Value?.ToString(),
                                 CodigoProducto = worksheet.Cells[row, 2].Value?.ToString(),
                                 NombreProducto = worksheet.Cells[row, 3].Value?.ToString(),
                                 DescripcionProducto = worksheet.Cells[row, 4].Value?.ToString(),
                                 UnidadMedida = worksheet.Cells[row, 5].Value?.ToString(),
                                 FacturaNro = worksheet.Cells[row, 6].Value?.ToString(),
                                 Proveedor = worksheet.Cells[row, 7].Value?.ToString(),
-                                Cantidad = decimal.Parse(worksheet.Cells[row, 8].Value?.ToString()),
-                                ValorUnitario = decimal.Parse(worksheet.Cells[row, 9].Value?.ToString()),
-                                Descuento = decimal.Parse(worksheet.Cells[row, 10].Value?.ToString()),
-                                Subtotal = decimal.Parse(worksheet.Cells[row, 11].Value?.ToString()),
-                                IVA = decimal.Parse(worksheet.Cells[row, 12].Value?.ToString()),
-                                Total = decimal.Parse(worksheet.Cells[row, 13].Value?.ToString()),
-                                FechaCreacion= DateTime.Now,
+                                Cantidad = decimal.Parse(worksheet.Cells[row, 9].Value?.ToString()),
+                                ValorUnitario = decimal.Parse(worksheet.Cells[row, 10].Value?.ToString()),
+                                Descuento = decimal.Parse(worksheet.Cells[row, 11].Value?.ToString()),
+                                ValorUnitarioFinal = decimal.Parse(worksheet.Cells[row, 12].Value?.ToString()),
+                                Subtotal = decimal.Parse(worksheet.Cells[row, 13].Value?.ToString()),
+                                SubtotalDescuento = decimal.Parse(worksheet.Cells[row, 14].Value?.ToString()),
+                                IVA = decimal.Parse(worksheet.Cells[row, 15].Value?.ToString()),
+                                Total = decimal.Parse(worksheet.Cells[row, 16].Value?.ToString()),
+                                FechaCreacion = DateTime.Now,
                             };
 
                             listProductosRegistrados.Add(producto);
@@ -966,11 +987,11 @@ namespace ContaFacil.Controllers
                     inventario.TipoMovimiento = "E";
                     inventario.Descuento = producto.Descuento;
                     inventario.PrecioUnitario = producto.ValorUnitario;
-                    inventario.PrecioUnitarioFinal = (producto.Subtotal - producto.Descuento) / producto.Cantidad;
-                    inventario.Subtotal15=producto.Subtotal-producto.Descuento;
+                    inventario.PrecioUnitarioFinal = producto.ValorUnitarioFinal;
+                    inventario.Subtotal15=producto.SubtotalDescuento;
                     inventario.SubTotal=producto.Subtotal;
-                    inventario.Iva = inventario.Subtotal15*0.15m;
-                    inventario.Total=inventario.Subtotal15+inventario.Iva;
+                    inventario.Iva = producto.IVA;
+                    inventario.Total=producto.Total;
                     inventario.PrecioCalculo = inventario.PrecioUnitarioFinal;
                     _context.Add(inventario);
                     _context.SaveChanges();
@@ -1146,7 +1167,7 @@ namespace ContaFacil.Controllers
                 worksheet.Cell(currentRow, 13).Value = "Precio Unitario Final";
                 worksheet.Cell(currentRow, 14).Value = "Descuento";
                 worksheet.Cell(currentRow, 15).Value = "Subtotal";
-                worksheet.Cell(currentRow, 16).Value = "Subtotal 15%";
+                worksheet.Cell(currentRow, 16).Value = "Subtotal con descuento";
                 worksheet.Cell(currentRow, 17).Value = "IVA";
                 worksheet.Cell(currentRow, 18).Value = "Total";
 
@@ -1306,8 +1327,8 @@ namespace ContaFacil.Controllers
                     if (tipoMovimiento == "COMPRA")
                     {
                         worksheet.Cell(currentRow, 5).Value = mov.Cantidad;
-                        worksheet.Cell(currentRow, 6).Value = mov.PrecioUnitarioFinal;
-                        worksheet.Cell(currentRow, 7).Value = mov.Cantidad* mov.PrecioUnitarioFinal;
+                        worksheet.Cell(currentRow, 6).Value = mov.PrecioUnitario;
+                        worksheet.Cell(currentRow, 7).Value = mov.Cantidad* mov.PrecioUnitario;
 
                         // Actualizar saldo
                         if (saldoCantidad == 0)
@@ -1318,7 +1339,7 @@ namespace ContaFacil.Controllers
                         else
                         {
                             // Más de un registro
-                            saldoValorUnitario = (saldoValorUnitario + mov.PrecioUnitarioFinal) / 2 ?? 0;
+                            saldoValorUnitario = (saldoValorUnitario + mov.PrecioUnitario) / 2 ?? 0;
                         }
 
                         saldoCantidad += mov.Cantidad;

@@ -17,9 +17,11 @@
             <th>Fecha de creación</th>
             <th>Cantidad</th>
             <th>Valor Unitario</th>
-            <th>2% Descuento</th>
+            <th>Valor Unitario Final</th>
+            <th>Descuento</th>
             <th>Subtotal</th>
-            <th>IVA 15%</th>
+             <th>Subtotal con descuento</th>
+            <th>IVA</th>
             <th>Total</th>
             <th>Carga Inicial</th>
         </tr>
@@ -37,8 +39,10 @@
                 <td>@producto.FechaCreacion.ToString("dd/MM/yyyy")</td>
                 <td>@producto.Cantidad.ToString("N2")</td>
                 <td>@producto.ValorUnitario.ToString("C2")</td>
+                <td>@producto.ValorUnitarioFinal.ToString("C2")</td>
                 <td>@producto.Descuento.ToString("C2")</td>
                 <td>@producto.Subtotal.ToString("C2")</td>
+                    <td>@producto.SubtotalDescuento.ToString("C2")</td>
                 <td>@producto.IVA.ToString("C2")</td>
                 <td>@producto.Total.ToString("C2")</td>
                     <td>@(producto.CargaInicial ? "Sí" : "Sí")</td>
@@ -66,9 +70,11 @@
                 <th>Fecha de creación</th>
                 <th>Cantidad</th>
                 <th>Valor Unitario</th>
-                <th>2% Descuento</th>
+                <th>Valor Unitario Final</th>
+                <th>Descuento</th>
                 <th>Subtotal</th>
-                <th>IVA 15%</th>
+                <th>Subtotal con descuento</th>
+                <th>IVA</th>
                 <th>Total</th>
                 <th>Carga Inicial</th>
             </tr>
@@ -86,8 +92,10 @@
                     <td>@producto.FechaCreacion.ToString("dd/MM/yyyy")</td>
                     <td>@producto.Cantidad.ToString("N2")</td>
                     <td>@producto.ValorUnitario.ToString("C2")</td>
+                    <td>@producto.ValorUnitarioFinal.ToString("C2")</td>
                     <td>@producto.Descuento.ToString("C2")</td>
                     <td>@producto.Subtotal.ToString("C2")</td>
+                    <td>@producto.SubtotalDescuento.ToString("C2")</td>
                     <td>@producto.IVA.ToString("C2")</td>
                     <td>@producto.Total.ToString("C2")</td>
                     <td>@(producto.CargaInicial ? "Sí" : "Sí")</td>
