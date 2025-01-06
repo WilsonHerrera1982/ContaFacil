@@ -299,6 +299,7 @@ namespace ContaFacil.Controllers
                     {
                           await CrearTransaccion(cuentum.Codigo, numeroAsiento + $" Compra de {producto.Nombre}", inv.SubTotal ?? 0, tipoTransaccion2, empresa, usuario, true);
                     }
+                    cuentum = _context.Cuenta.Where(c => c.Nombre.Equals("IVA en compras")).FirstOrDefault();
                     await CrearTransaccion(cuentum.Codigo, numeroAsiento + $" IVA en compra de {producto.Nombre}", inv.Iva ?? 0, tipoTransaccion2, empresa, usuario, true);
                    
                     // Generar retención si es aplicable
@@ -437,7 +438,7 @@ namespace ContaFacil.Controllers
                        
                        // await CrearTransaccion(cuent.Codigo, numeroAsiento + " Pago a proveedor " + descripcion, sumaRetencion ?? 0, tipoTransaccion, empresa, usuario, true);
                         var pagoTotal = inv.Total - sumaRetencion;
-                        await CrearTransaccion(cuentum.Codigo, numeroAsiento + $" Compra de "+ descripcion, pagoTotal??0, tipoTransaccion2, empresa, usuario, false);
+                        await CrearTransaccion(cuent.Codigo, numeroAsiento + $" Compra de "+ descripcion, pagoTotal??0, tipoTransaccion2, empresa, usuario, false);
                         inv.TransaccionRegistrada = true;
                         _context.Update(inv);
                         // Guardar los cambios en todas las retenciones
@@ -761,6 +762,17 @@ namespace ContaFacil.Controllers
 
                     for (int row = 2; row <= rowCount; row++)
                     {
+                        string idProveedor = worksheet.Cells[row, 7].Value?.ToString();
+                        if (!idProveedor.Equals("0"))
+                        {
+                            Proveedor proveedor=_context.Proveedors.Where(p=>p.Identificacion.Equals(idProveedor)).FirstOrDefault();
+                            if(proveedor == null)
+                            {
+                                Notificacion("Proveedor no registrado",NotificacionTipo.Warning);
+
+                                return View();
+                            }
+                        }
                         string nombreProducto = worksheet.Cells[row, 3].Value?.ToString();
                         string descripcionProducto = worksheet.Cells[row, 4].Value?.ToString();
                         Producto product = new Producto();
@@ -965,13 +977,19 @@ namespace ContaFacil.Controllers
                     {
                         productoProveedor.IdProveedor = 0;
                     }
-                    
+                    Proveedor proveedor=new Proveedor();
+                    Inventario inventario = new Inventario();
+                    if (!producto.Proveedor.Equals("0"))
+                    {
+                        proveedor = _context.Proveedors.Where(p => p.Identificacion.Equals(producto.Proveedor)).FirstOrDefault();
+                        inventario.IdProveedor = proveedor.IdProveedor;
+                        productoProveedor.IdProveedor=proveedor.IdProveedor;
+                    }                     
                     productoProveedor.EstadoBoolean = true;
                     productoProveedor.FechaCreacion = new DateTime();
                     productoProveedor.UsuarioCreacion = usuario.IdUsuario;
                     _context.Add(productoProveedor);
-                    _context.SaveChanges();
-                    Inventario inventario=new Inventario();
+                    _context.SaveChanges();                    
                     inventario.Cantidad=producto.Cantidad;
                     inventario.Descripcion = "INGRESO CARGA INICIAL";
                     inventario.FacturaNumero = producto.FacturaNro;
@@ -1062,39 +1080,48 @@ namespace ContaFacil.Controllers
             persona=_context.Personas.Where(p=>p.IdPersona==usuario.IdPersona).FirstOrDefault();
             Emisor emisor = new Emisor();
             emisor=_context.Emisors.Where(e=>e.Ruc==persona.Identificacion).FirstOrDefault();
-            var query = from pro in _context.Productos
-                        join inv in _context.Inventarios on pro.IdProducto equals inv.IdProducto
-                        join si in _context.SucursalInventarios on inv.IdInventario equals si.IdInventario
-                        join su in _context.Sucursals on si.IdSucursal equals su.IdSucursal
-                        join cue in _context.Cuenta on inv.IdCuentaContable equals cue.IdCuenta
-                        join cp in _context.CategoriaProductos on pro.IdCategoriaProducto equals cp.IdCategoriaProducto
-                        join um in _context.UnidadMedida on pro.IdUnidadMedida equals um.IdUnidadMedida
-                        where (idSucursal == null || su.IdSucursal == idSucursal)
-                           && (idProducto == null || pro.IdProducto == idProducto)
-                           && (string.IsNullOrEmpty(tipoMovimiento) || inv.TipoMovimiento == tipoMovimiento)
-                           && (!fechaInicio.HasValue || inv.FechaMovimiento >= fechaInicio)
-                           && (!fechaFin.HasValue || inv.FechaMovimiento <= fechaFin)
-                        select new
-                        {
-                            CategoriaProducto = cp.Nombre,
-                            CodigoProducto = pro.Codigo,
-                            NombreProducto = pro.Nombre,
-                            DescripcionProducto = pro.Descripcion,
-                            CodigoCuenta = cue.Codigo,
-                            UnidadMedida = um.Abreviatura,
-                            NumeroFactura = inv.FacturaNumero,
-                            FechaMovimiento = inv.FechaMovimiento,
-                            Cantidad = inv.Cantidad,
-                            PrecioUnitario=inv.PrecioUnitario,
-                            PrecioUnitarioFinal= inv.PrecioUnitarioFinal,
-                            Descuento = inv.Descuento,
-                            Subtotal15= inv.Subtotal15,
-                            Stock = inv.Stock,
-                            SubTotal = inv.SubTotal,
-                            Iva = inv.Iva,
-                            Total = inv.Total,
-                            DescripcionInventario=inv.Descripcion
-                        };
+            var query = (from pro in _context.Productos
+                         join pp in _context.ProductoProveedors on pro.IdProducto equals pp.IdProducto
+                         join prov in _context.Proveedors on pp.IdProveedor equals prov.IdProveedor
+                         join inv in _context.Inventarios on pro.IdProducto equals inv.IdProducto
+                         join si in _context.SucursalInventarios on inv.IdInventario equals si.IdInventario
+                         join su in _context.Sucursals on si.IdSucursal equals su.IdSucursal
+                         join cue in _context.Cuenta on inv.IdCuentaContable equals cue.IdCuenta
+                         join cp in _context.CategoriaProductos on pro.IdCategoriaProducto equals cp.IdCategoriaProducto
+                         join um in _context.UnidadMedida on pro.IdUnidadMedida equals um.IdUnidadMedida
+                         where (idSucursal == null || su.IdSucursal == idSucursal)
+                            && (idProducto == null || pro.IdProducto == idProducto)
+                            && (string.IsNullOrEmpty(tipoMovimiento) || inv.TipoMovimiento == tipoMovimiento)
+                            && (!fechaInicio.HasValue || inv.FechaMovimiento >= fechaInicio)
+                            && (!fechaFin.HasValue || inv.FechaMovimiento <= fechaFin)
+                            // Subconsulta para obtener solo el primer proveedor
+                            && pp.IdProveedor == _context.ProductoProveedors
+                                 .Where(p => p.IdProducto == pro.IdProducto)
+                                 .OrderBy(p => p.IdProveedor)
+                                 .Select(p => p.IdProveedor)
+                                 .FirstOrDefault()
+                         select new
+                         {
+                             CategoriaProducto = cp.Nombre,
+                             CodigoProducto = pro.Codigo,
+                             NombreProducto = pro.Nombre,
+                             DescripcionProducto = pro.Descripcion,
+                             CodigoCuenta = cue.Codigo,
+                             UnidadMedida = um.Abreviatura,
+                             NumeroFactura = inv.FacturaNumero,
+                             FechaMovimiento = inv.FechaMovimiento,
+                             Cantidad = inv.Cantidad,
+                             PrecioUnitario = inv.PrecioUnitario,
+                             PrecioUnitarioFinal = inv.PrecioUnitarioFinal,
+                             Descuento = inv.Descuento,
+                             Subtotal15 = inv.Subtotal15,
+                             Stock = inv.Stock,
+                             SubTotal = inv.SubTotal,
+                             Iva = inv.Iva,
+                             Total = inv.Total,
+                             DescripcionInventario = inv.Descripcion,
+                             Proveedor = prov.Nombre,
+                         }).Distinct();
 
             var data = await query.ToListAsync();
             string categoriaProducto = "";
@@ -1152,47 +1179,58 @@ namespace ContaFacil.Controllers
                 var currentRow = 8;
 
                 // Añadir encabezados
-                worksheet.Cell(currentRow, 1).Value = "Categoría Producto";
+                worksheet.Cell(currentRow, 1).Value = "Categoría Producto";                
                 worksheet.Cell(currentRow, 2).Value = "Código Producto";
                 worksheet.Cell(currentRow, 3).Value = "Nombre Producto";
                 worksheet.Cell(currentRow, 4).Value = "Descripción Producto";
                 worksheet.Cell(currentRow, 5).Value = "Descripción Inventario";
                 worksheet.Cell(currentRow, 6).Value = "Código Cuenta";
                 worksheet.Cell(currentRow, 7).Value = "Unidad Medida";
-                worksheet.Cell(currentRow, 8).Value = "Número Factura";
-                worksheet.Cell(currentRow, 9).Value = "Fecha Movimiento";
-                worksheet.Cell(currentRow, 10).Value = "Cantidad";
-                worksheet.Cell(currentRow, 11).Value = "Stock";
-                worksheet.Cell(currentRow, 12).Value = "Precio Unitario";
-                worksheet.Cell(currentRow, 13).Value = "Precio Unitario Final";
-                worksheet.Cell(currentRow, 14).Value = "Descuento";
-                worksheet.Cell(currentRow, 15).Value = "Subtotal";
-                worksheet.Cell(currentRow, 16).Value = "Subtotal con descuento";
-                worksheet.Cell(currentRow, 17).Value = "IVA";
-                worksheet.Cell(currentRow, 18).Value = "Total";
+                worksheet.Cell(currentRow, 8).Value = "Proveedor";
+                worksheet.Cell(currentRow, 9).Value = "Número Factura";
+                worksheet.Cell(currentRow, 10).Value = "Fecha Movimiento";
+                worksheet.Cell(currentRow, 11).Value = "Cantidad";
+                worksheet.Cell(currentRow, 12).Value = "Stock";
+                worksheet.Cell(currentRow, 13).Value = "Precio Unitario";
+                worksheet.Cell(currentRow, 14).Value = "Precio Unitario Final";
+                worksheet.Cell(currentRow, 15).Value = "Descuento";
+                worksheet.Cell(currentRow, 16).Value = "Subtotal";
+                worksheet.Cell(currentRow, 17).Value = "Subtotal con descuento";
+                worksheet.Cell(currentRow, 18).Value = "IVA";
+                worksheet.Cell(currentRow, 19).Value = "Total";
 
                 // Añadir datos
                 foreach (var item in data)
                 {
                     currentRow++;
-                    worksheet.Cell(currentRow, 1).Value = item.CategoriaProducto;
+                    worksheet.Cell(currentRow, 1).Value = item.CategoriaProducto;                   
                     worksheet.Cell(currentRow, 2).Value = item.CodigoProducto;
                     worksheet.Cell(currentRow, 3).Value = item.NombreProducto;
                     worksheet.Cell(currentRow, 4).Value = item.DescripcionProducto;
                     worksheet.Cell(currentRow, 5).Value = item.DescripcionInventario;
                     worksheet.Cell(currentRow, 6).Value = item.CodigoCuenta;
                     worksheet.Cell(currentRow, 7).Value = item.UnidadMedida;
-                    worksheet.Cell(currentRow, 8).Value = item.NumeroFactura;
-                    worksheet.Cell(currentRow, 9).Value = item.FechaMovimiento;
-                    worksheet.Cell(currentRow, 10).Value = item.Cantidad;
-                    worksheet.Cell(currentRow, 11).Value = item.Stock;
-                    worksheet.Cell(currentRow, 12).Value = item.PrecioUnitario;
-                    worksheet.Cell(currentRow, 13).Value = item.PrecioUnitarioFinal;
-                    worksheet.Cell(currentRow, 14).Value = item.Descuento;
-                    worksheet.Cell(currentRow, 15).Value = item.SubTotal;
-                    worksheet.Cell(currentRow, 16).Value = item.Subtotal15;
-                    worksheet.Cell(currentRow, 17).Value = item.Iva;
-                    worksheet.Cell(currentRow, 18).Value = item.Total;
+                    worksheet.Cell(currentRow, 8).Value = item.Proveedor;
+                    worksheet.Cell(currentRow, 9).Value = item.NumeroFactura;
+                    worksheet.Cell(currentRow, 10).Value = item.FechaMovimiento;
+                    worksheet.Cell(currentRow, 11).Value = item.Cantidad;
+                    worksheet.Cell(currentRow, 12).Value = item.Stock;
+                    worksheet.Cell(currentRow, 13).Value = item.PrecioUnitario;
+                    worksheet.Cell(currentRow, 14).Value = item.PrecioUnitarioFinal;
+                    worksheet.Cell(currentRow, 15).Value = item.Descuento;
+                    worksheet.Cell(currentRow, 15).Style.NumberFormat.NumberFormatId = 2; // Format: 0.00
+
+                    worksheet.Cell(currentRow, 16).Value = item.SubTotal;
+                    worksheet.Cell(currentRow, 16).Style.NumberFormat.NumberFormatId = 2;
+
+                    worksheet.Cell(currentRow, 17).Value = item.Subtotal15;
+                    worksheet.Cell(currentRow, 17).Style.NumberFormat.NumberFormatId = 2;
+
+                    worksheet.Cell(currentRow, 18).Value = item.Iva;
+                    worksheet.Cell(currentRow, 18).Style.NumberFormat.NumberFormatId = 2;
+
+                    worksheet.Cell(currentRow, 19).Value = item.Total;
+                    worksheet.Cell(currentRow, 19).Style.NumberFormat.NumberFormatId = 2;
                 }
 
                 // Ajustar el ancho de las columnas automáticamente
@@ -1327,19 +1365,19 @@ namespace ContaFacil.Controllers
                     if (tipoMovimiento == "COMPRA")
                     {
                         worksheet.Cell(currentRow, 5).Value = mov.Cantidad;
-                        worksheet.Cell(currentRow, 6).Value = mov.PrecioUnitario;
-                        worksheet.Cell(currentRow, 7).Value = mov.Cantidad* mov.PrecioUnitario;
+                        worksheet.Cell(currentRow, 6).Value = mov.PrecioUnitarioFinal;
+                        worksheet.Cell(currentRow, 7).Value = mov.Cantidad* mov.PrecioUnitarioFinal;
 
                         // Actualizar saldo
                         if (saldoCantidad == 0)
                         {
                             // Primer registro
-                            saldoValorUnitario = mov.PrecioUnitario??0;
+                            saldoValorUnitario = mov.PrecioUnitarioFinal??0;
                         }
                         else
                         {
                             // Más de un registro
-                            saldoValorUnitario = (saldoValorUnitario + mov.PrecioUnitario) / 2 ?? 0;
+                            saldoValorUnitario = (saldoValorUnitario + mov.PrecioUnitarioFinal) / 2 ?? 0;
                         }
 
                         saldoCantidad += mov.Cantidad;

@@ -20,8 +20,8 @@
             <select name="tipoMovimiento" class="form-control">
                 <option value="">Todos los movimientos</option>
                 <option value="E" selected="@(Model.TipoMovimientoSeleccionado == "E")">Ingreso</option>
-                    <option value="E" selected="@(Model.TipoMovimientoSeleccionado == "C")">Compra</option>
-                <option value="E" selected="@(Model.TipoMovimientoSeleccionado == "V")">Venta</option>
+                <option value="C" selected="@(Model.TipoMovimientoSeleccionado == "C")">Compra</option>
+                <option value="V" selected="@(Model.TipoMovimientoSeleccionado == "V")">Venta</option>
                 <option value="S" selected="@(Model.TipoMovimientoSeleccionado == "S")">Egreso</option>
                 <option value="T" selected="@(Model.TipoMovimientoSeleccionado == "T")">Transferencia entre bodegas</option>
                 <option value="A" selected="@(Model.TipoMovimientoSeleccionado == "A")">Ajuste de inventario</option>

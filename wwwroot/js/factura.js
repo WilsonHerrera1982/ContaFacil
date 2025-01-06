@@ -31,7 +31,7 @@
         },
         buttons: [
 
-            {
+     /*       {
                 extend: 'excelHtml5',
                 customize: function (xlsx) {
 
@@ -79,7 +79,7 @@
                     $(win.document.body).append('<h2 style="text-align: right; font-weight: bold;">Credito: ' + credito + '</h2>');
                 }
             }
-        ],
+        */],
         headerCallback: function (thead, data, start, end, display) {
             $(thead).find('th').attr('scope', 'col');
         },

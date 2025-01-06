@@ -1684,6 +1684,9 @@ public partial class ContableContext : DbContext
             entity.Property(e => e.IdInventario)
                 .HasComment("TRIAL")
                 .HasColumnName("id_inventario");
+            entity.Property(e => e.IdProveedor)
+               .HasComment("TRIAL")
+               .HasColumnName("id_proveedor");
             entity.Property(e => e.Cantidad)
                 .HasPrecision(10, 2)
                 .HasComment("TRIAL")

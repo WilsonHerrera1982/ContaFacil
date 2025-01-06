@@ -76,6 +76,7 @@ public partial class Inventario
     /// </summary>
     public int? IdCuentaContable { get; set; }
 
+    public int? IdProveedor { get; set; }
     /// <summary>
     /// TRIAL
     /// </summary>

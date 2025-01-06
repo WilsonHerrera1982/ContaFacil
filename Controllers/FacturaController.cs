@@ -117,11 +117,14 @@ namespace ContaFacil.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Factura factura, List<DetalleFactura> detalles, List<Pago> pagos)
+        public async Task<IActionResult> Create([Bind("IdCliente,Credito")] Factura factura, List<DetalleFactura> detalles, List<Pago> pagos)
         {
             try
             {
                 Factura facturaCreada;
+                bool creditoValue = factura.Credito;
+                factura.MontoTotal = pagos.Sum(p => p.Monto);
+                factura.Subtotal = detalles.Sum(d => d.PrecioUnitario);
                 using (var transaction = await _context.Database.BeginTransactionAsync())
                 {
                     idUsuario = HttpContext.Session.GetString("_idUsuario");
@@ -228,7 +231,8 @@ namespace ContaFacil.Controllers
                             .FirstOrDefaultAsync(c => c.Nombre.Equals(producto.IdCategoriaProductoNavigation.Nombre));
 
                         int stock = (ultimoMovimiento.Stock - detalle.Cantidad) ?? 0;
-
+                        ProductoProveedor productoProveedor = _context.ProductoProveedors.Where(p=>p.IdProducto==detalle.IdProducto).FirstOrDefault();
+                    
                         inventario.Cantidad = detalle.Cantidad;
                         inventario.IdProducto = detalle.IdProducto;
                         inventario.TipoMovimiento = "V";
@@ -239,7 +243,7 @@ namespace ContaFacil.Controllers
                         inventario.IdSucursal = factura.IdSucursal;
                         inventario.IdCuentaContable = cuentum.IdCuenta;
                         inventario.NumeroDespacho = ObtenerNumeroDespacho(inventario.TipoMovimiento);
-
+                        inventario.IdProveedor = productoProveedor.IdProveedor;
                         decimal totalDescuento = detalle.Descuento ?? 0;
                         decimal totalValorUnitario = detalle.PrecioUnitario;
                         decimal subtotal = (totalValorUnitario * detalle.Cantidad) - totalDescuento;
@@ -264,6 +268,16 @@ namespace ContaFacil.Controllers
                         await _context.SaveChangesAsync();
                     }
 
+                    foreach(var pago in pagos)
+                    {
+                        pago.IdFactura = factura.IdFactura;
+                        pago.Fecha =factura.Fecha;
+                        pago.FechaCreacion = DateTime.Now;
+                        pago.UsuarioCreacion = factura.UsuarioCreacion;
+                        pago.Estado = true;
+                        _context.Add(pago);
+                        await _context.SaveChangesAsync();
+                    }
                     var cliente = await _context.Clientes
                         .Where(c => c.IdCliente == factura.IdCliente)
                         .Include(c => c.IdPersonaNavigation)
@@ -310,7 +324,7 @@ namespace ContaFacil.Controllers
                 using (var nuevoContexto = new ContableContext())
                 {
                    
-                        await registrarTransaccionesVenta(nuevoContexto, facturaCreada);
+                        await registrarTransaccionesVenta(creditoValue,nuevoContexto, facturaCreada);
                     
                 }
 
@@ -959,7 +973,7 @@ namespace ContaFacil.Controllers
                 }
             }
         }
-        private async Task registrarTransaccionesVenta(ContableContext context, Factura factura)
+        private async Task registrarTransaccionesVenta(bool creditoValue, ContableContext context, Factura factura)
         {
             var sucursal = await _context.Sucursals
              .FirstOrDefaultAsync(s => s.IdSucursal == factura.IdSucursal);
@@ -1007,7 +1021,7 @@ namespace ContaFacil.Controllers
             await CrearTransaccion("IVA por pagar", numeroAsiento + " IVA por pagar en venta de " + descripcion, iva, tipoTransaccion, empresa, usuario,true);
 
 
-            if (!factura.Credito)
+            if (!creditoValue)
             {
                 // Transacciones por tipo de pago
                 foreach (var pag in lista)

@@ -205,7 +205,7 @@ namespace ContaFacil.Controllers
       
 public IActionResult ExportToExcel()
     {
-        var cuentas = _context.Cuenta.OrderBy(c => c.Codigo).ToList();
+        var cuentas = _context.Cuenta.Where(c=>c.Estado==true).OrderBy(c => c.Codigo).ToList();
 
         using (var workbook = new XLWorkbook())
         {

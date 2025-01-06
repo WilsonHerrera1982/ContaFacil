@@ -1,0 +1,101 @@
+﻿@model IEnumerable<ContaFacil.Models.Inventario>
+
+@{
+    ViewData["Title"] = "Principal Despacho";
+    var opcionClientes = (List<OpcionCliente>
+    )ViewBag.OpcionClientes;
+
+    bool TienePermiso(string opcionNombre)
+    {
+        return opcionClientes?.Any(o => o.OpcionNombre.Trim().Equals(opcionNombre.Trim(),
+        StringComparison.OrdinalIgnoreCase)) ?? false;
+    }
+}
+
+
+<style>
+    .form-group {
+        width: 400px;
+    }
+
+    .row {
+        justify-content: left;
+    }
+
+    .card.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        font-size: 1.2em;
+        z-index: 1;
+    }
+</style>
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("REGISTRAR TRANSFERENCIA") ? "disabled" : "")"
+                 id="REGISTRAR TRANSFERENCIA">
+                @if (!TienePermiso("REGISTRAR TRANSFERENCIA"))
+                {
+                    <i class="fas fa-lock lock-icon"></i>
+                }
+                <div class="card-body text-center">
+                    <i class="fas fa-exchange-alt fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Registrar Transferencia</h5>
+                    <p class="card-text">Registra transfrencias entre bodegas.</p>
+                    <a asp-action="Create" asp-controller="Inventario" class="btn btn-primary mt-auto">Registrar Transferencia</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 @(!TienePermiso("LISTAR DESPACHOS") ? "disabled" : "")">
+                @if (!TienePermiso("LISTAR DESPACHOS"))
+                {
+                    <i title="Deshabilitado para el cliente actual" class="fas fa-lock lock-icon"></i>
+                }
+                <div class="card-body text-center">
+                    <i class="fas fa-truck-loading fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Listar Despachos</h5>
+                    <p class="card-text">Genera listado de despachos.</p>
+                    <a asp-action="Index" asp-controller="Despacho" class="btn btn-success mt-auto">Listar Despachos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/jquery-3.6.0.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/js/bootstrap.js"></script>
+    <script src="~/js/inventario.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.card.disabled a').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}
