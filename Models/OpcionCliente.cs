@@ -22,9 +22,7 @@ public partial class OpcionCliente
 
     public int? UsuarioModificacion { get; set; }
 
-    public int? EmpresaId { get; set; }
-
     public int? Estado { get; set; }
 
-    public virtual Empresa? Empresa { get; set; }
+    public virtual ICollection<OpcionesCliente> OpcionesClientes { get; set; } = new List<OpcionesCliente>();
 }

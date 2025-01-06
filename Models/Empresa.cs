@@ -83,7 +83,7 @@ public partial class Empresa
 
     public virtual ICollection<NotaCredito> NotaCreditos { get; set; } = new List<NotaCredito>();
 
-    public virtual ICollection<OpcionCliente> OpcionClientes { get; set; } = new List<OpcionCliente>();
+    public virtual ICollection<OpcionesCliente> OpcionesClientes { get; set; } = new List<OpcionesCliente>();
 
     public virtual ICollection<Parametro> Parametros { get; set; } = new List<Parametro>();
 
