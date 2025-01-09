@@ -65,7 +65,7 @@
 }
                     <i class="fas fa-chart-line fa-3x mb-3 text-info"></i>
                     <h5 class="card-title">Reporte Facturación</h5>
-                    <p class="card-text">Genera reportes de facturación detallados.</p>
+                    <p class="card-text">Genera reporte detallado de facturación.</p>
                     <a asp-action="Index" asp-controller="Factura" class="btn btn-success mt-auto">Ver Listado</a>
 
                     <form asp-action="ExportFacturaExcel" method="post">
@@ -137,7 +137,7 @@
                     <i class="fas fa-percent fa-3x mb-3 text-warning"></i>
                     <h5 class="card-title">Listado Retenciones</h5>
                     <p class="card-text"Listado retenciones de proveedores y clientes.</p>
-                    <a asp-action="Index" asp-controller="Retencion" class="btn btn-success mt-auto">Ver Listado</a>
+                    <a asp-action="ListadoRetencion" asp-controller="Retencion" class="btn btn-success mt-auto">Ver Listado</a>
 
                     <form asp-controller="Retencion" asp-action="ListadoRetencion" method="post">
                         <div class="form-group">

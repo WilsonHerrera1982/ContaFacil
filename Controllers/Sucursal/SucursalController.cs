@@ -19,6 +19,13 @@ namespace ContaFacil.Controllers.Sucursal
             _context = context;
         }
 
+        public IActionResult PrincipalSucursal()
+        {
+            // Aquí puedes agregar cualquier lógica adicional que necesites antes de devolver la vista
+            // Por ejemplo, podrías cargar algunos datos desde la base de datos y pasarlos a la vista
+
+            return View(); // Esto devolverá la vista PrincipalProducto.cshtml
+        }
         // GET: Sucursal
         public async Task<IActionResult> Index()
         {

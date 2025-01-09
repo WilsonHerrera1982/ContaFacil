@@ -119,10 +119,9 @@ public partial class ContableContext : DbContext
     public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
 
     public virtual DbSet<VentaPaquete> VentaPaquetes { get; set; }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=contable;user=root;password=ROOT", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
+         => optionsBuilder.UseMySql("Server=localhost;Database=contable;User=root;Password=ROOT;ConvertZeroDateTime=True;", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -193,11 +192,6 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(10)
                 .HasComment("TRIAL")
                 .HasColumnName("tipo_pago");
-            entity.Property(e => e.Trial482)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial482");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -913,11 +907,6 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
                 .HasColumnName("numero_despacho");
-            entity.Property(e => e.Trial485)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial485");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1335,11 +1324,6 @@ public partial class ContableContext : DbContext
                 .HasPrecision(15, 2)
                 .HasComment("TRIAL")
                 .HasColumnName("subtotal");
-            entity.Property(e => e.Trial485)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial485");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1853,11 +1837,7 @@ public partial class ContableContext : DbContext
                 .HasComment("TRIAL")
                 .HasColumnName("menu_id");
             entity.Property(e => e.Orden).HasColumnName("orden");
-            entity.Property(e => e.Trial489)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial489");
+          
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
@@ -3082,10 +3062,7 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(255)
                 .HasComment("TRIAL")
                 .HasColumnName("descripcion");
-            entity.Property(e => e.Esdebito)
-                .HasDefaultValueSql("'0'")
-                .HasComment("TRIAL")
-                .HasColumnName("esdebito");
+           
             entity.Property(e => e.Estado)
                 .IsRequired()
                 .HasDefaultValueSql("'1'")

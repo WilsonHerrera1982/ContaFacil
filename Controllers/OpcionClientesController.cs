@@ -22,7 +22,7 @@ namespace ContaFacil.Controllers
         // GET: OpcionClientes
         public async Task<IActionResult> Index()
         {
-            var contableContext = _context.OpcionClientes.Include(o => o.Empresa);
+            var contableContext = _context.OpcionClientes;
             return View(await contableContext.ToListAsync());
         }
 
@@ -35,7 +35,6 @@ namespace ContaFacil.Controllers
             }
 
             var opcionCliente = await _context.OpcionClientes
-                .Include(o => o.Empresa)
                 .FirstOrDefaultAsync(m => m.OpcionId == id);
             if (opcionCliente == null)
             {
@@ -74,7 +73,7 @@ namespace ContaFacil.Controllers
             }
             catch (Exception e)
             {
-                ViewData["EmpresaId"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", opcionCliente.EmpresaId);
+               // ViewData["EmpresaId"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", opcionCliente.EmpresaId);
                 Notificacion("Error al guardar el registro " +e,NotificacionTipo.Error);
                 return View(opcionCliente);
             }
@@ -93,7 +92,7 @@ namespace ContaFacil.Controllers
             {
                 return NotFound();
             }
-            ViewData["EmpresaId"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre", opcionCliente.EmpresaId);
+           // ViewData["EmpresaId"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre", opcionCliente.EmpresaId);
             return View(opcionCliente);
         }
 
@@ -124,7 +123,7 @@ namespace ContaFacil.Controllers
             }
             catch (DbUpdateConcurrencyException e)
             {
-                ViewData["EmpresaId"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", opcionCliente.EmpresaId);
+                //ViewData["EmpresaId"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa", opcionCliente.EmpresaId);
                 Notificacion("Error al actualizar el registro" + e,NotificacionTipo.Error);
                 return View(opcionCliente);
             }
@@ -141,7 +140,7 @@ namespace ContaFacil.Controllers
             }
 
             var opcionCliente = await _context.OpcionClientes
-                .Include(o => o.Empresa)
+               
                 .FirstOrDefaultAsync(m => m.OpcionId == id);
             if (opcionCliente == null)
             {
