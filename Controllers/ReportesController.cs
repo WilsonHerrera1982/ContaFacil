@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,6 +44,10 @@ namespace ContaFacil.Controllers
         [HttpPost]
         public async Task<IActionResult> ExportarLibroDiarioExcel(DateTime fechaInicio, DateTime fechaFin)
         {
+            if (fechaFin.Date == DateTime.Now.Date)
+            {
+                fechaFin = fechaFin.AddDays(1);
+            }
             try
             {
                 if (fechaInicio == default || fechaFin == default)
@@ -75,6 +79,10 @@ namespace ContaFacil.Controllers
         [HttpPost]
         public async Task<IActionResult> ExportarMayorizacionExcel(DateTime fechaInicio, DateTime fechaFin)
         {
+            if (fechaFin.Date == DateTime.Now.Date)
+            {
+                fechaFin = fechaFin.AddDays(1);
+            }
             try
             {
                 if (fechaInicio == default || fechaFin == default)
@@ -107,6 +115,10 @@ namespace ContaFacil.Controllers
         [HttpPost]
         public async Task<IActionResult> ExportEstadoExcel(DateTime fechaInicio, DateTime fechaFin)
         {
+            if (fechaFin.Date == DateTime.Now.Date)
+            {
+                fechaFin = fechaFin.AddDays(1);
+            }
             string idUsuario = HttpContext.Session.GetString("_idUsuario");
             Usuario usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == int.Parse(idUsuario));
             UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.FirstOrDefault(u => u.IdUsuario == usuario.IdUsuario);
@@ -143,10 +155,10 @@ namespace ContaFacil.Controllers
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Estado de Resultados");
-                var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
+                /*var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
                 var logo = worksheet.AddPicture(logoPath)
                     .MoveTo(worksheet.Cell("A1"))
-                    .Scale(0.25);
+                    .Scale(0.25);*/
 
                 worksheet.Cell("C1").Value = "Estado de Resultados";
                 worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";
@@ -293,6 +305,10 @@ namespace ContaFacil.Controllers
         [HttpPost]
         public async Task<IActionResult> ExportarBalanceExcel(DateTime fechaInicio, DateTime fechaFin)
         {
+            if (fechaFin.Date == DateTime.Now.Date)
+            {
+                fechaFin = fechaFin.AddDays(1);
+            }
             string idUsuario = HttpContext.Session.GetString("_idUsuario");
             Usuario usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == int.Parse(idUsuario));
             UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.FirstOrDefault(u => u.IdUsuario == usuario.IdUsuario);
@@ -329,10 +345,10 @@ namespace ContaFacil.Controllers
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Estado de Situación Financiera");
-                var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
+                /*var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
                 var logo = worksheet.AddPicture(logoPath)
                     .MoveTo(worksheet.Cell("A1"))
-                    .Scale(0.25);
+                    .Scale(0.25);*/
 
                 worksheet.Cell("C1").Value = "Estado de Situación Financiera";
                 worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";
@@ -588,7 +604,7 @@ namespace ContaFacil.Controllers
                 .Select(g => new {
                     g.Key.Codigo,
                     g.Key.Nombre,
-                    Movimiento = g.Sum(t => t.EsDebito.GetValueOrDefault() ? -t.Monto : t.Monto)
+                    Movimiento = g.Sum(t => t.IdCuentaNavigation.Nombre.Contains("(-)") ? -t.Monto : t.Monto)
                 })
                 .OrderBy(g => g.Codigo);
 
@@ -598,7 +614,7 @@ namespace ContaFacil.Controllers
                 var nombreCuenta = grupo.Nombre;
                 var movimiento = grupo.Movimiento;
 
-                if (codigoCuenta.StartsWith("1.1.2")) // Inventario
+                if (codigoCuenta.StartsWith("1.1.3")) // Inventario
                 {
                     var saldoInicial = transacciones
                         .Where(t => t.IdCuentaNavigation.Codigo == codigoCuenta && t.Descripcion.Contains("Saldo inicial"))
@@ -627,11 +643,7 @@ namespace ContaFacil.Controllers
 
                     movimiento = saldoInicial;
                 }
-                // Invertir el signo para cuentas de Pasivo y Patrimonio
-                if (codigoCuenta.StartsWith("2") || codigoCuenta.StartsWith("3"))
-                {
-                    movimiento = -movimiento;
-                }
+               
 
                 AgregarOActualizarCuenta(balanceItems, codigoCuenta, nombreCuenta, movimiento);
             }
@@ -652,7 +664,7 @@ namespace ContaFacil.Controllers
 
                     if (ultimoNumero >= 3)
                     {
-                        item.Subtotal1 = item.Movimiento * -1;
+                        item.Subtotal1 = item.Movimiento;
                         totalIngresos += item.Subtotal1 ?? 0;
                     }
                 }
@@ -757,7 +769,7 @@ namespace ContaFacil.Controllers
             {
                 reservaItem.Subtotal2 = balanceItems.Values
                  .Where(item => item.Codigo.StartsWith("2.1.") && item.Codigo.Split('.').Length == 3)
-                 .Sum(item => -(Math.Abs(item.Subtotal1 ?? 0)));
+                 .Sum(item => (Math.Abs(item.Subtotal1 ?? 0)));
             }
 
             // Actualizar Patrimonio (3)
@@ -765,7 +777,7 @@ namespace ContaFacil.Controllers
             {
                 patrimonioItem.Total = balanceItems.Values
                 .Where(item => item.Codigo.StartsWith("2.1.") && item.Codigo.Split('.').Length == 3)
-                .Sum(item => -(Math.Abs(item.Subtotal1 ?? 0)));
+                .Sum(item => (Math.Abs(item.Subtotal1 ?? 0)));
             }
         }
         private void ActualizarTotalesPatrimonio(Dictionary<string, BalanceItem> balanceItems)
@@ -932,5 +944,271 @@ namespace ContaFacil.Controllers
                        nombreCuenta.Contains("por pagar"))
             };
         }
+        [HttpPost]
+        public async Task<IActionResult> ExportarBalanceGeneralExcel(DateTime fechaInicio, DateTime fechaFin)
+        {
+            if (fechaFin.Date == DateTime.Now.Date)
+            {
+                fechaFin = fechaFin.AddDays(1);
+            }
+            string idUsuario = HttpContext.Session.GetString("_idUsuario");
+            Usuario usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == int.Parse(idUsuario));
+            UsuarioSucursal usuarioSucursal = _context.UsuarioSucursals.FirstOrDefault(u => u.IdUsuario == usuario.IdUsuario);
+            ContaFacil.Models.Sucursal sucursal = _context.Sucursals.FirstOrDefault(s => s.IdSucursal == usuarioSucursal.IdSucursal);
+            Persona persona = _context.Personas.FirstOrDefault(p => p.IdPersona == usuario.IdPersona);
+            Emisor emisor = _context.Emisors.FirstOrDefault(e => e.Ruc == persona.Identificacion);
+            Empresa empresa = _context.Empresas.FirstOrDefault(e => e.Identificacion == emisor.Ruc);
+
+            if (fechaFin == default)
+            {
+                TempData["Error"] = "La fecha de corte es obligatoria.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            Console.WriteLine($"Buscando transacciones para la empresa {empresa.IdEmpresa} entre {fechaInicio} y {fechaFin}");
+
+            var transacciones = await _context.Transaccions
+                .Where(t => t.FechaCreacion >= fechaInicio && t.FechaCreacion <= fechaFin && t.IdEmpresa == empresa.IdEmpresa)
+                .Include(t => t.IdCuentaNavigation)
+                .ToListAsync();
+
+            Console.WriteLine($"Número de transacciones encontradas: {transacciones.Count}");
+
+            if (transacciones.Count == 0)
+            {
+                TempData["Error"] = "No se encontraron transacciones para el período seleccionado.";
+                return RedirectToAction(nameof(Index));
+            }
+             
+            var balanceData = await GenerarBalanceItems(transacciones, fechaFin);
+
+            Console.WriteLine($"Número de items en el balance: {balanceData.Count}");
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Estado de Situación Financiera");
+
+                // Configuración inicial y encabezado
+                /*var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
+                var logo = worksheet.AddPicture(logoPath)
+                    .MoveTo(worksheet.Cell("A1"))
+                    .Scale(0.25);*/
+
+                worksheet.Cell("B1").Value = "Estado de Situación Financiera";
+                worksheet.Cell("B2").Value = $"Nombre de cliente: {empresa.Nombre}";
+                worksheet.Cell("B3").Value = $"RUC: {empresa.Identificacion}";
+                worksheet.Cell("B4").Value = $"Sucursal: {sucursal.NombreSucursal}";
+                worksheet.Cell("B5").Value = $"Fecha de corte: {fechaFin:dd/MM/yyyy}";
+
+                // Formato del encabezado
+                worksheet.Range("B1:B5").Style.Font.Bold = true;
+                worksheet.Cell("B1").Style.Font.FontSize = 14;
+
+                // Configuración de las columnas
+                worksheet.Column(1).Width = 10;  // Código
+                worksheet.Column(2).Width = 40;  // Cuenta
+                worksheet.Column(3).Width = 15;  // Total
+
+                // Inicio de la tabla de datos
+                int currentRow = 8;
+
+                // Procesamiento y organización de los datos para el formato deseado
+                // Filtrar solo las cuentas que deberían aparecer en el balance
+                var balanceItems = balanceData.Where(i => !i.Codigo.StartsWith("5")).ToList();
+
+                decimal totalActivos = 0;
+                decimal totalPasivos = 0;
+                decimal patrimonioTotal = 0;
+                decimal resultadoEjercicio = 0;
+
+                // Formatear y agregar Activos
+                currentRow = AgregarSeccionBalance(worksheet, balanceItems, "1", "Activos", currentRow, ref totalActivos);
+
+                // Formatear y agregar Pasivos
+                currentRow = AgregarSeccionBalance(worksheet, balanceItems, "2", "Pasivo", currentRow, ref totalPasivos);
+
+                // Calcular el resultado del ejercicio (básico)
+                var ingresos = balanceData.Where(i => i.Codigo.StartsWith("4")).Sum(i => i.Total ?? 0);
+                var gastos = balanceData.Where(i => i.Codigo.StartsWith("5")).Sum(i => i.Total ?? 0);
+                resultadoEjercicio = ingresos + gastos; // Sumamos porque los gastos ya son negativos
+
+                // Agregar el resultado del ejercicio a la sección de patrimonio
+                foreach (var item in balanceItems.Where(i => i.Codigo.StartsWith("3")))
+                {
+                    if (item.Codigo == "3.7")
+                    {
+                        item.Total = resultadoEjercicio;
+                    }
+                }
+                foreach (var item in balanceData)
+                {
+                    if (item.Cuenta.Contains("(-)"))
+                    {
+                        // Forzar valor negativo si el nombre contiene "(-)"
+                        item.Total = -Math.Abs(item.Total ?? 0);
+                    }
+                    else
+                    {
+                        // Forzar valor positivo si no contiene "(-)"
+                        item.Total = Math.Abs(item.Total ?? 0);
+                    }
+                   
+                }
+               
+                // Formatear y agregar Patrimonio
+                currentRow = AgregarSeccionBalance(worksheet, balanceItems, "3", "Patrimonio Atribuible a Propietarios", currentRow, ref patrimonioTotal);
+                foreach (var item in balanceData)
+                {
+                    if (item.Codigo.Equals("1.1.3.2"))
+                    {
+                        item.Codigo = item.Codigo;
+                    }
+                }
+                    // Agregar Participación No Controlada
+                    worksheet.Cell(currentRow, 1).Value = "3.2";
+                worksheet.Cell(currentRow, 2).Value = "Participación No Controlada";
+                worksheet.Cell(currentRow, 3).Value = 0.00;
+                worksheet.Cell(currentRow, 3).Style.NumberFormat.Format = "#,##0.00";
+                currentRow++;
+
+                // Agregar Resultado del Ejercicio (separado)
+                worksheet.Cell(currentRow, 1).Value = "";
+                worksheet.Cell(currentRow, 2).Value = "Resultado del Ejercicio";
+                worksheet.Cell(currentRow, 3).Value = resultadoEjercicio;
+                worksheet.Cell(currentRow, 3).Style.NumberFormat.Format = "#,##0.00";
+                worksheet.Range(currentRow, 1, currentRow, 3).Style.Font.Bold = true;
+                currentRow++;
+
+                // Aplicar formato general
+                worksheet.Range("A8:C" + (currentRow - 1)).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                worksheet.Range("A8:C" + (currentRow - 1)).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                // Alinear las columnas numéricas a la derecha
+                worksheet.Range("C8:C" + (currentRow - 1)).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+                // Guardar y devolver el archivo
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    Console.WriteLine($"Tamaño del archivo Excel generado: {content.Length} bytes");
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EstadoSituacionFinanciera.xlsx");
+                }
+            }
+        }
+
+        // Método auxiliar para agregar una sección del balance (Activos, Pasivos o Patrimonio)
+        private int AgregarSeccionBalance(IXLWorksheet worksheet, List<BalanceItem> items, string codigoBase, string nombreSeccion, int startRow, ref decimal total)
+        {
+            int currentRow = startRow;
+
+            // Encabezado de la sección
+            worksheet.Cell(currentRow, 1).Value = codigoBase;
+            worksheet.Cell(currentRow, 2).Value = nombreSeccion;
+            worksheet.Range(currentRow, 1, currentRow, 3).Style.Font.Bold = true;
+            currentRow++;
+
+            // Filtrar los items de esta sección
+            var seccionItems = items.Where(i => i.Codigo.StartsWith(codigoBase + ".")).OrderBy(i => i.Codigo).ToList();
+
+            // Procesar cada nivel
+            foreach (var item in seccionItems)
+            {
+                // Permitir más niveles en la jerarquía para mostrar subcuentas
+                var niveles = item.Codigo.Split('.');
+                if (niveles.Length <= 5) // Ahora permitimos hasta 5 niveles (ej: 1.1.3.1.1)
+                {
+                    // Aplicar sangría basada en el nivel
+                    int nivel = niveles.Length - 1;
+                    string sangria = new string(' ', nivel * 2);
+
+                    // Valor a mostrar dependiendo del nivel
+                    decimal? valorMostrar = null;
+
+                    if (niveles.Length == 2) // Nivel 2: 1.1, 1.2, etc.
+                        valorMostrar = item.Subtotal2;
+                    else if (niveles.Length == 3) // Nivel 3: 1.1.1, 1.1.2, etc.
+                        valorMostrar = item.Subtotal1;
+                    else if (niveles.Length >= 4) // Nivel 4 y 5: 1.1.1.1, 1.1.1.1.1, etc.
+                        valorMostrar = item.Movimiento;
+
+                    // Algunos ajustes específicos para cuentas particulares
+                    AjustarValoresCuenta(item);
+
+                    // Agregar la fila
+                    worksheet.Cell(currentRow, 1).Value = item.Codigo;
+                    worksheet.Cell(currentRow, 2).Value = sangria + item.Cuenta;
+
+                    if (valorMostrar.HasValue)
+                    {
+                        worksheet.Cell(currentRow, 3).Value = valorMostrar.Value;
+                        worksheet.Cell(currentRow, 3).Style.NumberFormat.Format = "#,##0.00";
+                    }
+
+                    // Aplicar negrita a los niveles 1 y 2
+                    if (niveles.Length <= 2)
+                    {
+                        worksheet.Range(currentRow, 1, currentRow, 3).Style.Font.Bold = true;
+                    }
+
+                    currentRow++;
+
+                    // Actualizar el total de la sección
+                    if (niveles.Length == 2 && item.Subtotal2.HasValue)
+                    {
+                        total += item.Subtotal2.Value;
+                    }
+                }
+               
+            }
+           
+            // Agregar total de la sección
+           // worksheet.Cell(currentRow - 1, 3).Value = total;
+            worksheet.Cell(currentRow - 1, 3).Style.Font.Bold = true;
+            worksheet.Cell(currentRow - 1, 3).Style.NumberFormat.Format = "#,##0.00";
+
+            return currentRow;
+        }
+
+        // Método para realizar ajustes específicos a ciertas cuentas
+        private void AjustarValoresCuenta(BalanceItem item)
+        {
+            // Ajustes para cuentas específicas según la lógica original
+            string[] partes = item.Codigo.Split('.');
+
+            // Ajuste para descuentos y cuentas específicas
+            if (partes.Length == 3 && partes[0] == "4" && partes[1] == "1")
+            {
+                int ultimoNumero = int.Parse(partes[2]);
+                if (ultimoNumero >= 3)
+                {
+                    // item.Subtotal1 ya está calculado correctamente en el método original
+                }
+            }
+
+            // Ajustes para cuentas de pasivo
+            if (item.Codigo.Equals("2.1.1"))
+            {
+                item.Subtotal1 = item.Subtotal1 * -1;
+            }
+
+            if (item.Codigo.Equals("2.1.1.1"))
+            {
+                item.Movimiento = item.Movimiento * -1;
+            }
+
+            if (item.Codigo.Contains("2.1.3.") && item.Movimiento > 0)
+            {
+                item.Movimiento = item.Movimiento * -1;
+            }
+            ImprimirValorSeccion(item);
+        }
+        private void ImprimirValorSeccion(BalanceItem item)
+        {
+           
+                Console.WriteLine($"{item.Codigo}\t{item.Cuenta}");
+            
+        }
     }
+
 }

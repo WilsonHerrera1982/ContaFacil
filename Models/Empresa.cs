@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ContaFacil.Models;
@@ -72,6 +72,8 @@ public partial class Empresa
     public virtual ICollection<ConstatacionFisica> ConstatacionFisicas { get; set; } = new List<ConstatacionFisica>();
 
     public virtual ICollection<Cuentum> Cuenta { get; set; } = new List<Cuentum>();
+
+    public virtual ICollection<CuentaEmpresa> CuentaEmpresas { get; set; } = new List<CuentaEmpresa>();
 
     public virtual ICollection<CuentaCobrar> CuentaCobrars { get; set; } = new List<CuentaCobrar>();
 

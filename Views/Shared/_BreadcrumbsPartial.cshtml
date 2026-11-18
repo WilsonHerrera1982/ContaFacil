@@ -1,0 +1,54 @@
+@{
+    string controller = ViewContext.RouteData.Values["controller"].ToString();
+    string action = ViewContext.RouteData.Values["action"].ToString();
+    string id = ViewContext.RouteData.Values["id"]?.ToString();
+
+    // Mapeo de nombres amigables para controladores
+    var controllerNames = new Dictionary<string, string> {
+        { "Home", "Inicio" },
+        { "CategoriaProducto", "Categoría de Producto" },
+        { "Producto", "Producto" },
+        { "Inventario", "Inventario" },
+        { "Factura", "Factura" },
+        { "Persona", "Cliente" },
+        { "Proveedor", "Proveedor" },
+        { "Comision", "Comisión" },
+        { "Tipocuentum", "Tipo de Cuenta" },
+        { "Transaccion", "Transacción" },
+        { "UnidadMedidum", "Unidad de Medida" },
+        { "VentaPaquete", "Venta de Paquete" },
+        { "TipoTransaccion", "Tipo de Transacción" },
+        { "TipoIdentificacion", "Tipo de Identificación" },
+        { "Sucursal", "Sucursal" }
+    };
+
+    // Mapeo de nombres amigables para acciones
+    var actionNames = new Dictionary<string, string> {
+        { "Index", "Lista" },
+        { "Create", "Crear" },
+        { "Edit", "Editar" },
+        { "Details", "Detalles" },
+        { "Delete", "Eliminar" },
+        { "NotaCredito", "Nota de Crédito" },
+        { "Transferencia", "Transferencia" },
+        { "Egreso", "Egreso" },
+        { "Reportes", "Reportes" }
+    };
+
+    // Obtener nombre amigable para el controlador actual
+    var controllerDisplay = controllerNames.ContainsKey(controller) ? controllerNames[controller] : controller;
+    
+    // Obtener nombre amigable para la acción actual
+    var actionDisplay = actionNames.ContainsKey(action) ? actionNames[action] : action;
+}
+
+<nav aria-label="breadcrumb" class="custom-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index">
+                <i class="fas fa-home"></i> Inicio
+            </a>
+        </li>        
+       
+    </ol>
+</nav>

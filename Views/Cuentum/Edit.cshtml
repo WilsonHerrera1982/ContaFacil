@@ -16,25 +16,32 @@
                 <input asp-for="Nombre" class="form-control" />
                 <span asp-validation-for="Nombre" class="text-danger"></span>
             </div>
-
+            <div class="form-group mb-3">
+                <label asp-for="Tipo" class="control-label"></label>
+                <input asp-for="Tipo" class="form-control" />
+                <span asp-validation-for="Tipo" class="text-danger"></span>
+            </div>
             <div class="form-check mb-2">
                 <input type="checkbox" class="form-check-input"
                        id="Credito" name="Credito"
-                @(Model.Credito == true ? "checked" : "") />
+                       value="true" @(Model.Credito == true ? "checked" : "") />
+                <input type="hidden" name="Credito" value="false" />
                 <label class="form-check-label" for="Credito">Crédito</label>
             </div>
 
             <div class="form-check mb-2">
                 <input type="checkbox" class="form-check-input"
                        id="Debito" name="Debito"
-                @(Model.Debito == true ? "checked" : "") />
+                       value="true" @(Model.Debito == true ? "checked" : "") />
+                <input type="hidden" name="Debito" value="false" />
                 <label class="form-check-label" for="Debito">Débito</label>
             </div>
 
             <div class="form-check mb-2">
                 <input type="checkbox" class="form-check-input"
                        id="Estado" name="Estado"
-                @(Model.Estado == true ? "checked" : "") />
+                       value="true" @(Model.Estado == true ? "checked" : "") />
+                <input type="hidden" name="Estado" value="false" />
                 <label class="form-check-label" for="Estado">Activo/Inactivo</label>
             </div>
 

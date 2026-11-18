@@ -69,21 +69,23 @@ namespace ContaFacil.Controllers
         }
 
         // GET: Proveedor/Create
-        public IActionResult Create()
-        {
-            ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa");
-            ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA").Select(i => new
-            {
-                IdImpuesto = i.Porcentaje,
-                NombrePorcentaje = i.Nombre
-            }), "IdImpuesto", "NombrePorcentaje");
-            ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE").Select(i => new
-            {
-                IdImpuesto = i.Porcentaje,
-                NombrePorcentaje = i.Nombre 
-            }), "IdImpuesto", "NombrePorcentaje");
-            return View();
-        }
+      public IActionResult Create()
+{
+    ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "IdEmpresa");
+    ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION IVA" && i.EstadoBoolean==true).Select(i => new
+    {
+        IdImpuesto = i.Porcentaje,
+        NombrePorcentaje = i.Nombre
+    }), "IdImpuesto", "NombrePorcentaje");
+    ViewData["IdRetencionF"] = new SelectList(_context.Impuestos.Where(i => i.Tipo == "RETENCION EN LA FUENTE" && i.EstadoBoolean==true).Select(i => new
+    {
+        IdImpuesto = i.Porcentaje,
+        NombrePorcentaje = i.Nombre 
+    }), "IdImpuesto", "NombrePorcentaje");
+    
+    // Aquí está el cambio importante:
+    return View(new Proveedor());
+}
 
         // POST: Proveedor/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.

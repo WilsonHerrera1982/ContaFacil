@@ -87,6 +87,7 @@ public partial class Factura
 
     [NotMapped]
     public virtual int? idPago { get; set; }
+   public Boolean Preventa { get; set; }
     public virtual ICollection<CuentaCobrar> CuentaCobrars { get; set; } = new List<CuentaCobrar>();
 
     public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; } = new List<DetalleFactura>();

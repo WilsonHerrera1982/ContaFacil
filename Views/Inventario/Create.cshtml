@@ -1,208 +1,351 @@
-﻿@model ContaFacil.Models.ViewModel.InventarioViewModel
+@model ContaFacil.Models.ViewModel.InventarioViewModel
 
 @{
     ViewData["Title"] = "Create";
 }
 
-
 <div class="text-left mb-4">
-    <h2>Crear Inventario</h2>
-    <a asp-action="Index" asp-controller="Inventario" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+    <h2>Registrar compra</h2>
+    <a asp-action="OpcionesInventario" asp-controller="Inventario" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
         </svg>
         Regresar
     </a>
 </div>
-<div class="form-container">
-    <div class="row">
-        <div class="col">        
 
-<form asp-action="Create" id="inventarioForm">
-    <div class="form-group">
-        <label asp-for="tipoMovimiento" class="control-label">Tipo de Movimiento</label>
-        <select asp-for="tipoMovimiento" class="form-control" id="tipoMovimiento">
-            <option value="">Seleccione un tipo de movimiento</option>
-            <option value="C">Compra</option>
-           <!-- <option value="E">Ingreso</option>-->
-            <option value="S">Egreso</option>
-            <option value="T">Transferencia entre bodegas</option>
-          <!--  <option value="A">Ajuste de inventario</option>-->
-        </select>
-    </div>
-
-                <div id="detallesMovimiento" style="display: none;">
-                    <div class="row">
+<div>
+    <form asp-action="Create" id="inventarioForm">
+        <!-- Sección de Cabecera -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
                         <div class="form-group">
-                            <label asp-for="numeroDespacho" class="control-label">Número de Despacho</label>
-                            <input asp-for="numeroDespacho" id="NumeroDespacho" class="form-control" readonly />
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="idProducto" class="control-label">Producto</label>
-                            <select asp-for="idProducto" id="productoSelect" class="form-control" asp-items="ViewBag.IdProducto"></select>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="idProveedor" class="control-label">Proveedor</label>
-                            <select asp-for="idProveedor" id="proveedorSelect" class="form-control" asp-items="ViewBag.IdProveedor"></select>
-                        </div>
-                        <div class="col-md-6">
-                           
-                            <div class="form-group">
-                                <label asp-for="cantidad" class="control-label"></label>
-                                <input asp-for="cantidad" class="form-control" onchange="calcularTotales()" />
-                            </div>
-                               <div class="form-group" id="precioUnitarioDiv">
-                                <label asp-for="precioUnitario" class="control-label">Precio Unitario</label>
-                                <input readonly asp-for="precioUnitario" class="form-control" />
-                            </div>
-                            <div class="form-group" id="descuentoDiv">
-                                <label asp-for="descuento" class="control-label">Descuento</label>
-                                <input asp-for="descuento" class="form-control" onchange="calcularTotales()" />
-                            </div>
-
-                            <div class="form-group" id="subtotalDiv">
-                                <label asp-for="subtotal" class="control-label">Subtotal</label>
-                                <input asp-for="subtotal" class="form-control" onchange="calcularTotales()" />
-                            </div>                           
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group" id="sucursalDestinoDiv" style="display: none;">
-                                <label asp-for="sucursalDestino" class="control-label">Sucursal Destino</label>
-                                <select asp-for="sucursalDestino" class="form-control" asp-items="ViewBag.IdSucursal"></select>
-                            </div>
-                            <div class="form-group" id="numeroFacturaDiv">
-                                <label asp-for="numeroFactura" class="control-label">Número Factura</label>
-                                <input asp-for="numeroFactura" class="form-control" />
-                            </div>
-                         
-                           
-                            <div class="form-group" id="precioUnitarioFinalDiv">
-                                <label asp-for="precioUnitarioFinal" class="control-label">Precio Unitario Final</label>
-                                <input readonly asp-for="precioUnitarioFinal" class="form-control" />
-                            </div>
-                          
-                            <div class="form-group" id="subtotal15Div">
-                                <label asp-for="subtotal15" class="control-label">Subtotal 15%</label>
-                                <input readonly asp-for="subtotal15" class="form-control" />
-                            </div>
-                          
-                            <div class="form-group" id="ivaDiv">
-                                <label asp-for="iva" class="control-label">IVA</label>
-                                <input readonly asp-for="iva" class="form-control" />
-                            </div>
-                            <div class="form-group" id="totalDiv">
-                                <label asp-for="total" class="control-label">Total</label>
-                                <input readonly asp-for="total" class="form-control" />
-                            </div>
-
+                            <label asp-for="tipoMovimiento" class="control-label">Tipo de Movimiento</label>
+                            <select asp-for="tipoMovimiento" class="form-control" id="tipoMovimiento" disabled>
+                                <option value="C" selected>Compra</option>
+                            </select>
+                            <input type="hidden" asp-for="tipoMovimiento" value="C" />
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Guardar</button>
-                            </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="control-label">Factura</label>
+                            <input type="text" asp-for="numeroFactura" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="numeroDespacho" class="control-label">Número</label>
+                            <input asp-for="numeroDespacho" id="NumeroDespacho" class="form-control" readonly />
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="idProveedor" class="control-label">Proveedor</label>
+                            <select asp-for="idProveedor" id="proveedorSelect" class="form-control select2-proveedor" asp-items="ViewBag.IdProveedor" required>
+                                <option value="">-- Seleccione un proveedor --</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-</form>
-
-
+            </div>
         </div>
-    </div>
+
+        <!-- Sección de Detalles -->
+        <div class="card mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Detalles del Movimiento</span>
+                <button type="button" class="btn btn-primary btn-sm" id="btnAgregarProducto">
+                    <i class="fas fa-plus"></i> Agregar Producto
+                </button>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive" style="overflow-x: auto; min-height: 0.01%;">
+                    <table class="table table-bordered table-sm" id="detallesTable" style="min-width: 1200px;">
+                        <thead>
+                            <tr>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">Código</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">Producto</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">Cantidad</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">P. Unitario</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">% Desc.</th>
+                                <th class="d-none d-md-table-cell" style="position:sticky;top:0;z-index:2;background:#f8f9fa;">Desc. Unitario</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">P. Unit. Final</th>
+                                <th class="d-none d-md-table-cell" style="position:sticky;top:0;z-index:2;background:#f8f9fa;">Subtotal sin Imp.</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">Total Desc.</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">% IVA</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">IVA</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">Total</th>
+                                <th style="position:sticky;top:0;z-index:2;background:#f8f9fa;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detallesBody">
+                            <!-- Las filas se agregarán dinámicamente -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="6" class="text-right"><strong>Totales:</strong></td>
+                                <td class="d-none d-md-table-cell"><input type="number" class="form-control form-control-sm" id="totalDescuentoUnitario" readonly title="Total Descuento Unitario" /></td>
+                                <td class="d-none d-md-table-cell"><input type="number" class="form-control form-control-sm" id="totalSubtotalSinImpuestos" readonly title="Subtotal sin Impuestos" /></td>
+                                <td><input type="number" class="form-control form-control-sm" id="totalDescuento" readonly title="Total Descuento" /></td>
+                                <td></td>
+                                <td><input type="number" class="form-control form-control-sm" id="totalIVA" readonly title="IVA" /></td>
+                                <td><input type="number" class="form-control form-control-sm" id="totalGeneral" readonly title="Total General" /></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group text-right mt-3">
+            <button type="submit" class="btn btn-primary">Guardar Movimiento</button>
+        </div>
+    </form>
 </div>
-
-
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     }
+    <link href="~/css/select2.css" rel="stylesheet" />
+    <link href="~/css/select2.min.css" rel="stylesheet" />
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/select2.full.min.js"></script>
+
     <script>
-        function calcularTotales() {
-            var cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
-            var subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
-            var descuento = parseFloat(document.getElementById('descuento').value) || 0;
-            // Calcular precio unitario final
-            var precioUnitarioFinal = cantidad !== 0 ? (subtotal - descuento) / cantidad : 0;
-            document.getElementById('precioUnitarioFinal').value = precioUnitarioFinal.toFixed(2);
-
-            var precioUnitario = cantidad !== 0 ? (subtotal/ cantidad) : 0;
-            document.getElementById('precioUnitario').value = precioUnitario.toFixed(2);
-
-            // Calcular subtotal15 (asumimos que es igual al subtotal - descuento)
-            var subtotal15 = subtotal - descuento;
-            document.getElementById('subtotal15').value = subtotal15.toFixed(2);
-
-            // Calcular IVA
-            var iva = subtotal15 * 0.15;
-            document.getElementById('iva').value = iva.toFixed(2);
-
-            // Calcular total
-            var total = subtotal15 + iva;
-            document.getElementById('total').value = total.toFixed(2);
-            
-        }
-
         $(document).ready(function () {
-            $('#tipoMovimiento').change(function () {
-                var tipoMovimiento = $(this).val();
-                if (tipoMovimiento) {
-                    $.ajax({
-                        url: '@Url.Action("ObtenerNumeroDespacho")',
-                        type: 'GET',
-                        data: { tipoMovimiento: tipoMovimiento },
-                        success: function (data) {
-                            $('#NumeroDespacho').val(data);
-                            $('#detallesMovimiento').show();
-                            if (tipoMovimiento === 'T') {
-                                $('#sucursalDestinoDiv').show();
-                            } else {
-                                $('#sucursalDestinoDiv').hide();
-                            }
-                            if (tipoMovimiento === 'E' || tipoMovimiento === 'C') {
-                                $('#precioUnitarioDiv').show();
-                                $('#precioUnitarioFinalDiv').show();
-                                $('#subtotal15Div').show();
-                                $('#numeroFacturaDiv').show();
-                                $('#ivaDiv').show();
-                                $('#totalDiv').show();
-                                $('#subtotalDiv').show();
-                                $('#descuentoDiv').show();
-                               
-                            } else {
-                                $('#precioUnitarioDiv').hide();
-                                $('#precioUnitarioFinalDiv').hide();
-                                $('#subtotal15Div').hide();
-                                $('#numeroFacturaDiv').hide();
-                                $('#ivaDiv').hide();
-                                $('#totalDiv').hide();
-                                $('#subtotalDiv').hide();
-                                $('#descuentoDiv').hide();                               
-                            }
-                        }
-                    });
-                } else {
-                    $('#detallesMovimiento').hide();
+            let detalleCount = 0;
+            let timeoutId;
+
+            // Obtener número de despacho inicial
+            $.ajax({
+                url: '@Url.Action("ObtenerNumeroDespacho", "Inventario")',
+                type: 'GET',
+                data: { tipoMovimiento: 'C' },
+                success: function (data) {
+                    $('#NumeroDespacho').val(data);
                 }
             });
-        });
-    </script>
-    <script>
-        $(document).ready(function () {
-            $('#productoSelect').select2({
-                placeholder: 'Buscar producto...',
-                allowClear: true
+
+            // Configurar Select2 para proveedores
+            $('.select2-proveedor').select2({
+                placeholder: 'Buscar proveedor...',
+                allowClear: true,
+                width: '100%'
             });
-        });
-        $(document).ready(function () {
-            $('#proveedorSelect').select2({
-                placeholder: 'Buscar producto...',
-                allowClear: true
+
+            // Agregar nueva fila de producto
+            $('#btnAgregarProducto').click(function () {
+                agregarFilaProducto();
             });
+
+            function agregarFilaProducto() {
+                let newRow = `
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control producto-codigo" placeholder="Código">
+                                </td>
+                                <td>
+                                    <select name="Detalles[${detalleCount}].IdProducto" class="form-control producto-select">
+                                        <option value="">-- Seleccione un producto --</option>
+        @foreach (var producto in ViewBag.IdProducto)
+        {
+            var parts = producto.Text.Split('|');
+            var nombre = parts.Length > 0 ? parts[0].Trim() : producto.Text;
+            var codigo = parts.Length > 1 ? parts[1].Trim() : "";
+            var precio = parts.Length > 2 ? parts[2].Trim() : "0";
+                                                <option value="@producto.Value"
+                                                        data-codigo="@codigo"
+                                                        data-precio="@precio">
+                @nombre
+                                                </option>
+        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].Cantidad" class="form-control cantidad" value="1" min="0.01" step="0.01" required />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].PrecioUnitario" class="form-control precio-unitario" step="0.01" min="0.01" required />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].PorcentajeDescuento" class="form-control porcentaje-descuento" value="0" min="0" max="100" step="0.01" />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].DescuentoUnitario" class="form-control descuento-unitario" readonly />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].PrecioUnitarioFinal" class="form-control precio-unitario-final" readonly />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].SubtotalSinImpuestos" class="form-control subtotal-sin-impuestos" readonly />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].TotalDescuento" class="form-control total-descuento" readonly />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].PorcentajeIVA" class="form-control porcentaje-iva" value="15" min="0" max="100" step="0.01" style="width: 70px; min-width: 60px;" />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].IVA" class="form-control iva" readonly style="width: 90px; min-width: 70px;" />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].Total" class="form-control total" readonly style="width: 90px; min-width: 70px;" />
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm removeDetalle">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                $('#detallesBody').append(newRow);
+                detalleCount++;
+
+                // Inicializar Select2 para el nuevo select de producto
+                $('.producto-select').last().select2({
+                    placeholder: 'Buscar producto...',
+                    allowClear: true
+                });
+            }
+
+             function actualizarDetallesProducto(productoId, row) {
+                $.get(`/Factura/GetProductoDetails?idProducto=${productoId}`, function (data) {
+                    row.find(".precio").val(data.precioUnitario);
+                    row.find(".descuento").val(data.descuento);
+                    row.data("descuentoPorcentaje", data.descuento); // Guardamos el porcentaje de descuento
+
+                    calcularSubtotal(row);
+                });
+            }
+            // Eliminar fila
+            $(document).on('click', '.removeDetalle', function () {
+                $(this).closest('tr').remove();
+                actualizarTotales();
+                // Renumerar los índices de los campos
+                $('#detallesBody tr').each(function (index) {
+                    $(this).find('[name]').each(function () {
+                        let name = $(this).attr('name').replace(/\[\d+\]/, '[' + index + ']');
+                        $(this).attr('name', name);
+                    });
+                });
+                detalleCount = $('#detallesBody tr').length;
+            });
+
+            // Cargar precio cuando se selecciona un producto
+            $(document).on('change', '.producto-select', function () {
+                let row = $(this).closest('tr');
+                let selectedOption = $(this).find('option:selected');
+                let precio = selectedOption.data('precio');
+
+                if (precio) {
+                    row.find('.precio-unitario').val(precio);
+                } else {
+                    row.find('.precio-unitario').val('0.00');
+                }
+
+                calcularFila(row);
+            });
+
+            // Buscar por código
+            $(document).on('keydown', '.producto-codigo', function (e) {
+                if (e.keyCode === 13) { // Enter key
+                    e.preventDefault();
+                    procesarCodigo($(this));
+                }
+            });
+
+            $(document).on('input', '.producto-codigo', function () {
+                clearTimeout(timeoutId);
+                let input = $(this);
+                timeoutId = setTimeout(() => {
+                    procesarCodigo(input);
+                }, 300);
+            });
+
+            function procesarCodigo(input) {
+                let codigo = input.val();
+                let row = input.closest('tr');
+                let select = row.find('.producto-select');
+
+                let option = select.find(`option[data-codigo="${codigo}"]`);
+                if (option.length) {
+                    select.val(option.val()).trigger('change');
+                } else if (codigo !== '') {
+                    alert("Código de producto no encontrado");
+                    input.val('');
+                    select.val('').trigger('change');
+                }
+            }
+
+            // Calcular valores cuando cambian los inputs
+            $(document).on('input', '.cantidad, .precio-unitario, .porcentaje-descuento, .porcentaje-iva', function () {
+                calcularFila($(this).closest('tr'));
+            });
+
+            function calcularFila(row) {
+                let cantidad = parseFloat(row.find('.cantidad').val()) || 0;
+                let precioUnitario = parseFloat(row.find('.precio-unitario').val()) || 0;
+                let porcentajeDescuento = parseFloat(row.find('.porcentaje-descuento').val()) / 100 || 0;
+                let porcentajeIVA = parseFloat(row.find('.porcentaje-iva').val()) / 100 || 0.15;
+
+                // Calcular descuento
+                let descuentoUnitario = precioUnitario * porcentajeDescuento;
+                let precioUnitarioFinal = precioUnitario - descuentoUnitario;
+
+                // Calcular subtotales
+                let subtotalSinImpuestos = cantidad * precioUnitarioFinal;
+                let totalDescuento = cantidad * descuentoUnitario;
+
+                // Calcular impuestos y total
+                let iva = subtotalSinImpuestos * porcentajeIVA;
+                let total = subtotalSinImpuestos + iva;
+
+                // Actualizar campos
+                row.find('.descuento-unitario').val(descuentoUnitario.toFixed(2));
+                row.find('.precio-unitario-final').val(precioUnitarioFinal.toFixed(2));
+                row.find('.subtotal-sin-impuestos').val(subtotalSinImpuestos.toFixed(2));
+                row.find('.total-descuento').val(totalDescuento.toFixed(2));
+                row.find('.iva').val(iva.toFixed(2));
+                row.find('.total').val(total.toFixed(2));
+
+                actualizarTotales();
+            }
+
+            function actualizarTotales() {
+                let totales = {
+                    descuentoUnitario: 0,
+                    subtotalSinImpuestos: 0,
+                    totalDescuento: 0,
+                    iva: 0,
+                    total: 0
+                };
+
+                $('#detallesBody tr').each(function () {
+                    totales.descuentoUnitario += parseFloat($(this).find('.descuento-unitario').val()) || 0;
+                    totales.subtotalSinImpuestos += parseFloat($(this).find('.subtotal-sin-impuestos').val()) || 0;
+                    totales.totalDescuento += parseFloat($(this).find('.total-descuento').val()) || 0;
+                    totales.iva += parseFloat($(this).find('.iva').val()) || 0;
+                    totales.total += parseFloat($(this).find('.total').val()) || 0;
+                });
+
+                $('#totalDescuentoUnitario').val(totales.descuentoUnitario.toFixed(2));
+                $('#totalSubtotalSinImpuestos').val(totales.subtotalSinImpuestos.toFixed(2));
+                $('#totalDescuento').val(totales.totalDescuento.toFixed(2));
+                $('#totalIVA').val(totales.iva.toFixed(2));
+                $('#totalGeneral').val(totales.total.toFixed(2));
+            }
+
+            // Agregar una fila inicial al cargar la página
+            agregarFilaProducto();
         });
     </script>
 }

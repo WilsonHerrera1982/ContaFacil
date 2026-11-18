@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;  using System.ComponentModel;
 
 namespace ContaFacil.Models;
@@ -17,7 +17,7 @@ public partial class Cuentum
     /// TRIAL
     /// </summary>
     public string Nombre { get; set; } = null!;
-
+    public string Tipo { get; set; } = null!;
     /// <summary>
     /// TRIAL
     /// </summary>
@@ -90,4 +90,9 @@ public partial class Cuentum
     public virtual Tipocuentum IdTipoCuentaNavigation { get; set; } = null!;
 
     public virtual ICollection<Transaccion> Transaccions { get; set; } = new List<Transaccion>();
+
+    /// <summary>
+    /// Colección de relaciones cuenta-empresa (tabla intermedia)
+    /// </summary>
+    public virtual ICollection<CuentaEmpresa> CuentaEmpresas { get; set; } = new List<CuentaEmpresa>();
 }

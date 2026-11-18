@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ContaFacil.Models.MenuPerfil>
+@model IEnumerable<ContaFacil.Models.MenuPerfil>
 
 @{
     ViewData["Title"] = "Index";
@@ -7,9 +7,15 @@
 
 
 <p>
-    <a asp-action="Create">Crear Nuevo</a>
+      <a asp-action="Create" class="btn btn-primary d-inline-flex align-items-center gap-2 mb-2" style="padding: 8px 16px; border-radius: 4px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13A6 6 0 1 1 8 2a6 6 0 0 1 0 12z"/>
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+      </svg>
+      Crear Nuevo
+  </a>
 </p>
-<table class="table">
+<table class="table table-striped table-bordered table-hover align-middle">
     <thead>
         <tr>
             <th>

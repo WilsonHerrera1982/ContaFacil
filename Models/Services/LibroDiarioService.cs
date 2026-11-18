@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using ContaFacil.Models.Dto;
 using ContaFacil.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -73,7 +73,11 @@ namespace ContaFacil.Models.Services
             int idEmpresa)
         {
             var cue2 = await _context.Cuenta
-                .FirstOrDefaultAsync(c => c.Nombre == "Relacionadas por pagar");
+                .FirstOrDefaultAsync(c => c.Nombre == "Relacionadas por Pagar");
+            var cuentas = await _context.Cuenta
+                .Where(c => c.IdIdCuenta == cue2.IdCuenta)
+                .Select(c => c.IdCuenta)
+                .ToListAsync();
 
             var transacciones = await _context.Transaccions
                 .Where(t => t.FechaCreacion >= fechaInicio &&
@@ -84,7 +88,7 @@ namespace ContaFacil.Models.Services
 
             var compras = transacciones
                 .Where(t => !t.Descripcion.ToLower().Contains("venta") &&
-                           t.IdCuenta != cue2.IdCuenta);
+                           !cuentas.Contains(t.IdCuenta));
 
             var ventas = transacciones
                 .Where(t => t.Descripcion.ToLower().Contains("venta") &&
@@ -92,11 +96,28 @@ namespace ContaFacil.Models.Services
                 .OrderBy(t => t.FechaCreacion);
 
             var inicial = transacciones
-                .Where(t => t.Descripcion.ToLower().Contains("inicial"));
+                .Where(t => t.Descripcion.Contains("inicial"));
 
             return compras.Concat(ventas).Concat(inicial)
-                .OrderBy(t => t.FechaCreacion)
+                .OrderBy(t => ExtraerNumeroAsiento(t.Descripcion))
+                .ThenBy(t => t.IdCuentaNavigation.Codigo)
                 .ToList();
+        }
+
+        private string ExtraerNumeroAsiento(string descripcion)
+        {
+            if (string.IsNullOrEmpty(descripcion))
+                return "";
+
+            // Buscar el patrón AS#### al inicio de la descripción
+            var partes = descripcion.Split(' ');
+            if (partes.Length > 0 && partes[0].StartsWith("AS"))
+            {
+                return partes[0];
+            }
+
+            // Si no encuentra el patrón, retorna la descripción completa para mantener el orden
+            return descripcion;
         }
 
         private void ConfigurarEncabezadoReporte(
@@ -104,10 +125,10 @@ namespace ContaFacil.Models.Services
             Empresa empresa,
             Sucursal sucursal)
         {
-            var logoPath = Path.Combine(_webRootPath, "img", "logo1.JPG");
+            /*var logoPath = Path.Combine(_webRootPath, "img", "logo1.JPG");
             var logo = worksheet.AddPicture(logoPath)
                 .MoveTo(worksheet.Cell("A1"))
-                .Scale(0.25);
+                .Scale(0.25);*/
 
             worksheet.Cell("C1").Value = "LIBRO DIARIO";
             worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";

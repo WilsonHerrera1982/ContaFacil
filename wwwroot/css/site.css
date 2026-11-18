@@ -73,11 +73,11 @@ body {
 
 
 .form-container {
-    width: 500px;
+    width: 1000px;
     margin: 0 auto;
-    margin-top: 50px;
+    margin-top: 520px;
     margin-bottom: 50px;
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     border: 5px solid #1A3263;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -165,4 +165,18 @@ header {
     color: white;
     margin-top: 5px;
     text-align: center;
+}
+/* En tu archivo CSS principal */
+.container-fluid {
+    max-width: 99%; /* Utiliza casi todo el ancho */
+    padding: 0 150px; /* Ajusta según necesidad */
+}
+
+.table td, .table th {
+    white-space: nowrap; /* Evita saltos de línea */
+    padding: 0.5rem; /* Reduce el espaciado interno */
+}
+
+.card-body {
+    overflow-x: auto; /* Para contenido ancho */
 }

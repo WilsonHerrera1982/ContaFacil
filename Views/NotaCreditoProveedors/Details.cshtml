@@ -1,0 +1,114 @@
+﻿@model ContaFacil.Models.NotaCreditoProveedor
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Detalles</h1>
+
+<div>
+    <h4>Nota Credito Proveedor</h4>
+    <hr />
+    <dl class="row">
+        
+        <dt class = "col-sm-2">
+           Razón Social)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.RazonSocial)
+        </dd>
+        <dt class = "col-sm-2">
+             Nombre Comercial
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NombreComercial)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Ruc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Ruc)
+        </dd>
+        <dt class = "col-sm-2">
+            Clave Acceso
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ClaveAcceso)
+        </dd>
+      
+        <dt class = "col-sm-2">
+             Punto Emisión
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PtoEmi)
+        </dd>       
+        <dt class = "col-sm-2">
+           Dirección Matriz
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DirMatriz)
+        </dd>
+        <dt class = "col-sm-2">
+           Fecha Emisión
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FechaEmision)
+        </dd>
+        <dt class = "col-sm-2">
+           Dirección Establecimiento
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DirEstablecimiento)
+        </dd>
+       
+        <dt class = "col-sm-2">
+           Razón Social Comprador
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.RazonSocialComprador)
+        </dd>
+        <dt class = "col-sm-2">
+           Identificación Comprador
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.IdentificacionComprador)
+        </dd>
+        <dt class = "col-sm-2">
+           Contribuyente Especial
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ContribuyenteEspecial)
+        </dd>
+        
+        <dt class = "col-sm-2">
+            Factura
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NumDocModificado)
+        </dd>
+        
+        <dt class = "col-sm-2">
+           Total Sin Impuestos
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TotalSinImpuestos)
+        </dd>
+       
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Moneda)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Moneda)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Motivo)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Motivo)
+        </dd>
+      
+    </dl>
+</div>
+<div>
+     <a asp-action="Index">Regresar a la Lista</a>
+</div>

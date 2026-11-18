@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.Tipocuentum
+@model ContaFacil.Models.Tipocuentum
 
 @{
     ViewData["Title"] = "Details";
@@ -8,7 +8,12 @@
 
 <div>
     <h4>Tipocuentum</h4>
-    <hr />
+    <a asp-action="Index" asp-controller="Tipocuentum" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+        </svg>
+        Regresar
+    </a>
     <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Nombre)
@@ -19,6 +24,5 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.IdTipoCuenta">Editar</a> |
-    <a asp-action="Index">Volver a la Lista</a>
+    <a asp-action="Edit" asp-route-id="@Model?.IdTipoCuenta">Editar</a>
 </div>

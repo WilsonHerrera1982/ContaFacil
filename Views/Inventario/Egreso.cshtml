@@ -1,0 +1,378 @@
+﻿@model ContaFacil.Models.ViewModel.InventarioViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="text-left mb-4">
+    <h2>Registrar Egreso</h2>
+    <a asp-action="OpcionesInventario" asp-controller="Inventario" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+        </svg>
+        Regresar
+    </a>
+</div>
+
+<div>
+    <form asp-action="Create" id="inventarioForm">
+        <!-- Sección de Cabecera -->
+        <div class="card mb-4">
+            <div class="card-header">Cabecera del Movimiento</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="tipoMovimiento" class="control-label">Tipo de Movimiento</label>
+                            <select asp-for="tipoMovimiento" class="form-control" disabled>
+                                <option value="S" selected>Egreso</option>
+                            </select>
+                            <input type="hidden" asp-for="tipoMovimiento" value="S" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="control-label">Tipo de Documento</label>
+                            <select class="form-control" id="seleccion" required>
+                                <option value="">Seleccione</option>
+                                <option value="F">Factura</option>
+                                <option value="E">Egreso</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3" id="divFactura" style="display: none;">
+                        <div class="form-group">
+                            <label class="control-label">Número de Factura</label>
+                            <input type="text" asp-for="numeroFactura" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="col-md-3" id="divObservacion" style="display: none;">
+                        <div class="form-group">
+                            <label class="control-label">Motivo del Egreso</label>
+                            <input type="text" asp-for="descripcion" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="numeroDespacho" class="control-label">Número</label>
+                            <input asp-for="numeroDespacho" id="NumeroDespacho" class="form-control" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Detalles -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Detalles del Egreso</span>
+                <button type="button" class="btn btn-primary btn-sm" id="btnAgregarProducto">
+                    <i class="fas fa-plus"></i> Agregar Producto
+                </button>
+            </div>
+
+            <div class="card-body">
+                <div id="stockError" class="alert alert-danger" style="display: none;"></div>
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="detallesTable">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Precio Unitario Final</th>
+                                <th>Subtotal0</th>
+                                <th>Subtotal15</th>
+                                <th>IVA</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detallesBody">
+                            <!-- Las filas se agregarán dinámicamente -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" class="text-right"><strong>Totales:</strong></td>
+                                <td><input type="number" class="form-control" id="totalSubtotal0" readonly /></td>
+                                <td><input type="number" class="form-control" id="totalSubtotal15" readonly /></td>
+                                <td><input type="number" class="form-control" id="totalIva" readonly /></td>
+                                <td><input type="number" class="form-control" id="totalGeneral" readonly /></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group text-right">
+            <button type="submit" class="btn btn-primary">Registrar Egreso</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <link href="~/css/select2.css" rel="stylesheet" />
+    <link href="~/css/select2.min.css" rel="stylesheet" />
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/select2.full.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            let detalleCount = 0;
+            let timeoutId;
+
+            // Configuración inicial
+            $('#seleccion').trigger('change');
+            obtenerNumeroDespacho();
+
+            // Manejar cambio en tipo de documento
+            $('#seleccion').change(function () {
+                var seleccion = $(this).val();
+                $('#divFactura, #divObservacion').hide().find('input').removeAttr('required');
+
+                if (seleccion === 'F') {
+                    $('#divFactura').show().find('input').attr('required', 'required');
+                } else if (seleccion === 'E') {
+                    $('#divObservacion').show().find('input').attr('required', 'required');
+                }
+            });
+
+            // Obtener número de despacho
+            function obtenerNumeroDespacho() {
+                $.ajax({
+                    url: '@Url.Action("ObtenerNumeroDespacho", "Inventario")',
+                    type: 'GET',
+                    data: { tipoMovimiento: 'S' },
+                    success: function (data) {
+                        $('#NumeroDespacho').val(data);
+                    }
+                });
+            }
+
+            // Agregar nueva fila de producto
+            $('#btnAgregarProducto').click(function () {
+                agregarFilaProducto();
+            });
+
+            function agregarFilaProducto() {
+                let newRow = `
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control producto-codigo" placeholder="Código">
+                                </td>
+                                <td>
+                                    <select name="Detalles[${detalleCount}].IdProducto" class="form-control producto-select">
+                                        <option value="">-- Seleccione un producto --</option>
+        @foreach (var producto in ViewBag.IdProducto)
+        {
+            var parts = producto.Text.Split('|');
+            var nombre = parts.Length > 0 ? parts[0].Trim() : producto.Text;
+            var codigo = parts.Length > 1 ? parts[1].Trim() : "";
+            var precio = parts.Length > 2 ? parts[2].Trim() : "0";
+                                                <option value="@producto.Value"
+                                                        data-codigo="@codigo"
+                                                        data-precio="@precio">
+                @nombre
+                                                </option>
+        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].Cantidad" class="form-control cantidad" value="1" min="0.01" step="0.01" required />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].PrecioUnitario" class="form-control precio-unitario" readonly />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].PrecioUnitarioFinal" class="form-control precio-unitario-final" step="0.01" min="0.01" required />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].Subtotal0" class="form-control subtotal0" readonly />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].Subtotal15" class="form-control subtotal15" readonly />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].IVA" class="form-control iva" readonly />
+                                </td>
+                                <td>
+                                    <input type="number" name="Detalles[${detalleCount}].Total" class="form-control total" readonly />
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm removeDetalle">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                $('#detallesBody').append(newRow);
+                detalleCount++;
+
+                // Inicializar Select2 para el nuevo select de producto
+                $('.producto-select').last().select2({
+                    placeholder: 'Buscar producto...',
+                    allowClear: true
+                });
+            }
+
+            // Eliminar fila
+            $(document).on('click', '.removeDetalle', function () {
+                $(this).closest('tr').remove();
+                actualizarTotales();
+                // Renumerar los índices de los campos
+                $('#detallesBody tr').each(function (index) {
+                    $(this).find('[name]').each(function () {
+                        let name = $(this).attr('name').replace(/\[\d+\]/, '[' + index + ']');
+                        $(this).attr('name', name);
+                    });
+                });
+                detalleCount = $('#detallesBody tr').length;
+            });
+
+            // Cargar detalles cuando se selecciona un producto
+            $(document).on('change', '.producto-select', function () {
+                let row = $(this).closest('tr');
+                let productoId = $(this).val();
+
+                if (productoId) {
+                    actualizarDetallesProducto(productoId, row);
+                    // Verificar stock con cantidad actual
+                    let cantidad = row.find('.cantidad').val() || 0;
+                    verificarStockYActualizar(productoId, cantidad, row);
+                } else {
+                    // Limpiar campos si no se seleccionó producto
+                    row.find('.precio-unitario, .precio-unitario-final').val('');
+                    calcularFila(row);
+                }
+            });
+
+            function actualizarDetallesProducto(productoId, row) {
+                $.get(`/Inventario/GetProductoDetails?idProducto=${productoId}`, function (data) {
+                    // Actualizar precio unitario
+                    row.find('.precio-unitario').val(data.precioUnitario);
+                    row.find('.precio-unitario-final').val(data.precioUnitario);
+
+                    // Establecer el máximo según el stock disponible
+                    row.find('.cantidad').attr('max', data.stock);
+
+                    calcularFila(row);
+                }).fail(function () {
+                    alert('Error al cargar los detalles del producto');
+                    row.find('.precio-unitario, .precio-unitario-final').val('');
+                    calcularFila(row);
+                });
+            }
+
+            // Verificar stock al cambiar cantidad
+            $(document).on('input', '.cantidad, .precio-unitario-final', function () {
+                let row = $(this).closest('tr');
+                let productoId = row.find('.producto-select').val();
+                let cantidad = row.find('.cantidad').val();
+
+                if (productoId && cantidad) {
+                    verificarStockYActualizar(productoId, cantidad, row);
+                }
+                calcularFila(row);
+            });
+
+            function verificarStockYActualizar(productoId, cantidad, row) {
+                $.get(`/Inventario/VerificarStock?idProducto=${productoId}&cantidad=${cantidad}`, function (data) {
+                    if (!data.disponible) {
+                        $("#stockError").text(data.mensaje).show();
+                        row.find(".cantidad").val(0);
+                    } else {
+                        $("#stockError").hide();
+                        row.find(".precio-unitario").val(data.precioUnitario);
+                        row.find(".precio-unitario-final").val(data.precioUnitario);
+                    }
+                    calcularFila(row);
+                }).fail(function () {
+                    $("#stockError").text("Error al verificar el stock").show();
+                });
+            }
+
+            // Buscar por código
+            $(document).on('keydown', '.producto-codigo', function (e) {
+                if (e.keyCode === 13) { // Enter key
+                    e.preventDefault();
+                    procesarCodigo($(this));
+                }
+            });
+
+            $(document).on('input', '.producto-codigo', function () {
+                clearTimeout(timeoutId);
+                let input = $(this);
+                timeoutId = setTimeout(() => {
+                    procesarCodigo(input);
+                }, 300);
+            });
+
+            function procesarCodigo(input) {
+                let codigo = input.val();
+                let row = input.closest('tr');
+                let select = row.find('.producto-select');
+
+                let option = select.find(`option[data-codigo="${codigo}"]`);
+                if (option.length) {
+                    select.val(option.val()).trigger('change');
+                } else if (codigo !== '') {
+                    alert("Código de producto no encontrado");
+                    input.val('');
+                    select.val('').trigger('change');
+                }
+            }
+
+            function calcularFila(row) {
+                let cantidad = parseFloat(row.find('.cantidad').val()) || 0;
+                let precioFinal = parseFloat(row.find('.precio-unitario-final').val()) || 0;
+
+                // Para egresos, simplificamos los cálculos
+                let subtotal0 = cantidad * precioFinal;
+                let subtotal15 = subtotal0; // En egresos no aplicamos descuentos
+                let iva = subtotal15 * 0.15;
+                let total = subtotal15 + iva;
+
+                row.find('.subtotal0').val(subtotal0.toFixed(2));
+                row.find('.subtotal15').val(subtotal15.toFixed(2));
+                row.find('.iva').val(iva.toFixed(2));
+                row.find('.total').val(total.toFixed(2));
+
+                actualizarTotales();
+            }
+
+            function actualizarTotales() {
+                let totales = {
+                    subtotal0: 0,
+                    subtotal15: 0,
+                    iva: 0,
+                    total: 0
+                };
+
+                $('#detallesBody tr').each(function () {
+                    totales.subtotal0 += parseFloat($(this).find('.subtotal0').val()) || 0;
+                    totales.subtotal15 += parseFloat($(this).find('.subtotal15').val()) || 0;
+                    totales.iva += parseFloat($(this).find('.iva').val()) || 0;
+                    totales.total += parseFloat($(this).find('.total').val()) || 0;
+                });
+
+                $('#totalSubtotal0').val(totales.subtotal0.toFixed(2));
+                $('#totalSubtotal15').val(totales.subtotal15.toFixed(2));
+                $('#totalIva').val(totales.iva.toFixed(2));
+                $('#totalGeneral').val(totales.total.toFixed(2));
+            }
+
+            // Agregar una fila inicial al cargar la página
+            agregarFilaProducto();
+        });
+    </script>
+}

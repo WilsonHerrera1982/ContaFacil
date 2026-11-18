@@ -19,7 +19,7 @@
             <option value="">-- Seleccione un cliente --</option>
             @foreach (var cliente in ViewBag.Clientes)
             {
-                <option value="@cliente.IdCliente">@cliente.IdPersonaNavigation.Nombre @cliente.IdPersonaNavigation.Identificacion</option>
+                <option value="@cliente.IdCliente">@cliente.IdPersonaNavigation.Identificacion  - @cliente.IdPersonaNavigation.Nombre </option>
             }
         </select>
     </div>
@@ -91,6 +91,11 @@
     <div class="form-group form-check">
         <label class="form-check-label">
             <input class="form-check-input" asp-for="Credito" /> Crédito
+        </label>
+    </div>
+    <div class="form-group form-check">
+        <label class="form-check-label">
+            <input class="form-check-input" asp-for="Preventa" /> Preventa
         </label>
     </div>
     <button type="submit" id="crearFactura" class="btn btn-primary mt-3" style="display: none;">Crear Factura</button>
@@ -385,7 +390,7 @@
 
         $(document).on("change", ".tipo-pago", function () {
             let selectedPaymentType = $(this).find("option:selected").text().trim();
-            if (selectedPaymentType === "TARJETA CREDITO" || selectedPaymentType === "TRANSFERENCIA") {
+            if (selectedPaymentType === "TARJETA CREDITO" ) {
                 $(".form-check").hide();
                 $("#Credito").prop("checked", false);  // Uncheck the checkbox
             } else {

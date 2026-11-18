@@ -1,0 +1,43 @@
+﻿;Estado de Situación Financiera;
+;Nombre de cliente: KAROL RIVADENEIRA;
+;RUC: 1003747415001;
+;Sucursal: Matriz;
+;Fecha de corte: 23/07/2025;
+;;
+;;
+1;Activos;
+1.1;  Activo Corriente;4.007,86
+1.1.3;    Inventario;3.842,69
+1.1.3.1;      MEDIAS;106,11
+1.1.3.2;      CAMISETAS;1.840,00
+1.1.3.2.1;        CAMISETA HOMBRE;920,00
+1.1.3.2.2;        CAMISETA MUJER;920,00
+1.1.3.3;      FALDA;1.896,58
+1.1.3.3.1;        FALDA JEAN NIÑA;901,60
+1.1.4;    Activo por impuesto corriente;165,17
+1.1.4.1;       IVA en compras;165,17
+2;Pasivo;
+2.1;  Pasivo Corriente;4.007,86
+2.1.1;    Cuentas por Pagar;1.232,87
+2.1.1.1;      Proveedores nacionales;1.232,87
+2.1.3;    Obligaciones tributarias;33,39
+2.1.3.2;      Retención IVA;16,53
+2.1.3.2.1;        Retención IVA - Bienes 10%;15,83
+2.1.3.2.2;        Retención IVA - Servicios 20%;0,70
+2.1.3.3;      Retención IR;16,86
+2.1.3.3.1;        Retención IR - Bienes 1.75 %;9,95
+2.1.3.3.2;        Retención IR - Servicios 2.75 %;0,93
+2.1.3.3.4;         Retención IR - Honorarios Profesionales, Arrendamientos, Docencia 10%;5,98
+2.1.8;    Partes Relacionadas;2.741,60
+2.1.8.1;      Relacionadas por Pagar;2.741,60
+2.1.8.1.1;        Relacionadas por Pagar CAMISETA HOMBRE;920,00
+2.1.8.1.2;        Relacionadas por Pagar CAMISETA MUJER;920,00
+2.1.8.1.3;        Relacionadas por Pagar FALDA JEAN NIÑA;901,60
+3;Patrimonio Atribuible a Propietarios;
+3.1;  Capital;
+3.2;  Reserva;
+3.2.1;    Reserva legal;
+3.3;  Utilidad;
+3.3.1;    Utilidad 2025;
+3.2;Participación No Controlada;0,00
+;Resultado del Ejercicio;0,00

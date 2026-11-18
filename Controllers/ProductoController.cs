@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;  
 using System.ComponentModel;
 using System.Linq;
@@ -58,7 +58,7 @@ namespace ContaFacil.Controllers
                 decimal porcentajeUtilidad = ((producto.Utilidad ?? 0) / 100m);
                 producto.Iva = porcentajeIva * producto.PrecioUnitario;
                 producto.Comision = producto.PrecioUnitario *porcentajeUtilidad;
-                producto.Stock = inventario.Stock;
+                producto.Stock = inventario != null ? inventario.Stock : 0;
             }
 
             return View(await contableContext.ToListAsync());
@@ -94,7 +94,7 @@ namespace ContaFacil.Controllers
             emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
             Empresa empresa = new Empresa();
             empresa = _context.Empresas.Where(empresa => empresa.Identificacion == emisor.Ruc).FirstOrDefault();
-            ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos.Where(c=>c.IdEmpresa==empresa.IdEmpresa), "IdCategoriaProducto", "Nombre");
+            ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos.Where(c=>c.IdEmpresa==empresa.IdEmpresa && c.EstadoBoolean==true), "IdCategoriaProducto", "Nombre");
             ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre");
             ViewData["IdUnidadMedida"] = new SelectList(_context.UnidadMedida, "IdUnidadMedida", "Nombre");
             ViewData["IdImpuesto"] = new SelectList(_context.Impuestos.Where(i=>i.Tipo=="IVA").Select(i => new
@@ -107,11 +107,37 @@ namespace ContaFacil.Controllers
             return View();
         }
 
+        // Método para obtener el siguiente código de producto según el nombre
+        [HttpGet]
+        public JsonResult GetSiguienteCodigo(string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre) || nombre.Length < 3)
+                return Json("");
+
+            string prefijo = nombre.Trim().ToUpper().Substring(0, 3);
+            var codigos = _context.Productos
+                .Where(p => p.Codigo.StartsWith(prefijo + "-"))
+                .Select(p => p.Codigo)
+                .ToList();
+
+            int maxSecuencia = 0;
+            foreach (var codigo in codigos)
+            {
+                var partes = codigo.Split('-');
+                if (partes.Length == 2 && int.TryParse(partes[1], out int sec))
+                {
+                    if (sec > maxSecuencia) maxSecuencia = sec;
+                }
+            }
+            int siguiente = maxSecuencia + 1;
+            string codigoNuevo = $"{prefijo}-{siguiente.ToString("D3")}";
+            return Json(codigoNuevo);
+        }
+
         // POST: Producto/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductoViewModel producto)
         {
             try
@@ -125,27 +151,107 @@ namespace ContaFacil.Controllers
                 emisor = _context.Emisors.Where(e => e.Ruc == usuario.IdPersonaNavigation.Identificacion).FirstOrDefault();
                 Empresa empresa=new Empresa();
                 empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
+                Tipocuentum tipocuentum = _context.Tipocuenta.FirstOrDefault(c => c.Nombre == "ACTIVOS");
                 Producto product = new Producto();
                 product.Codigo = producto.Codigo;
                 product.Nombre = producto.Nombre;
                 product.Descripcion = producto.Descripcion;
-                product.PrecioUnitario = producto.PrecioUnitario;
+                product.PrecioUnitario =0;
                 product.IdCategoriaProducto = producto.IdCategoriaProducto;
                 product.IdUnidadMedida = producto.IdUnidadMedida;
-                product.Stock = producto.Stock;
+                product.Stock = 0;
                 product.EstadoBoolean = true;
                 product.FechaCreacion = new DateTime();
                 product.UsuarioCreacion = int.Parse(idUsuario);
                 product.IdEmpresa = empresa.IdEmpresa;
                 product.IdImpuesto=producto.IdImpuesto;
-                product.CantidadMinima=producto.CantidadMinima;
+                product.CantidadMinima=producto.CantidadMinima;                
                 if (producto.Descuento == null)
                 {
                     product.Descuento = 0;
                 }
                 _context.Productos.Add(product);
                  _context.SaveChanges();
-                Inventario inventario = new Inventario();
+                // creaR cuenta contable
+                // Generar el código correcto para la subcuenta basado en la categoría padre
+                String codigoSubcuenta;
+                CategoriaProducto categoriaProducto = new CategoriaProducto();
+                categoriaProducto = _context.CategoriaProductos.Where(c => c.IdCategoriaProducto == producto.IdCategoriaProducto).FirstOrDefault();
+                Cuentum cuentum = new Cuentum();
+                cuentum = _context.Cuenta.Where(c=>c.Nombre==categoriaProducto.Nombre).FirstOrDefault(); 
+                // Extraer el prefijo para esta subcuenta basado en la categoría padre
+                // Para subcuentas, siempre debe usar el código completo del padre como prefijo
+                string prefijoPadre = cuentum.Codigo;
+                var subcuentasExistentes = _context.Cuenta
+                            .Where(c => c.IdIdCuenta == cuentum.IdCuenta)
+                            .OrderBy(c => c.Codigo)
+                            .ToList();
+
+                if (subcuentasExistentes.Any())
+                {
+                    // Filtrar solo las subcuentas que son hijas directas de esta categoría
+                    var subcuentasDirectas = subcuentasExistentes
+                        .Where(c => c.Codigo.StartsWith(prefijoPadre + "."))
+                        .ToList();
+
+                    if (subcuentasDirectas.Any())
+                    {
+                        // Extraer los últimos segmentos numéricos
+                        var ultimosSegmentos = subcuentasDirectas
+                            .Select(c => {
+                                string ultimoSegmento = c.Codigo.Split('.').Last();
+                                int.TryParse(ultimoSegmento, out int num);
+                                return num;
+                            })
+                            .Where(n => n > 0)
+                            .OrderBy(n => n)
+                            .ToList();
+
+                        // Encontrar el primer número que falta en la secuencia
+                        int siguienteNumero = 1;
+                        for (int i = 0; i < ultimosSegmentos.Count; i++)
+                        {
+                            if (ultimosSegmentos[i] != i + 1)
+                            {
+                                siguienteNumero = i + 1;
+                                break;
+                            }
+                            siguienteNumero = i + 2; // El siguiente después del último
+                        }
+
+                        codigoSubcuenta = $"{prefijoPadre}.{siguienteNumero}";
+                    }
+                    else
+                    {
+                        // Primera subcuenta para este padre
+                        codigoSubcuenta = prefijoPadre + ".1";
+                    }
+                }
+                else
+                {
+                    // Si no hay subcuentas, crear la primera con .1
+                    codigoSubcuenta = prefijoPadre + ".1";
+                }
+
+                Cuentum cuenta = new Cuentum();
+                cuenta = _context.Cuenta.Where(c => c.Nombre.Equals(producto.Nombre)).FirstOrDefault();
+                if (cuenta == null || cuenta.IdCuenta == null)
+                {
+                    cuenta = new Cuentum();
+                    cuenta.Nombre = producto.Nombre;
+                    cuenta.Codigo = codigoSubcuenta;
+                    cuenta.IdIdCuenta = cuentum.IdCuenta;
+                    cuenta.FechaCreacion = new DateTime();
+                    cuenta.UsuarioCreacion = int.Parse(idUsuario);
+                    cuenta.IdEmpresa = empresa.IdEmpresa;
+                    cuenta.IdTipoCuenta = tipocuentum.IdTipoCuenta;
+                    cuenta.Debito = true;
+                    cuenta.Credito = false;
+                    cuenta.Tipo = "Producto";
+                    _context.Add(cuenta);
+                    _context.SaveChanges();
+                }
+                /*Inventario inventario = new Inventario();
                 inventario.TipoMovimiento = "E";
                 inventario.Cantidad = producto.Stock??0m;
                 inventario.FechaCreacion= new DateTime();
@@ -156,6 +262,7 @@ namespace ContaFacil.Controllers
                 inventario.EstadoBoolean=true;
                 inventario.Descripcion = "REGISTRO INICIAL DEL PRODUCTO";
                 inventario.IdSucursal = usuarioSucursal.IdSucursal;
+                inventario.IdCuentaContable = cuenta.IdCuenta;
                 _context.Inventarios.Add(inventario);
                 await _context.SaveChangesAsync();
                 SucursalInventario sucursalInventario = new SucursalInventario();
@@ -165,15 +272,15 @@ namespace ContaFacil.Controllers
                 sucursalInventario.UsuarioCreacion=int.Parse(idUsuario);
                 sucursalInventario.EstadoBoolean = true;
                 _context.Add(sucursalInventario);
-                await _context.SaveChangesAsync();
-                ProductoProveedor productoProveedor = new ProductoProveedor();
+                await _context.SaveChangesAsync();*/
+               /* ProductoProveedor productoProveedor = new ProductoProveedor();
                 productoProveedor.IdProducto = product.IdProducto;
                 productoProveedor.IdProveedor=producto.IdProveedor;
                 productoProveedor.FechaCreacion = new DateTime();
                 productoProveedor.UsuarioCreacion = int.Parse(idUsuario);
                 productoProveedor.PrecioCompra=product.PrecioUnitario;
                 productoProveedor.EstadoBoolean=true;
-                _context.ProductoProveedors.Add(productoProveedor);
+                _context.ProductoProveedors.Add(productoProveedor);*/
                 await _context.SaveChangesAsync();
                 ViewData["IdCategoriaProducto"] = new SelectList(_context.CategoriaProductos.Where(c => c.IdEmpresa == emisor.IdEmpresa), "IdCategoriaProducto", "Nombre");
                 ViewData["IdEmpresa"] = new SelectList(_context.Empresas, "IdEmpresa", "Nombre");
@@ -322,7 +429,7 @@ namespace ContaFacil.Controllers
 
             return View(); // Esto devolverá la vista PrincipalProducto.cshtml
         }
-        public async Task<IActionResult> ExportToExcel()
+        public async Task<IActionResult> ExportToExcel(string downloadToken = null)
         {
             // Verificar sesión y obtener datos de la empresa
             string idUsuario = HttpContext.Session.GetString("_idUsuario");
@@ -366,7 +473,7 @@ namespace ContaFacil.Controllers
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Reporte de Productos");
-                var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
+                /*var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
                 if (System.IO.File.Exists(logoPath))
                 {
                     var logo = worksheet.AddPicture(logoPath)
@@ -376,7 +483,7 @@ namespace ContaFacil.Controllers
                 else
                 {
                     Console.WriteLine("El archivo de logo no existe en la ruta especificada.");
-                }
+                }*/
 
                 worksheet.Cell("D1").Value = "Reporte de Productos";
                 worksheet.Cell("D2").Value = $"Nombre de cliente: {empresa.Nombre}";
@@ -389,7 +496,7 @@ namespace ContaFacil.Controllers
                 worksheet.Cell("B8").Value = "Nombre";
                 worksheet.Cell("C8").Value = "Descripción";
                 worksheet.Cell("D8").Value = "Precio Unitario";
-                worksheet.Cell("E8").Value = "Utilidad";
+                worksheet.Cell("E8").Value = "Utilidad %";
                 worksheet.Cell("F8").Value = "Precio Venta";
                 worksheet.Cell("G8").Value = "Descuento %";
                 worksheet.Cell("H8").Value = "Stock";
@@ -417,7 +524,18 @@ namespace ContaFacil.Controllers
                 {
                     workbook.SaveAs(stream);
                     var content = stream.ToArray();
-                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReporteProductos.xlsx");
+                    if (!string.IsNullOrEmpty(downloadToken))
+        {
+            Response.Cookies.Append(downloadToken + "_completed", "true", new CookieOptions
+            {
+                Path = "/", // Cookie disponible en todo el sitio
+                HttpOnly = false, // Permitir que JavaScript la lea
+                Expires = DateTime.UtcNow.AddMinutes(2) // Que expire pronto (ej. 2 minutos)
+                // Secure = true; // Descomentar si se sirve sobre HTTPS y se quiere forzar
+            });
+        }
+
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReporteProductos.xlsx");
                 }
             }
         }

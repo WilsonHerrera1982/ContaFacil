@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
@@ -39,6 +39,8 @@ public partial class ContableContext : DbContext
     public virtual DbSet<CuentasPorPagar> CuentasPorPagars { get; set; }
 
     public virtual DbSet<Cuentum> Cuenta { get; set; }
+
+    public virtual DbSet<CuentaEmpresa> CuentaEmpresas { get; set; }
 
     public virtual DbSet<Despacho> Despachos { get; set; }
 
@@ -128,7 +130,7 @@ public partial class ContableContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=contable;user=root;password=ROOT", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
+          => optionsBuilder.UseMySql("Server=localhost;Database=contable;User=root;Password=ROOT;ConvertZeroDateTime=True;", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -199,11 +201,6 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(10)
                 .HasComment("TRIAL")
                 .HasColumnName("tipo_pago");
-            entity.Property(e => e.Trial482)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial482");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -840,6 +837,10 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
                 .HasColumnName("nombre");
+            entity.Property(e => e.Tipo)
+                .HasMaxLength(100)
+                .HasComment("tipo")
+                .HasColumnName("tipo");
             entity.Property(e => e.SaldoActual)
                 .HasPrecision(15, 2)
                 .HasComment("TRIAL")
@@ -868,6 +869,82 @@ public partial class ContableContext : DbContext
                 .HasForeignKey(d => d.IdTipoCuenta)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("cuenta_id_tipo_cuenta_fkey");
+        });
+
+        modelBuilder.Entity<CuentaEmpresa>(entity =>
+        {
+            entity.HasKey(e => e.IdCuentaEmpresa).HasName("PRIMARY");
+
+            entity.ToTable("cuenta_empresa", tb => tb.HasComment("Relación muchos a muchos entre cuentas y empresas. Permite que una cuenta pueda ser usada por múltiples empresas con saldos independientes"));
+
+            entity.HasIndex(e => e.IdCuenta, "idx_cuenta_empresa_cuenta");
+
+            entity.HasIndex(e => e.IdEmpresa, "idx_cuenta_empresa_empresa");
+
+            entity.HasIndex(e => e.Estado, "idx_cuenta_empresa_estado");
+
+            entity.HasIndex(e => new { e.IdCuenta, e.IdEmpresa }, "uk_cuenta_empresa")
+                .IsUnique();
+
+            entity.Property(e => e.IdCuentaEmpresa)
+                .HasComment("ID único de la relación cuenta-empresa")
+                .HasColumnName("id_cuenta_empresa");
+
+            entity.Property(e => e.IdCuenta)
+                .HasComment("ID de la cuenta")
+                .HasColumnName("id_cuenta");
+
+            entity.Property(e => e.IdEmpresa)
+                .HasComment("ID de la empresa")
+                .HasColumnName("id_empresa");
+
+            entity.Property(e => e.SaldoInicial)
+                .HasPrecision(15, 2)
+                .HasDefaultValueSql("'0.00'")
+                .HasComment("Saldo inicial de la cuenta para esta empresa")
+                .HasColumnName("saldo_inicial");
+
+            entity.Property(e => e.SaldoActual)
+                .HasPrecision(15, 2)
+                .HasDefaultValueSql("'0.00'")
+                .HasComment("Saldo actual de la cuenta para esta empresa")
+                .HasColumnName("saldo_actual");
+
+            entity.Property(e => e.Estado)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasComment("1=Activo, 0=Inactivo")
+                .HasColumnName("estado");
+
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasComment("Fecha de creación del registro")
+                .HasColumnType("datetime")
+                .HasColumnName("fecha_creacion");
+
+            entity.Property(e => e.FechaModificacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasComment("Fecha de última modificación")
+                .HasColumnType("datetime")
+                .HasColumnName("fecha_modificacion");
+
+            entity.Property(e => e.UsuarioCreacion)
+                .HasComment("ID del usuario que creó el registro")
+                .HasColumnName("usuario_creacion");
+
+            entity.Property(e => e.UsuarioModificacion)
+                .HasComment("ID del usuario que modificó el registro")
+                .HasColumnName("usuario_modificacion");
+
+            entity.HasOne(d => d.IdCuentaNavigation).WithMany(p => p.CuentaEmpresas)
+                .HasForeignKey(d => d.IdCuenta)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_cuenta_empresa_cuenta");
+
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.CuentaEmpresas)
+                .HasForeignKey(d => d.IdEmpresa)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_cuenta_empresa_empresa");
         });
 
         modelBuilder.Entity<Despacho>(entity =>
@@ -919,11 +996,6 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
                 .HasColumnName("numero_despacho");
-            entity.Property(e => e.Trial485)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial485");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1287,6 +1359,10 @@ public partial class ContableContext : DbContext
                 .HasDefaultValueSql("'1'")
                 .HasComment("TRIAL")
                 .HasColumnName("credito");
+            entity.Property(e => e.Preventa)
+                .HasDefaultValueSql("'1'")
+                .HasComment("TRIAL")
+                .HasColumnName("preventa");
             entity.Property(e => e.DescripcionSri)
                 .HasMaxLength(200)
                 .HasComment("TRIAL")
@@ -1341,11 +1417,6 @@ public partial class ContableContext : DbContext
                 .HasPrecision(15, 2)
                 .HasComment("TRIAL")
                 .HasColumnName("subtotal");
-            entity.Property(e => e.Trial485)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial485");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1859,11 +1930,7 @@ public partial class ContableContext : DbContext
                 .HasComment("TRIAL")
                 .HasColumnName("menu_id");
             entity.Property(e => e.Orden).HasColumnName("orden");
-            entity.Property(e => e.Trial489)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("TRIAL")
-                .HasColumnName("trial489");
+          
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
@@ -3278,7 +3345,7 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(255)
                 .HasComment("TRIAL")
                 .HasColumnName("descripcion");
-            entity.Property(e => e.Esdebito)
+            entity.Property(e => e.EsDebito)
                 .HasDefaultValueSql("'0'")
                 .HasComment("TRIAL")
                 .HasColumnName("esdebito");

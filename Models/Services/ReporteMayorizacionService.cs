@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using ContaFacil.Models.Dto;
 using ContaFacil.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -87,10 +87,10 @@ namespace ContaFacil.Models.Services
             Empresa empresa,
             Sucursal sucursal)
         {
-            var logoPath = Path.Combine(_webRootPath, "img", "logo1.JPG");
+           /* var logoPath = Path.Combine(_webRootPath, "img", "logo1.JPG");
             var logo = worksheet.AddPicture(logoPath)
                 .MoveTo(worksheet.Cell("A1"))
-                .Scale(0.25);
+                .Scale(0.25);*/
 
             worksheet.Cell("C1").Value = "MAYORIZACIÓN";
             worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";
@@ -104,7 +104,7 @@ namespace ContaFacil.Models.Services
         {
             int currentRow = 8;
 
-            // Configurar encabezados
+            // Configurar encabezados mejorados
             worksheet.Cell(currentRow, 1).Value = "Fecha";
             worksheet.Cell(currentRow, 2).Value = "No. Asiento";
             worksheet.Cell(currentRow, 3).Value = "Código";
@@ -112,12 +112,13 @@ namespace ContaFacil.Models.Services
             worksheet.Cell(currentRow, 5).Value = "Detalle";
             worksheet.Cell(currentRow, 6).Value = "Debe";
             worksheet.Cell(currentRow, 7).Value = "Haber";
-            worksheet.Cell(currentRow, 8).Value = "Movimiento";
+            worksheet.Cell(currentRow, 8).Value = "Saldo";
 
             // Dar formato a los encabezados
             var headerRange = worksheet.Range(currentRow, 1, currentRow, 8);
             headerRange.Style.Font.Bold = true;
             headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+            headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
 
             return currentRow + 1;
         }
@@ -191,7 +192,7 @@ namespace ContaFacil.Models.Services
             IXLWorksheet worksheet,
             int currentRow,
             Transaccion transaccion,
-            decimal totalMovimiento,
+            decimal saldoAcumulado,
             decimal saldoInicial)
         {
             worksheet.Cell(currentRow, 1).Value = transaccion.FechaCreacion;
@@ -199,37 +200,64 @@ namespace ContaFacil.Models.Services
             worksheet.Cell(currentRow, 3).Value = transaccion.IdCuentaNavigation.Codigo;
             worksheet.Cell(currentRow, 4).Value = transaccion.IdCuentaNavigation.Nombre;
             worksheet.Cell(currentRow, 5).Value = transaccion.Descripcion;
+            
             decimal montoAbs = Math.Abs(transaccion.Monto);
-            if (transaccion.IdCuentaNavigation.Debito.GetValueOrDefault() && transaccion.EsDebito==true)
+            decimal debe = 0;
+            decimal haber = 0;
+            decimal movimientoNeto = 0;
+            
+            // Determinar si es débito o crédito basado en la naturaleza de la cuenta y el tipo de transacción
+            bool esDebito = DeterminarEsDebito(transaccion);
+            
+            if (esDebito)
             {
-                saldoInicial = montoAbs;
-                worksheet.Cell(currentRow, 6).Value = saldoInicial;
-                worksheet.Cell(currentRow, 7).Value = 0;
-                worksheet.Cell(currentRow, 8).Value = saldoInicial;
-                totalMovimiento = saldoInicial;
+                debe = montoAbs;
+                haber = 0;
+                movimientoNeto = montoAbs; // Movimiento positivo
             }
-            else if (transaccion.IdCuentaNavigation.Credito.GetValueOrDefault())
+            else
             {
-                worksheet.Cell(currentRow, 6).Value = 0;
-                worksheet.Cell(currentRow, 7).Value = montoAbs;
-                worksheet.Cell(currentRow, 8).Value = -montoAbs;
-                totalMovimiento -= montoAbs;
-            }else if (transaccion.EsDebito == false)
-            {
-                worksheet.Cell(currentRow, 6).Value = 0;
-                worksheet.Cell(currentRow, 7).Value = montoAbs;
-                worksheet.Cell(currentRow, 8).Value = -montoAbs;
-                totalMovimiento -= montoAbs;
-
+                debe = 0;
+                haber = montoAbs;
+                movimientoNeto = -montoAbs; // Movimiento negativo
             }
             
-
-            // Handle other cases as needed...
+            worksheet.Cell(currentRow, 6).Value = debe; // Debe
+            worksheet.Cell(currentRow, 7).Value = haber; // Haber
+            worksheet.Cell(currentRow, 8).Value = movimientoNeto; // Saldo = Debe - Haber
+            
             return new TransactionProcessingResult
             {
-                TotalMovimiento = totalMovimiento,
+                TotalMovimiento = saldoAcumulado + movimientoNeto,
                 SaldoInicial = saldoInicial
             };
+        }
+        
+        private bool DeterminarEsDebito(Transaccion transaccion)
+        {
+            // Si la transacción tiene el flag EsDebito definido, usarlo
+            if (transaccion.EsDebito.HasValue)
+            {
+                return transaccion.EsDebito.Value;
+            }
+            
+            // Si no, determinar basado en la naturaleza de la cuenta
+            var cuenta = transaccion.IdCuentaNavigation;
+            
+            // Para cuentas de naturaleza deudora (Activos, Gastos)
+            if (cuenta.Debito.GetValueOrDefault())
+            {
+                return transaccion.Monto >= 0;
+            }
+            
+            // Para cuentas de naturaleza acreedora (Pasivos, Patrimonio, Ingresos)
+            if (cuenta.Credito.GetValueOrDefault())
+            {
+                return transaccion.Monto < 0;
+            }
+            
+            // Por defecto, usar el signo del monto
+            return transaccion.Monto >= 0;
         }
 
         private TransactionProcessingResult ProcesarInventario(

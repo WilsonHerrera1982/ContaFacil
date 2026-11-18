@@ -1,0 +1,80 @@
+/* Modo oscuro global para ContaFacil */
+
+.dark-mode .dropdown-menu {
+  background-color: #23272b !important;
+  color: #f1f1f1 !important;
+  border-color: #444 !important;
+}
+
+.dark-mode .dropdown-item {
+  background-color: transparent !important;
+  color: #f1f1f1 !important;
+}
+
+.dark-mode .dropdown-item:hover, 
+.dark-mode .dropdown-item:focus, 
+.dark-mode .dropdown-item.active {
+  background-color: #3a3f44 !important;
+  color: #fff !important;
+}
+
+body.dark-mode, .dark-mode {
+  background-color: #181a1b !important;
+  color: #f1f1f1 !important;
+}
+
+.dark-mode table, .dark-mode .table {
+  background-color: #23272b !important;
+  color: #f1f1f1 !important;
+}
+
+.dark-mode th, .dark-mode td {
+  background-color: #23272b !important;
+  color: #f1f1f1 !important;
+  border-color: #444 !important;
+}
+
+.dark-mode .btn {
+  /* Opcional: puedes personalizar los botones para modo oscuro aquí */
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+  background-color: #202225 !important;
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(even) {
+  background-color: #23272b !important;
+}
+
+.dark-mode .form-control, .dark-mode input, .dark-mode select, .dark-mode textarea {
+  background-color: #23272b !important;
+  color: #f1f1f1 !important;
+  border-color: #444 !important;
+}
+
+.dark-mode .card, .dark-mode .modal-content {
+  background-color: #23272b !important;
+  color: #f1f1f1 !important;
+  border-color: #444 !important;
+}
+
+.dark-mode .dropdown-menu {
+  background-color: #23272b !important;
+  color: #f1f1f1 !important;
+}
+
+.dark-mode .bg-light {
+  background-color: #23272b !important;
+}
+
+.dark-mode .text-dark {
+  color: #f1f1f1 !important;
+}
+
+.dark-mode .text-muted {
+  color: #b0b3b8 !important;
+}
+
+.dark-mode .border {
+  border-color: #444 !important;
+}

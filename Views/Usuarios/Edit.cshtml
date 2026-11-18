@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.Usuario
+@model ContaFacil.Models.Usuario
 
 @{
     ViewData["Title"] = "Edit";
@@ -29,10 +29,9 @@
                 <span asp-validation-for="IdPersona" class="text-danger"></span>
             </div>
             <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Estado" /> Activo/Inactivo
-                </label>
-            </div>
+    <input type="checkbox" class="form-check-input" asp-for="Estado" />
+    <label class="form-check-label" asp-for="Estado">Activo/Inactivo</label>
+</div>
            
             <div class="form-group">
                 <label asp-for="IdEmpresa" class="control-label">ID Empresa</label>

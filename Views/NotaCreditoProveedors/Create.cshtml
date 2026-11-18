@@ -1,0 +1,440 @@
+@model ContaFacil.Models.NotaCreditoProveedor
+@{
+    ViewData["Title"] = "Crear Nota de Crédito";
+}
+
+<h1>Crear Nota de Crédito</h1>
+<hr />
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5>Cargar Archivo XML</h5>
+                <input type="file" id="xmlFile" accept=".xml" class="form-control" />
+                <button onclick="processXML()" class="btn btn-secondary mt-2">Cargar XML</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Create" id="notaCreditoForm">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="row">
+        <!-- Columna Izquierda -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Información General</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Ambiente" class="control-label">Ambiente</label>
+                        <input asp-for="Ambiente" class="form-control" readonly />
+                        <span asp-validation-for="Ambiente" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="TipoEmision" class="control-label">Tipo Emisión</label>
+                        <input asp-for="TipoEmision" class="form-control" readonly />
+                        <span asp-validation-for="TipoEmision" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="RazonSocial" class="control-label">Razón Social</label>
+                        <input asp-for="RazonSocial" class="form-control" readonly />
+                        <span asp-validation-for="RazonSocial" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="NombreComercial" class="control-label">Nombre Comercial</label>
+                        <input asp-for="NombreComercial" class="form-control" readonly />
+                        <span asp-validation-for="NombreComercial" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Ruc" class="control-label">RUC</label>
+                        <input asp-for="Ruc" class="form-control" readonly />
+                        <span asp-validation-for="Ruc" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="ClaveAcceso" class="control-label">Clave de Acceso</label>
+                        <input asp-for="ClaveAcceso" class="form-control" readonly />
+                        <span asp-validation-for="ClaveAcceso" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="CodDoc" class="control-label">Código Documento</label>
+                        <input asp-for="CodDoc" class="form-control" readonly />
+                        <span asp-validation-for="CodDoc" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Información del Comprador</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="TipoIdentificacionComprador" class="control-label">Tipo Identificación</label>
+                        <input asp-for="TipoIdentificacionComprador" class="form-control" readonly />
+                        <span asp-validation-for="TipoIdentificacionComprador" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="RazonSocialComprador" class="control-label">Razón Social</label>
+                        <input asp-for="RazonSocialComprador" class="form-control" readonly />
+                        <span asp-validation-for="RazonSocialComprador" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="IdentificacionComprador" class="control-label">Identificación</label>
+                        <input asp-for="IdentificacionComprador" class="form-control" readonly />
+                        <span asp-validation-for="IdentificacionComprador" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Información del Documento</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Estab" class="control-label">Establecimiento</label>
+                        <input asp-for="Estab" class="form-control" readonly />
+                        <span asp-validation-for="Estab" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="PtoEmi" class="control-label">Punto Emisión</label>
+                        <input asp-for="PtoEmi" class="form-control" readonly />
+                        <span asp-validation-for="PtoEmi" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Secuencial" class="control-label">Secuencial</label>
+                        <input asp-for="Secuencial" class="form-control" readonly />
+                        <span asp-validation-for="Secuencial" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="FechaEmision" class="control-label">Fecha Emisión</label>
+                        <input asp-for="FechaEmision" class="form-control" readonly type="date" />
+                        <span asp-validation-for="FechaEmision" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="DirMatriz" class="control-label">Dirección Matriz</label>
+                        <input asp-for="DirMatriz" class="form-control" readonly />
+                        <span asp-validation-for="DirMatriz" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="DirEstablecimiento" class="control-label">Dirección Establecimiento</label>
+                        <input asp-for="DirEstablecimiento" class="form-control" readonly />
+                        <span asp-validation-for="DirEstablecimiento" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Información de Modificación</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="CodDocModificado" class="control-label">Código Doc. Modificado</label>
+                        <input asp-for="CodDocModificado" class="form-control" readonly />
+                        <span asp-validation-for="CodDocModificado" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="NumDocModificado" class="control-label">Num. Doc. Modificado</label>
+                        <input asp-for="NumDocModificado" class="form-control" readonly />
+                        <span asp-validation-for="NumDocModificado" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="FechaEmisionDocSustento" class="control-label">Fecha Doc. Sustento</label>
+                        <input asp-for="FechaEmisionDocSustento" class="form-control" readonly type="date" />
+                        <span asp-validation-for="FechaEmisionDocSustento" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Motivo" class="control-label">Motivo</label>
+                        <input asp-for="Motivo" class="form-control" readonly />
+                        <span asp-validation-for="Motivo" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="TotalSinImpuestos" class="control-label">Total Sin Impuestos</label>
+                        <input asp-for="TotalSinImpuestos" class="form-control" readonly />
+                        <span asp-validation-for="TotalSinImpuestos" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalles -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Detalles de la Nota de Crédito</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="detallesTable">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unit.</th>
+                                    <th>Descuento</th>
+                                    <th>Total</th>
+                                    <th>Código Impuesto</th>
+                                    <th>Código Porcentaje</th>
+                                    <th>Valor Impuesto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Información Adicional</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="infoAdicionalTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <div class="form-group">
+                <input type="submit" value="Guardar" class="btn btn-primary" id="submitButton" disabled />
+                <a asp-action="Index" class="btn btn-secondary">Regresar</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        function processXML() {
+            const fileInput = document.getElementById('xmlFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Por favor seleccione un archivo XML');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('xmlFile', file);
+
+            fetch('/NotaCreditoProveedors/ProcessXML', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(result => {
+                    // Log para debugging
+                    console.log('Resultado completo:', result);
+                    console.log('Tipo de detalles:', typeof result.detalles);
+                    console.log('Detalles:', result.detalles);
+
+                    if (result.success) {
+                        // Llenar los campos del formulario con los datos recibidos
+                        const data = result.data;
+
+                        // Información Tributaria
+                        document.querySelector('[name="Ambiente"]').value = data.ambiente;
+                        document.querySelector('[name="TipoEmision"]').value = data.tipoEmision;
+                        document.querySelector('[name="RazonSocial"]').value = data.razonSocial;
+                        document.querySelector('[name="NombreComercial"]').value = data.nombreComercial;
+                        document.querySelector('[name="Ruc"]').value = data.ruc;
+                        document.querySelector('[name="ClaveAcceso"]').value = data.claveAcceso;
+                        document.querySelector('[name="CodDoc"]').value = data.codDoc;
+                        document.querySelector('[name="Estab"]').value = data.estab;
+                        document.querySelector('[name="PtoEmi"]').value = data.ptoEmi;
+                        document.querySelector('[name="Secuencial"]').value = data.secuencial;
+                        document.querySelector('[name="DirMatriz"]').value = data.dirMatriz;
+                        document.querySelector('[name="DirEstablecimiento"]').value = data.dirEstablecimiento;
+
+                        // Información del Comprador
+                        document.querySelector('[name="TipoIdentificacionComprador"]').value = data.tipoIdentificacionComprador;
+                        document.querySelector('[name="RazonSocialComprador"]').value = data.razonSocialComprador;
+                        document.querySelector('[name="IdentificacionComprador"]').value = data.identificacionComprador;
+
+                        // Información de Modificación
+                        document.querySelector('[name="CodDocModificado"]').value = data.codDocModificado;
+                        document.querySelector('[name="NumDocModificado"]').value = data.numDocModificado;
+                        document.querySelector('[name="Motivo"]').value = data.motivo;
+                        document.querySelector('[name="TotalSinImpuestos"]').value = data.totalSinImpuestos;
+                        // Fechas
+                        if (data.fechaEmision) {
+                            document.querySelector('[name="FechaEmision"]').value = data.fechaEmision.split('T')[0];
+                        }
+                        if (data.fechaEmisionDocSustento) {
+                            document.querySelector('[name="FechaEmisionDocSustento"]').value = data.fechaEmisionDocSustento.split('T')[0];
+                        }
+
+                        // Procesar detalles
+                        // Limpiar la tabla de detalles antes de agregar nuevas filas
+                        const detallesTable = document.getElementById('detallesTable').getElementsByTagName('tbody')[0];
+                        detallesTable.innerHTML = ''; // Limpiar tabla
+
+                        if (Array.isArray(result.detalles)) {
+                            result.detalles.forEach((detalle, index) => {
+                                const row = detallesTable.insertRow();
+
+                                // Agregar inputs a las celdas de la tabla en vez de texto estático
+                                row.insertCell(0).innerHTML = `<input type="text" name="detalles[${index}].codigoInterno" class="form-control" value="${detalle.codigoInterno || ''}" />`;
+                                row.insertCell(1).innerHTML = `<input type="text" name="detalles[${index}].descripcion" class="form-control" value="${detalle.descripcion || ''}" />`;
+                                row.insertCell(2).innerHTML = `<input type="number" name="detalles[${index}].cantidad" class="form-control cantidad" value="${detalle.cantidad || 1}" min="1" />`;
+                                row.insertCell(3).innerHTML = `<input type="number" name="detalles[${index}].precioUnitario" class="form-control" value="${detalle.precioUnitario || 0}" />`;
+                                row.insertCell(4).innerHTML = `<input type="number" name="detalles[${index}].descuento" class="form-control" value="${detalle.descuento || 0}" />`;
+                                row.insertCell(5).innerHTML = `<input type="number" name="detalles[${index}].precioTotalSinImpuesto" class="form-control" value="${detalle.precioTotalSinImpuesto || 0}" />`;
+                                row.insertCell(6).innerHTML = `<input type="text" name="detalles[${index}].codigoImpuesto" class="form-control" value="${detalle.codigoImpuesto || 0}" />`;
+                                row.insertCell(7).innerHTML = `<input type="text" name="detalles[${index}].codigoPorcentaje" class="form-control" value="${detalle.codigoPorcentaje || 0}" />`;
+                                row.insertCell(8).innerHTML = `<input type="number"  name="detalles[${index}].valorImpuesto" class="form-control" value="${detalle.valorImpuesto || 0}" />`;
+
+                                // Agregar los detalles como campos ocultos para el formulario
+                                const inputCodigoInterno = document.createElement('input');
+                                inputCodigoInterno.type = 'hidden';
+                                inputCodigoInterno.name = `notaCredito.Detalles[${index}].codigoInterno`;
+                                inputCodigoInterno.value = detalle.codigoInterno || '';
+                                document.forms['notaCreditoForm'].appendChild(inputCodigoInterno);
+
+                                const inputDescripcion = document.createElement('input');
+                                inputDescripcion.type = 'hidden';
+                                inputDescripcion.name = `notaCredito.Detalles[${index}].descripcion`;
+                                inputDescripcion.value = detalle.descripcion || '';
+                                document.forms['notaCreditoForm'].appendChild(inputDescripcion);
+
+                                const inputCantidad = document.createElement('input');
+                                inputCantidad.type = 'hidden';
+                                inputCantidad.name = `notaCredito.Detalles[${index}].cantidad`;
+                                inputCantidad.value = detalle.cantidad || '0';
+                                document.forms['notaCreditoForm'].appendChild(inputCantidad);
+
+                                const inputPrecioUnitario = document.createElement('input');
+                                inputPrecioUnitario.type = 'hidden';
+                                inputPrecioUnitario.name = `notaCredito.Detalles[${index}].precioUnitario`;
+                                inputPrecioUnitario.value = detalle.precioUnitario || '0';
+                                document.forms['notaCreditoForm'].appendChild(inputPrecioUnitario);
+
+                                const inputDescuento = document.createElement('input');
+                                inputDescuento.type = 'hidden';
+                                inputDescuento.name = `notaCredito.Detalles[${index}].descuento`;
+                                inputDescuento.value = detalle.descuento || '0';
+                                document.forms['notaCreditoForm'].appendChild(inputDescuento);
+
+                                const inputPrecioTotalSinImpuesto = document.createElement('input');
+                                inputPrecioTotalSinImpuesto.type = 'hidden';
+                                inputPrecioTotalSinImpuesto.name = `notaCredito.Detalles[${index}].precioTotalSinImpuesto`;
+                                inputPrecioTotalSinImpuesto.value = detalle.precioTotalSinImpuesto || '0';
+                                document.forms['notaCreditoForm'].appendChild(inputPrecioTotalSinImpuesto);
+                            });
+                        } else {
+                            console.warn('Los detalles no son un array válido:', result.data.detalles);
+                        }
+
+                        // Limpiar la tabla de información adicional antes de agregar nuevas filas
+                        // Suponiendo que ya tienes una tabla similar a la de detalles, pero para "Información Adicional"
+                        const infoAdicionalTable = document.getElementById('infoAdicionalTable').getElementsByTagName('tbody')[0];
+                        infoAdicionalTable.innerHTML = ''; // Limpiar tabla
+
+                        // Verificar si infoAdicional es un array y procesarlo
+                        if (Array.isArray(result.infoAdicional)) {
+                            result.infoAdicional.forEach((info, index) => {
+                                // Crear una nueva fila para cada elemento de información adicional
+                                const row = infoAdicionalTable.insertRow();
+
+                                // Insertar celdas en la fila para "nombre" y "valor"
+                                row.insertCell(0).innerHTML = `<input type="text" name="infoAdicional[${index}].nombre" class="form-control" value="${info.nombre || ''}" />`;
+                                row.insertCell(1).innerHTML = `<input type="text" name="infoAdicional[${index}].valor" class="form-control" value="${info.valor || ''}" />`;
+
+                                // Agregar la información adicional al formulario como campos ocultos antes de hacer submit
+                                const inputNombre = document.createElement('input');
+                                inputNombre.type = 'hidden';
+                                inputNombre.name = `notaCredito.InfoAdicional[${index}].nombre`;
+                                inputNombre.value = info.nombre || '';
+                                document.forms['notaCreditoForm'].appendChild(inputNombre);
+
+                                const inputValor = document.createElement('input');
+                                inputValor.type = 'hidden';
+                                inputValor.name = `notaCredito.InfoAdicional[${index}].valor`;
+                                inputValor.value = info.valor || '';
+                                document.forms['notaCreditoForm'].appendChild(inputValor);
+                            });
+                        } else {
+                            console.warn('La información adicional no es un array válido:', result.data.infoAdicional);
+                        }
+
+
+                        // Habilitar el botón de guardar
+                        document.getElementById('submitButton').disabled = false;
+
+                        // Mostrar mensaje de éxito
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: 'XML cargado exitosamente',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                        console.log('Procesamiento exitoso, llenando datos en el formulario.');
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: result.message || 'Error al procesar el XML',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error al procesar el archivo XML',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }).finally(() => {
+                    console.log('Intentando cerrar el loader...');
+                    LoaderManager.hide();
+                });
+        }
+       
+
+        function formatCurrency(value) {
+            const numero = parseFloat(value);
+            if (isNaN(numero)) return '0.00';
+            return numero.toLocaleString('es-EC', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    </script>
+    }

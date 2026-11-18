@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Reportes Contables";
      var opcionClientes = (List<OpcionCliente>
     )ViewBag.OpcionClientes;
@@ -46,6 +46,7 @@
         font-size: 1.2em;
         z-index: 1;
     }
+
 </style>
 
 <div class="container mt-4">
@@ -123,7 +124,7 @@
                     <i class="fas fa-balance-scale icon-size mb-3 text-primary"></i>
                     <h5 class="card-title">Estado de Situación Financiera</h5>
                     <p class="card-text">Genera el reporte de Estado Situación Financiera.</p>
-                    <form asp-action="ExportarBalanceExcel" method="post" data-download="true">
+                    <form asp-action="ExportarBalanceGeneralExcel" method="post" data-download="true">
                         <div class="form-group">
                             <label for="fechaInicioBal">Fecha Inicio:</label>
                             <input type="date" id="fechaInicioBal" name="fechaInicio" class="form-control" required />
@@ -165,11 +166,65 @@
     </div>
 </div>
 
+<!-- El overlay de loading se maneja desde el layout principal (_Layout.cshtml) -->
+
 <script>
 $(document).ready(function() {
+    // Deshabilitar todos los botones submit de formularios con fechas al iniciar
+    $('form').each(function() {
+        var $form = $(this);
+        var $fechaInicio = $form.find('input[type="date"][name="fechaInicio"]');
+        var $fechaFin = $form.find('input[type="date"][name="fechaFin"]');
+        var $submitBtn = $form.find('button[type="submit"]');
+        if ($fechaInicio.length && $fechaFin.length) {
+            $submitBtn.prop('disabled', true);
+            function validarFechas() {
+                if ($fechaInicio.val() && $fechaFin.val()) {
+                    $submitBtn.prop('disabled', false);
+                } else {
+                    $submitBtn.prop('disabled', true);
+                }
+            }
+            $fechaInicio.on('input change', validarFechas);
+            $fechaFin.on('input change', validarFechas);
+        }
+    });
+    // Variable para controlar el loading de descargas
+    var downloadInProgress = false;
+    var downloadTimeout;
+    
     // Interceptar todos los envíos de formularios
-    $('form').submit(function() {
+    $('form').submit(function(e) {
+        var $form = $(this);
         showLoading();
+        
+        // Para formularios de descarga, usar detección de focus
+        if ($form.attr('data-download') === 'true') {
+            var action = $form.attr('action') || '';
+            downloadInProgress = true;
+            
+            console.log('Form action:', action); // Debug log
+            console.log('Iniciando descarga, esperando regreso del focus...'); // Debug log
+            
+            // Para Estado de Resultados, forzar el uso del overlay temporal
+            if (action.includes('ExportEstadoExcel')) {
+                console.log('Estado de Resultados detectado - forzando overlay temporal'); // Debug log
+                // Ocultar overlay principal si existe para evitar conflictos
+                $('#loaderOverlay').hide();
+                // Forzar creación del overlay temporal
+                if ($('#temp-loading-overlay').length === 0) {
+                    $('body').append('<div id="temp-loading-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;color:white;font-size:18px;">Procesando...</div>');
+                }
+                $('#temp-loading-overlay').show();
+            }
+            
+            // Timeout de seguridad más corto
+            downloadTimeout = setTimeout(function() {
+                console.log('Timeout de seguridad alcanzado, ocultando loading'); // Debug log
+                downloadInProgress = false;
+                hideLoading();
+            }, 5000); // 5 segundos máximo
+        }
     });
 
     // Interceptar el clic en el botón de "Generar Plan de Cuentas"
@@ -177,16 +232,73 @@ $(document).ready(function() {
         showLoading();
     });
 
-    // Función para mostrar el indicador de carga
+    // Función para mostrar el indicador de carga (versión limpia)
     function showLoading() {
-        $('#loading-overlay').show();
+        // Siempre limpiar cualquier overlay previo antes de mostrar uno nuevo
+        $('#loaderOverlay').hide(); // Ocultar overlay principal
+        $('#temp-loading-overlay').remove(); // Eliminar overlay temporal
+        
+        // Intentar usar el overlay principal del layout primero
+        var $loaderOverlay = $('#loaderOverlay');
+        if ($loaderOverlay.length > 0) {
+            $loaderOverlay.show();
+        } else {
+            // Fallback: crear un overlay simple si no existe el principal
+            $('body').append('<div id="temp-loading-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;color:white;font-size:18px;">Procesando...</div>');
+        }
     }
 
-    // Función para ocultar el indicador de carga
+    // Función para ocultar el indicador de carga (versión limpia)
     function hideLoading() {
-        $('#loading-overlay').hide();
+        // Ocultar overlay principal si existe
+        var $loaderOverlay = $('#loaderOverlay');
+        if ($loaderOverlay.length > 0) {
+            $loaderOverlay.hide();
+            $loaderOverlay.css('display', 'none');
+        }
+        
+        // Ocultar overlay temporal si existe
+        var $tempOverlay = $('#temp-loading-overlay');
+        if ($tempOverlay.length > 0) {
+            $tempOverlay.hide();
+            $tempOverlay.remove();
+        }
+        // Forzar ocultamiento extra por compatibilidad, pero sin logs ni restauración
+        setTimeout(function() {
+            var principalCount = $('#loaderOverlay:visible').length;
+            var tempCount = $('#temp-loading-overlay:visible').length;
+            if (principalCount > 0) {
+                var $stubborn = $('#loaderOverlay');
+                $stubborn.hide().css({
+                    'display': 'none !important',
+                    'visibility': 'hidden !important',
+                    'opacity': '0 !important',
+                    'z-index': '-9999 !important',
+                    'pointer-events': 'none !important'
+                });
+                $stubborn.removeClass('show').removeClass('active').removeClass('in');
+                setTimeout(function() {
+                    if ($('#loaderOverlay:visible').length > 0) {
+                        $('#loaderOverlay').remove();
+                    }
+                }, 200);
+            }
+            if (tempCount > 0) {
+                $('#temp-loading-overlay').remove();
+            }
+        }, 500);
     }
 
+    // Detectar cuando el usuario regresa a la página después de una descarga
+    $(window).on('focus', function() {
+        if (downloadInProgress) {
+            console.log('Focus regresado, descarga completada, ocultando loading'); // Debug log
+            clearTimeout(downloadTimeout);
+            downloadInProgress = false;
+            hideLoading();
+        }
+    });
+    
     // Ocultar el indicador de carga cuando la página termine de cargar
     $(window).on('load', function() {
         hideLoading();
@@ -197,7 +309,7 @@ $(document).ready(function() {
     function showLoadingWithTimeout() {
         showLoading();
         clearTimeout(loadingTimer);
-        loadingTimer = setTimeout(hideLoading, 30000); // 30 segundos de tiempo máximo
+        loadingTimer = setTimeout(hideLoading, 20000); // 30 segundos de tiempo máximo
     }
 
     // Interceptar navegación del navegador

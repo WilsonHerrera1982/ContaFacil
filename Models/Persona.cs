@@ -36,7 +36,7 @@ public partial class Persona
     /// <summary>
     /// TRIAL
     /// </summary>
-    public bool? Estado { get; set; }
+    public bool Estado { get; set; }
 
     /// <summary>
     /// TRIAL

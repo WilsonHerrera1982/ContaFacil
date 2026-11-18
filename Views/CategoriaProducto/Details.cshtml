@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.CategoriaProducto
+@model ContaFacil.Models.CategoriaProducto
 
 @{
     ViewData["Title"] = "Details";
@@ -8,7 +8,12 @@
 
 <div>
     <h4>Categoría de Producto</h4>
-    <hr />
+    <a asp-action="Index" asp-controller="CategoriaProducto" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+        </svg>
+        Regresar
+    </a>
     <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Nombre)
@@ -31,6 +36,10 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.IdCategoriaProducto">Editar</a> |
-    <a asp-action="Index">Volver a la Lista</a>
+    <a asp-action="Edit" asp-route-id="@Model?.IdCategoriaProducto" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M12.146 3.354a.5.5 0 0 1 .708 0l.792.792a.5.5 0 0 1 0 .708l-7.439 7.439-2.853.714a.25.25 0 0 1-.316-.316l.714-2.853 7.439-7.439zm1.061-1.061a1.5 1.5 0 0 0-2.122 0l-7.439 7.439a1.5 1.5 0 0 0-.378.63l-.714 2.853a1.25 1.25 0 0 0 1.58 1.58l2.853-.714a1.5 1.5 0 0 0 .63-.378l7.439-7.439a1.5 1.5 0 0 0 0-2.122l-.792-.792z"/>
+    </svg>
+    Editar
+</a>
 </div>

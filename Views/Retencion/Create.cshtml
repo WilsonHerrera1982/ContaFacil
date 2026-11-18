@@ -1,143 +1,168 @@
 ﻿@model ContaFacil.Models.ViewModel.RetencionViewModel
-@{
-    ViewData["Title"] = "Create";
-}
 
-<div class="text-left mb-4">
-    <h2>Registrar Retención</h2>
-    <a asp-action="PrincipalFactura" asp-controller="Factura" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
-        </svg>
-        Regresar
-    </a>
-</div>
-<form asp-action="Create">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label asp-for="NumeroFactura" class="control-label"></label>
-                <div class="input-group">
-                    <input asp-for="NumeroFactura" class="form-control" id="numeroFactura" />
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-primary" id="buscarFactura">Buscar</button>
-                    </div>
-                </div>
-                <span asp-validation-for="NumeroFactura" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ComprobanteRetencion" class="control-label"></label>
-                <input asp-for="ComprobanteRetencion" class="form-control" />
-                <span asp-validation-for="ComprobanteRetencion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="NumeroAutorizacion" class="control-label"></label>
-                <input asp-for="NumeroAutorizacion" class="form-control" />
-                <span asp-validation-for="NumeroAutorizacion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EjercicioFiscal" class="control-label"></label>
-                <input asp-for="EjercicioFiscal" class="form-control" />
-                <span asp-validation-for="EjercicioFiscal" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="BaseImponibleIVA" class="control-label">Base Imponible IVA</label>
-                <input asp-for="BaseImponibleIVA" class="form-control" readonly />
-                <span asp-validation-for="BaseImponibleIVA" class="text-danger"></span>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label asp-for="BaseImponibleRT" class="control-label">Base Imponible Renta</label>
-                <input asp-for="BaseImponibleRT" class="form-control" readonly />
-                <span asp-validation-for="BaseImponibleRT" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PorcentajeRetencionIVA" class="control-label">Porcentaje Retención IVA</label>
-                <select asp-for="PorcentajeRetencionIVA" class="form-control" asp-items="ViewBag.PorcentajeRetencionIVA"></select>
-                <span asp-validation-for="PorcentajeRetencionIVA" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PorcentajeRetencionRT" class="control-label">Porcentaje Retención Renta</label>
-                <select asp-for="PorcentajeRetencionRT" class="form-control" asp-items="ViewBag.PorcentajeRetencionRT"></select>
-                <span asp-validation-for="PorcentajeRetencionRT" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ValorRetenidoIVA" class="control-label">Valor Retenido IVA</label>
-                <input asp-for="ValorRetenidoIVA" class="form-control" readonly />
-                <span asp-validation-for="ValorRetenidoIVA" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ValorRetenidoRT" class="control-label">Valor Retenido Renta</label>
-                <input asp-for="ValorRetenidoRT" class="form-control" readonly />
-                <span asp-validation-for="ValorRetenidoRT" class="text-danger"></span>
-            </div>
-        </div>
+<div class="container-fluid">
+    <h4 class="mb-4">Crear Retención</h4>
+    <div class="text-left mb-4">
+         <a asp-action="PrincipalFactura" asp-controller="Factura" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+            </svg>
+            Regresar
+        </a>
     </div>
     <div class="row">
         <div class="col-md-12">
-            <div class="form-group">
-                <input type="submit" value="Guardar" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Regresa a la lista</a>
-            </div>
+            <form asp-action="Create" enctype="multipart/form-data" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Archivo XML de Retención</label>
+                                    <input type="file" name="xmlFile" class="form-control" accept=".xml" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="NumeroFactura" class="control-label">Número de Factura</label>
+                                    <input asp-for="NumeroFactura" class="form-control" readonly />
+                                    <span asp-validation-for="NumeroFactura" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ComprobanteRetencion" class="control-label">Comprobante de Retención</label>
+                                    <input asp-for="ComprobanteRetencion" class="form-control" readonly />
+                                    <span asp-validation-for="ComprobanteRetencion" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="NumeroAutorizacion" class="control-label">Número de Autorización</label>
+                                    <input asp-for="NumeroAutorizacion" class="form-control" readonly />
+                                    <span asp-validation-for="NumeroAutorizacion" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="EjercicioFiscal" class="control-label">Fecha Emisión</label>
+                                    <input asp-for="EjercicioFiscal" class="form-control" readonly />
+                                    <span asp-validation-for="EjercicioFiscal" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mt-4">Retención IVA</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="BaseImponibleIVA" class="control-label">Base Imponible IVA</label>
+                                    <input asp-for="BaseImponibleIVA" class="form-control" readonly />
+                                    <span asp-validation-for="BaseImponibleIVA" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="PorcentajeRetencionIVA" class="control-label">Retención IVA %</label>
+                                    <input asp-for="PorcentajeRetencionIVA" class="form-control" readonly />
+                                    <span asp-validation-for="PorcentajeRetencionIVA" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="ValorRetenidoIVA" class="control-label">Valor Retenido IVA</label>
+                                    <input asp-for="ValorRetenidoIVA" class="form-control" readonly />
+                                    <span asp-validation-for="ValorRetenidoIVA" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mt-4">Retención Renta</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="BaseImponibleRenta" class="control-label">Base Imponible Renta</label>
+                                    <input asp-for="BaseImponibleRenta" class="form-control" readonly />
+                                    <span asp-validation-for="BaseImponibleRenta" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="PorcentajeRetencionRenta" class="control-label">Retención Renta %</label>
+                                    <input asp-for="PorcentajeRetencionRenta" class="form-control" readonly />
+                                    <span asp-validation-for="PorcentajeRetencionRenta" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="ValorRetenidoRenta" class="control-label">Valor Retenido Renta</label>
+                                    <input asp-for="ValorRetenidoRenta" class="form-control" readonly />
+                                    <span asp-validation-for="ValorRetenidoRenta" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Guardar Retención</button>
+                              
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-</form>
+</div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
     <script>
         $(document).ready(function () {
-            function calcularValorRetenido(baseImponible, porcentaje) {
-                var rate = parseFloat(porcentaje) / 100;
-                return baseImponible * rate;
-            }
+            $('input[name="xmlFile"]').change(function (e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var formData = new FormData();
+                    formData.append('xmlFile', file);
 
-            function actualizarValoresRetenidos() {
-                var baseImponibleIVA = parseFloat($("#BaseImponibleIVA").val()) || 0;
-                var baseImponibleRT = parseFloat($("#BaseImponibleRT").val()) || 0;
-                var porcentajeIVA = $("#PorcentajeRetencionIVA").val();
-                var porcentajeRT = $("#PorcentajeRetencionRT").val();
-
-                if (porcentajeIVA) {
-                    var valorRetenidoIVA = calcularValorRetenido(baseImponibleIVA, porcentajeIVA);
-                    $("#ValorRetenidoIVA").val(valorRetenidoIVA.toFixed(2));
-                }
-
-                if (porcentajeRT) {
-                    var valorRetenidoRT = calcularValorRetenido(baseImponibleRT, porcentajeRT);
-                    $("#ValorRetenidoRT").val(valorRetenidoRT.toFixed(2));
-                }
-            }
-
-            $("#PorcentajeRetencionIVA, #PorcentajeRetencionRT").change(actualizarValoresRetenidos);
-
-            $("#buscarFactura").click(function () {
-                var numeroFactura = $("#numeroFactura").val();
-                $.ajax({
-                    url: '@Url.Action("BuscarFactura", "Retencion")',
-                    type: 'POST',
-                    data: { numeroFactura: numeroFactura },
-                    success: function (result) {
-                        if (result.success) {
-                            $("#EjercicioFiscal").val(result.data.ejercicioFiscal);
-                            $("#BaseImponibleIVA").val(result.data.baseImponibleIVA);
-                            $("#BaseImponibleRT").val(result.data.baseImponibleRT);
-                            $("#PorcentajeRetencionIVA").val(result.data.porcentajeRetencionIVA);
-                            $("#PorcentajeRetencionRT").val(result.data.porcentajeRetencionRT);
-
-                            actualizarValoresRetenidos();
-                        } else {
-                            alert(result.message);
+                    $.ajax({
+                        url: '@Url.Action("ProcessXml", "Retencion")',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.success) {
+                                $('#NumeroFactura').val(response.numeroFactura);
+                                $('#ComprobanteRetencion').val(response.comprobanteRetencion);
+                                $('#NumeroAutorizacion').val(response.numeroAutorizacion);
+                                $('#EjercicioFiscal').val(response.ejercicioFiscal);
+                                $('#BaseImponibleIVA').val(response.baseImponibleIVA);
+                                $('#PorcentajeRetencionIVA').val(response.porcentajeRetencionIVA);
+                                $('#ValorRetenidoIVA').val(response.valorRetenidoIVA);
+                                $('#BaseImponibleRenta').val(response.baseImponibleRenta);
+                                $('#PorcentajeRetencionRenta').val(response.porcentajeRetencionRenta);
+                                $('#ValorRetenidoRenta').val(response.valorRetenidoRenta);
+                            } else {
+                                alert('Error al procesar el XML: ' + response.message);
+                            }
+                        },
+                        error: function (error) {
+                            alert('Error al procesar el archivo XML');
                         }
-                    },
-                    error: function () {
-                        alert("Error al buscar la factura");
-                    }
-                });
+                    });
+                }
             });
         });
     </script>

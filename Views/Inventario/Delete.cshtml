@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.Inventario
+@model ContaFacil.Models.Inventario
 
 @{
     ViewData["Title"] = "Delete";
@@ -7,10 +7,15 @@
 <h1>Eliminar</h1>
 
 <h4>Inventario</h4>
+<a asp-action="Index" asp-controller="Inventario" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+    </svg>
+    Regresar
+</a>
 
 <h4>¿Seguro quieres eliminar este elemento?</h4>
 <div>
-    <hr />
     <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.TipoMovimiento)
@@ -58,7 +63,6 @@
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="IdInventario" />
-        <input type="submit" value="Eliminar" class="btn btn-danger" /> |
-        <a asp-action="Index">Volver a la Lista</a>
+        <input type="submit" value="Eliminar" class="btn btn-danger" />
     </form>
 </div>

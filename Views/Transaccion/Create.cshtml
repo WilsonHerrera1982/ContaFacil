@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.Transaccion
+@model ContaFacil.Models.Transaccion
 
 @{
     ViewData["Title"] = "Create";
@@ -6,7 +6,12 @@
 
 <h1>Crear</h1>
 <h4>Asiento Manual</h4>
-<hr />
+<a asp-action="Index" asp-controller="Transaccion" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+    </svg>
+    Regresar
+</a>
 
 <form id="transactionForm" asp-action="Create" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -57,7 +62,6 @@
 
     <div class="form-group mt-3">
         <button type="submit" class="btn btn-primary" id="submitButton" disabled>Crear</button>
-        <a asp-action="Index" class="btn btn-secondary">Volver a la Lista</a>
     </div>
 </form>
 

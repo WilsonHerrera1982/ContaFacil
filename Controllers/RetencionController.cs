@@ -11,7 +11,7 @@ using System.Xml.Linq;
 using ContaFacil.Logica;
 using ContaFacil.Models.ViewModel;
 using Microsoft.EntityFrameworkCore.Query;
-
+using System.Xml;
 namespace ContaFacil.Controllers
 {
     public class RetencionController : NotificacionClass
@@ -80,45 +80,7 @@ namespace ContaFacil.Controllers
             return View(new RetencionViewModel());
         }
 
-        [HttpPost]
-        public async Task<IActionResult> BuscarFactura(string numeroFactura)
-        {
-            var factura = await _context.Facturas
-                .Include(f => f.IdClienteNavigation.IdPersonaNavigation)
-                .ThenInclude(p => p.IdEmpresaNavigation)
-                .FirstOrDefaultAsync(f => f.NumeroFactura == numeroFactura);
-
-            if (factura == null)
-            {
-                return Json(new { success = false, message = "Factura no encontrada" });
-            }
-
-            var inventarios = await _context.Inventarios
-                .Where(i => i.FacturaNumero == numeroFactura)
-                .ToListAsync();
-
-            if (!inventarios.Any())
-            {
-                return Json(new { success = false, message = "Inventario no encontrado para esta factura" });
-            }
-
-            decimal totalIva = inventarios.Sum(i => i.Iva ?? 0);
-            decimal totalBase = inventarios.Sum(i => i.Total ?? 0);
-
-            var retencionViewModel = new RetencionViewModel
-            {
-                NumeroFactura = factura.NumeroFactura,
-                EjercicioFiscal = "", // You might want to set this based on the factura data
-                BaseImponibleIVA = totalIva,
-                BaseImponibleRT = totalBase,
-                PorcentajeRetencionIVA = factura.IdClienteNavigation.IdPersonaNavigation.RetencionIva,
-                PorcentajeRetencionRT = factura.IdClienteNavigation.IdPersonaNavigation.RetencionPorcentaje,
-                ValorRetenidoIVA = totalIva * (factura.IdClienteNavigation.IdPersonaNavigation.RetencionIva / 100),
-                ValorRetenidoRT = totalBase * (factura.IdClienteNavigation.IdPersonaNavigation.RetencionPorcentaje / 100)
-            };
-
-            return Json(new { success = true, data = retencionViewModel });
-        }
+       
         // POST: Retencion/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -149,7 +111,7 @@ namespace ContaFacil.Controllers
                     numeroRetencion = "001-001-000000001";
                 }
                 string numeroAsiento = ObtenerSiguienteNumeroAsiento();
-                if (retencion.ValorRetenidoRT > 0)
+                if (retencion.ValorRetenidoRenta > 0)
                     {
                         
                         var retencionRenta = new Retencion
@@ -228,6 +190,113 @@ namespace ContaFacil.Controllers
             
         }
 
+
+        [HttpPost]
+        public IActionResult ProcessXml(IFormFile xmlFile)
+        {
+            try
+            {
+                
+                if (xmlFile == null || xmlFile.Length == 0)
+                    return Json(new { success = false, message = "No se ha seleccionado ningún archivo" });
+
+                using (var reader = new StreamReader(xmlFile.OpenReadStream()))
+                {
+                    var xmlContent = reader.ReadToEnd();
+                    var xmlDoc = new XmlDocument();
+                    xmlDoc.LoadXml(xmlContent);
+
+                    // Crear namespace manager para XPath
+                    var nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
+                    nsManager.AddNamespace("ns", "http://www.w3.org/2000/09/xmldsig#");
+
+                    // Extraer el contenido del CDATA dentro de comprobante
+                    var comprobanteCdata = xmlDoc.SelectSingleNode("//comprobante")?.InnerText;
+                    if (string.IsNullOrEmpty(comprobanteCdata))
+                        return Json(new { success = false, message = "No se encontró el comprobante" });
+
+                    // Cargar el contenido del CDATA como XML
+                    var comprobanteDoc = new XmlDocument();
+                    comprobanteDoc.LoadXml(comprobanteCdata);
+
+                    // Obtener datos generales
+                    string numeroFactura = comprobanteDoc.SelectSingleNode("//numDocSustento")?.InnerText ?? "";
+                    //string numeroFactura = comprobanteDoc.SelectSingleNode("//numDocSustento")?.Value;
+                    if (!string.IsNullOrEmpty(numeroFactura))
+                    {
+                        numeroFactura = numeroFactura.Substring(0, 3) + "-" +
+                                        numeroFactura.Substring(3, 3) + "-" +
+                                        numeroFactura.Substring(6);
+                    }
+                    var factura = _context.Facturas
+                    .Include(f => f.IdClienteNavigation.IdPersonaNavigation)
+                    .ThenInclude(p => p.IdEmpresaNavigation)
+                    .FirstOrDefaultAsync(f => f.NumeroFactura == numeroFactura);
+                    /*if(factura != null)
+                    {
+                        return Json(new { success = false, message = "Numero de factura no encontrado" +numeroFactura });
+                    }*/
+                    string comprobanteRetencion =
+                        (comprobanteDoc.SelectSingleNode("//estab")?.InnerText ?? "") + "-" +
+                        (comprobanteDoc.SelectSingleNode("//ptoEmi")?.InnerText ?? "") + "-" +
+                        (comprobanteDoc.SelectSingleNode("//secuencial")?.InnerText ?? "");
+                    string numeroAutorizacion = xmlDoc.SelectSingleNode("//numeroAutorizacion")?.InnerText ?? "";
+                    string ejercicioFiscal = comprobanteDoc.SelectSingleNode("//infoCompRetencion/fechaEmision")?.InnerText ?? "";
+
+                    decimal baseImponibleIVA = 0;
+                    decimal porcentajeRetencionIVA = 0;
+                    decimal valorRetenidoIVA = 0;
+                    decimal baseImponibleRenta = 0;
+                    decimal porcentajeRetencionRenta = 0;
+                    decimal valorRetenidoRenta = 0;
+
+                    // Procesar retenciones
+                    var retenciones = comprobanteDoc.SelectNodes("//docsSustento/docSustento/retenciones/retencion");
+                    if (retenciones != null)
+                    {
+                        foreach (XmlNode retencion in retenciones)
+                        {
+                            var codigo = retencion.SelectSingleNode("codigo")?.InnerText;
+                            var baseImponible = decimal.Parse(retencion.SelectSingleNode("baseImponible")?.InnerText ?? "0");
+                            var porcentaje = decimal.Parse(retencion.SelectSingleNode("porcentajeRetener")?.InnerText ?? "0");
+                            var valorRetenido = decimal.Parse(retencion.SelectSingleNode("valorRetenido")?.InnerText ?? "0");
+
+                            if (codigo == "2") // Retención IVA
+                            {
+                                baseImponibleIVA = baseImponible;
+                                porcentajeRetencionIVA = porcentaje;
+                                valorRetenidoIVA = valorRetenido;
+                            }
+                            else if (codigo == "1") // Retención Renta
+                            {
+                                baseImponibleRenta = baseImponible;
+                                porcentajeRetencionRenta = porcentaje;
+                                valorRetenidoRenta = valorRetenido;
+                            }
+                        }
+                    }
+
+                    return Json(new
+                    {
+                        success = true,
+                        numeroFactura,
+                        comprobanteRetencion,
+                        numeroAutorizacion,
+                        ejercicioFiscal,
+                        baseImponibleIVA,
+                        porcentajeRetencionIVA,
+                        valorRetenidoIVA,
+                        baseImponibleRenta,
+                        porcentajeRetencionRenta,
+                        valorRetenidoRenta
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
         // GET: Retencion/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {

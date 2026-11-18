@@ -1,75 +1,84 @@
-﻿@model ContaFacil.Models.Proveedor
+@model ContaFacil.Models.Proveedor
 @{
     ViewData["Title"] = "Create";
 }
 <h1>Crear</h1>
 <h4>Proveedor</h4>
-<hr />
-<div class="form-container">
-    <div class="row">
-        <div class="col-md-4">
+<a asp-action="PrincipalCliente" asp-controller="Persona" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+    </svg>
+    Regresar
+</a>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
             <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
-                    <label asp-for="Nombre" class="control-label"></label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Nombre" class="control-label"></label>
+                            <input asp-for="Nombre" class="form-control" />
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Direccion" class="control-label">Dirección</label>
+                            <input asp-for="Direccion" class="form-control" />
+                            <span asp-validation-for="Direccion" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Email" class="control-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <input type="checkbox" id="chkRetencionIva" name="chkRetencionIva" />
+                            <label for="chkRetencionIva">Retención IVA</label>
+                        </div>
+                        <div class="form-group mb-3" id="divRetencionIva" style="display:none;">
+                            <label asp-for="RetencionIva" class="control-label"></label>
+                            <select asp-for="RetencionIva" class="form-control" asp-items="@(new SelectList(ViewBag.IdImpuesto, "Value", "Text", 0))">
+                                <option value="0">Seleccione una opción</option>
+                            </select>
+                            <span asp-validation-for="RetencionIva" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Identificacion" class="control-label">Identificación</label>
+                            <input asp-for="Identificacion" class="form-control" />
+                            <span asp-validation-for="Identificacion" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Telefono" class="control-label">Teléfono</label>
+                            <input asp-for="Telefono" class="form-control" />
+                            <span asp-validation-for="Telefono" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <input type="checkbox" id="chkRetencionFuente" name="chkRetencionFuente" />
+                            <label for="chkRetencionFuente">Retención en la Fuente</label>
+                        </div>
+                        <div class="form-group mb-3" id="divRetencionFuente" style="display:none;">
+                            <label asp-for="RetencionPorcentaje" class="control-label"></label>
+                            <select asp-for="RetencionPorcentaje" class="form-control" asp-items="@(new SelectList(ViewBag.IdRetencionF, "Value", "Text", 0))">
+                                <option value="0">Seleccione una opción</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label asp-for="Identificacion" class="control-label">Identificación</label>
-                    <input asp-for="Identificacion" class="form-control" />
-                    <span asp-validation-for="Identificacion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Direccion" class="control-label">Dirección</label>
-                    <input asp-for="Direccion" class="form-control" />
-                    <span asp-validation-for="Direccion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Telefono" class="control-label">Teléfono</label>
-                    <input asp-for="Telefono" class="form-control" />
-                    <span asp-validation-for="Telefono" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Email" class="control-label"></label>
-                    <input asp-for="Email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <input type="checkbox" id="chkRetencionIva" name="chkRetencionIva" />
-                    <label for="chkRetencionIva">Retención IVA</label>
-                </div>
-                <div class="form-group" id="divRetencionIva" style="display:none;">
-                    <label asp-for="RetencionIva" class="control-label"></label>
-                    <select asp-for="RetencionIva" class="form-control" asp-items="@(new SelectList(ViewBag.IdImpuesto, "Value", "Text", 0))">
-                        <option value="0">Seleccione una opción</option>
-                    </select>
-                    <span asp-validation-for="RetencionIva" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <input type="checkbox" id="chkRetencionFuente" name="chkRetencionFuente" />
-                    <label for="chkRetencionFuente">Retención en la Fuente</label>
-                </div>
-                <div class="form-group" id="divRetencionFuente" style="display:none;">
-                    <label asp-for="RetencionPorcentaje" class="control-label"></label>
-                    <select asp-for="RetencionPorcentaje" class="form-control" asp-items="@(new SelectList(ViewBag.IdRetencionF, "Value", "Text", 0))">
-                        <option value="0">Seleccione una opción</option>
-                    </select>
-                </div>
-               
-                <div class="form-group">
-                    <center><button class="button" type="submit">Crear</button></center>
+                <div class="form-group mt-4 text-center">
+                    <button class="btn btn-primary px-5" type="submit">Crear</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-<div>
-    <a asp-action="Index">Volver a la Lista</a>
-</div>
+
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
         $(document).ready(function() {
             $("#chkRetencionIva").change(function() {

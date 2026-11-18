@@ -818,7 +818,7 @@ namespace ContaFacil.Controllers
                 using (var workbook = new XLWorkbook())
                 {
                     var worksheet = workbook.Worksheets.Add("Reporte de Facturación");
-                    var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
+                    /*var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
                     if (System.IO.File.Exists(logoPath))
                     {
                         var logo = worksheet.AddPicture(logoPath)
@@ -828,7 +828,7 @@ namespace ContaFacil.Controllers
                     else
                     {
                         Console.WriteLine("El archivo de logo no existe en la ruta especificada.");
-                    }
+                    }*/
 
                     worksheet.Cell("C1").Value = "Reporte de Facturación";
                     worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";
@@ -923,11 +923,11 @@ namespace ContaFacil.Controllers
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Notas de Crédito");
-                var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
+                /*var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo1.JPG");
                 var logo = worksheet.AddPicture(logoPath)
                     .MoveTo(worksheet.Cell("A1"))
                     .Scale(0.25);
-
+                */
                 worksheet.Cell("C1").Value = "Notas de Crédito";
                 worksheet.Cell("C2").Value = $"Nombre de cliente: {empresa.Nombre}";
                 worksheet.Cell("C3").Value = $"RUC: {empresa.Identificacion}";

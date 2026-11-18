@@ -1,7 +1,40 @@
-﻿@using ContaFacil.Models.ViewModel
+@using ContaFacil.Models.ViewModel
 @model SubCuentasPartialViewModel
 
-@foreach (var subcuenta in Model.Cuentas.Where(c => c.IdIdCuenta == Model.ParentId && c.Estado == true))
+@{
+    // Ordenar subcuentas numéricamente por código jerárquico
+    var subcuentasOrdenadas = Model.Cuentas
+        .Where(c => c.IdIdCuenta == Model.ParentId && c.Estado == true)
+        .OrderBy(c => OrdenarCodigoJerarquico(c.Codigo))
+        .ToList();
+    
+    string OrdenarCodigoJerarquico(string codigo)
+    {
+        if (string.IsNullOrEmpty(codigo))
+            return string.Empty;
+            
+        try
+        {
+            var partes = codigo.Split('.');
+            var partesOrdenadas = partes.Select(p => 
+            {
+                if (int.TryParse(p, out int numero))
+                {
+                    return numero.ToString("D6");
+                }
+                return p.PadLeft(6, '0');
+            });
+            
+            return string.Join(".", partesOrdenadas);
+        }
+        catch
+        {
+            return codigo;
+        }
+    }
+}
+
+@foreach (var subcuenta in subcuentasOrdenadas)
 {
     <div class="cuenta-hijo @(subcuenta.IdIdCuenta != null ? "cuenta-nieto" : "")">
         <div class="d-flex justify-content-between align-items-center">

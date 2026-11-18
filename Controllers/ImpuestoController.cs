@@ -35,7 +35,7 @@ namespace ContaFacil.Controllers
             }
 
             var impuestosSinRetencion = await _context.Impuestos
-                .Where(i => i.Nombre.ToUpper().Contains("RETENCION"))
+                .Where(i => i.Nombre.ToUpper().Contains("RETENCION") && i.EstadoBoolean==true)
                 .ToListAsync();
 
             return View(impuestosSinRetencion);

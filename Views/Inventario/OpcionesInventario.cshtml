@@ -1,0 +1,128 @@
+﻿@model IEnumerable<ContaFacil.Models.Inventario>
+
+@{
+    ViewData["Title"] = "Index";
+    var opcionClientes = (List<OpcionCliente>
+    )ViewBag.OpcionClientes;
+
+    bool TienePermiso(string opcionNombre)
+    {
+        return opcionClientes?.Any(o => o.OpcionNombre.Trim().Equals(opcionNombre.Trim(),
+        StringComparison.OrdinalIgnoreCase)) ?? false;
+    }
+}
+
+
+<style>
+    .form-group {
+        width: 400px;
+    }
+
+    .row {
+        justify-content: left;
+    }
+
+    .card.disabled {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #dc3545;
+        font-size: 1.2em;
+        z-index: 1;
+    }
+</style>
+<div class="text-left mb-4">
+    <h2>Opciones de inventario</h2>
+    <a asp-action="Index" asp-controller="Inventario" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+        </svg>
+        Regresar
+    </a>
+</div>
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card h-100 "
+                         id="CREAR INVENTARIO">
+                        
+                        <div class="card-body text-center">
+                    <i class="fas fa-boxes fa-3x mb-3 text-info"></i>
+                            <h5 class="card-title">Registrar Compra</h5>
+                            <p class="card-text">Registra nuevos movimientos de compra.</p>
+                    <a asp-action="Create" class="btn btn-primary mt-auto">Registrar Compra</a>
+                        </div>
+                    </div>
+                </div>
+       
+       
+        
+      
+
+       
+
+         <div class="col">
+            <div class="card h-100">
+             
+                <div class="card-body text-center">
+                    <i class="fas fa-file-signature fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">Egreso</h5>
+                    <p class="card-text">Gestiona el egreso de productos.</p>
+                    <a asp-action="Egreso" asp-controller="Inventario" class="btn btn-info mt-auto">Egreso</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100  @(!TienePermiso("TRANSFERENCIA BODEGA") ? "disabled" : "")">
+
+                <div class="card-body text-center ">
+                    @if (!TienePermiso("TRANSFERENCIA BODEGA"))
+                    {
+                        <i class="fas fa-lock lock-icon"></i>
+                    }
+                    <i class="fas fa-truck fa-3x mb-3 text-secondary "></i>
+                    <h5 class="card-title">Transferencias Bodega</h5>
+                    <p class="card-text">Revisar el estado de despachos realizados a bodegas.</p>
+                    <a asp-action="Transferencia" asp-controller="Inventario" class="btn btn-secondary  mt-auto">Despachos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/jquery-3.6.0.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/js/bootstrap.js"></script>
+    <script src="~/js/inventario.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.card.disabled a').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            var selectedSucursal = '@ViewBag.SelectedSucursal';
+            if (selectedSucursal) {
+                $('#idSucursal').val(selectedSucursal);
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

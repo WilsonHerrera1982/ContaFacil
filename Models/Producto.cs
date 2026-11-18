@@ -44,7 +44,7 @@ public partial class Producto
     /// <summary>
     /// TRIAL
     /// </summary>
-    public bool? EstadoBoolean { get; set; }
+    public bool EstadoBoolean { get; set; }
 
     /// <summary>
     /// TRIAL

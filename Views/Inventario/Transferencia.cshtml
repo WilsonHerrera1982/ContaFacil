@@ -1,0 +1,223 @@
+﻿@model ContaFacil.Models.ViewModel.InventarioViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="text-left mb-4">
+    <h2>Registrar Transferencia</h2>
+    <a asp-action="OpcionesInventario" asp-controller="Inventario" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+        </svg>
+        Regresar
+    </a>
+</div>
+
+<div>
+    <form asp-action="Create" id="inventarioForm">
+        <!-- Sección de Cabecera -->
+        <div class="card mb-4">
+            <div class="card-header">Cabecera de la Transferencia</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="tipoMovimiento" class="control-label">Tipo de Movimiento</label>
+                            <select asp-for="tipoMovimiento" class="form-control" disabled>
+                                <option value="T" selected>Transferencia</option>
+                            </select>
+                            <input type="hidden" asp-for="tipoMovimiento" value="T" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="numeroDespacho" class="control-label">Número de Transferencia</label>
+                            <input asp-for="numeroDespacho" id="NumeroDespacho" class="form-control" readonly />
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="sucursalDestino" class="control-label">Sucursal Destino</label>
+                            <select asp-for="sucursalDestino" id="sucursalSelect" class="form-control" asp-items="ViewBag.IdSucursal" required></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="control-label">Observación</label>
+                            <input type="text" asp-for="descripcion" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Detalles -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Detalles de la Transferencia</span>
+                <button type="button" class="btn btn-primary btn-sm" id="btnAgregarProducto">
+                    <i class="fas fa-plus"></i> Agregar Producto
+                </button>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detallesBody">
+                            <!-- Fila de plantilla (oculta) -->
+                            <tr class="fila-plantilla" style="display: none;">
+                                <td>
+                                    <select class="form-control productoSelect" asp-items="ViewBag.IdProducto" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" class="form-control cantidad" step="0.01" required /></td>
+                                <td><input type="number" class="form-control precioUnitario" readonly /></td>
+                                <td><input type="number" class="form-control subtotal" readonly /></td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm btnEliminarFila">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                        <!-- Totales -->
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-right"><strong>Total General:</strong></td>
+                                <td><input type="number" class="form-control" id="totalGeneral" readonly /></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group text-right">
+            <button type="submit" class="btn btn-primary">Registrar Transferencia</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    }
+
+    <script>
+        $(document).ready(function () {
+            // Obtener número de transferencia al cargar
+            obtenerNumeroDespacho();
+
+            // Configurar Select2 para sucursal
+            $('#sucursalSelect').select2();
+
+            // Configurar Select2 para productos
+            function inicializarSelect2(element) {
+                $(element).select2({
+                    placeholder: 'Buscar producto...',
+                    allowClear: true
+                });
+            }
+
+            // Generar número de transferencia
+            function obtenerNumeroDespacho() {
+                $.ajax({
+                    url: '@Url.Action("ObtenerNumeroDespacho")',
+                    type: 'GET',
+                    data: { tipoMovimiento: 'T' },
+                    success: function (data) {
+                        $('#NumeroDespacho').val(data);
+                    }
+                });
+            }
+
+            // Agregar nueva fila
+            $('#btnAgregarProducto').click(function () {
+                var nuevaFila = $('.fila-plantilla').clone()
+                    .removeClass('fila-plantilla')
+                    .addClass('fila-dinamica')
+                    .show();
+
+                nuevaFila.find('select').val('');
+                nuevaFila.find('input').val('');
+                nuevaFila.find('.select2-container').remove();
+
+                inicializarSelect2(nuevaFila.find('.productoSelect'));
+                nuevaFila.appendTo('#detallesBody');
+
+                calcularFila(nuevaFila);
+                actualizarCalculos();
+            });
+
+            // Eliminar fila
+            $(document).on('click', '.btnEliminarFila', function () {
+                $(this).closest('tr').remove();
+                actualizarCalculos();
+            });
+
+            // Eventos para cálculos
+            $(document).on('input', '.cantidad', function () {
+                var fila = $(this).closest('tr');
+                calcularFila(fila);
+                actualizarCalculos();
+            });
+
+            // Cargar precio al seleccionar producto
+            $(document).on('change', '.productoSelect', function () {
+                var productoId = $(this).val();
+                var fila = $(this).closest('tr');
+
+                if (productoId) {
+                    $.get('@Url.Action("ObtenerPrecioProducto", "Inventario")', { id: productoId }, function (data) {
+                        fila.find('.precioUnitario').val(data.precioUnitario);
+                        calcularFila(fila);
+                        actualizarCalculos();
+                    });
+                } else {
+                    fila.find('.precioUnitario').val('');
+                    calcularFila(fila);
+                    actualizarCalculos();
+                }
+            });
+
+            // Cálculos por fila
+            function calcularFila(fila) {
+                var cantidad = parseFloat(fila.find('.cantidad').val()) || 0;
+                var precioUnitario = parseFloat(fila.find('.precioUnitario').val()) || 0;
+                var subtotal = cantidad * precioUnitario;
+
+                fila.find('.subtotal').val(subtotal.toFixed(2));
+            }
+
+            // Actualizar total general
+            function actualizarCalculos() {
+                var totalGeneral = 0;
+
+                $('#detallesBody tr:not(.fila-plantilla)').each(function () {
+                    totalGeneral += parseFloat($(this).find('.subtotal').val()) || 0;
+                });
+
+                $('#totalGeneral').val(totalGeneral.toFixed(2));
+            }
+        });
+    </script>
+}

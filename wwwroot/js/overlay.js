@@ -1,4 +1,4 @@
-﻿const LoaderManager = {
+const LoaderManager = {
     overlay: null,
     downloadTimeout: null,
 
@@ -52,6 +52,33 @@
         });
     },
 
+    handleDownload() {
+        this.show();
+        // Usar un tiempo más corto para descargas (1.5 segundos)
+        this.downloadTimeout = setTimeout(() => {
+            this.hide();
+        }, 1500);
+    },
+
+    setupFormInterceptors() {
+        document.addEventListener('submit', (e) => {
+            if (e.target.tagName === 'FORM') {
+                const form = e.target;
+                // Verificar si es un formulario de exportación
+                const isExportForm = form.action.includes('Exportar') ||
+                    form.action.includes('Kardex');
+
+                if (isExportForm) {
+                    e.preventDefault();
+                    this.handleDownload();
+                    // Enviar el formulario después de un breve retraso
+                    setTimeout(() => form.submit(), 100);
+                } else {
+                    this.show();
+                }
+            }
+        });
+    },
     shouldIgnoreElement(element) {
         if (!element) return true;
 

@@ -16,7 +16,6 @@
     </a>
 </div>
 <div class="row mb-4">
-    <div class="col-md-6">
         <form asp-action="GenerarReporte" method="post" class="form-inline">
             <div class="form-group mr-2">
                 <label for="fechaInicio" class="mr-2">Fecha de Inicio:</label>
@@ -28,7 +27,7 @@
             </div>
             <button type="submit" class="btn btn-primary">Generar Reporte</button>
         </form>
-    </div>
+  
     <div class="col-md-6 text-right">
         @if (Model != null)
         {

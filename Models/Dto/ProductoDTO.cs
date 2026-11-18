@@ -24,5 +24,6 @@
         public decimal IVA { get; set; }
         public decimal Total { get; set; }
         public bool CargaInicial { get; set; }
+        public int CantidadMinima { get; set; }
     }
 }

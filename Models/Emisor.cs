@@ -94,7 +94,7 @@ public partial class Emisor
     public string TipoAmbiente { get; set; } = null!;
 
     [DisplayName("Activo/Inactivo")]
-    public bool? EstadoBoolean { get; set; }
+    public bool EstadoBoolean { get; set; }
 
     [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 

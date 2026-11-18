@@ -51,7 +51,7 @@ public partial class Sucursal
     public string Secuencial { get; set; } = null!;
 
     [DisplayName("Activo/Inactivo")]
-    public bool? EstadoBoolean { get; set; }
+    public bool EstadoBoolean { get; set; }
 
     [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 

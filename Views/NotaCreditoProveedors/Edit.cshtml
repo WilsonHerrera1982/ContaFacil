@@ -1,0 +1,117 @@
+﻿@model ContaFacil.Models.NotaCreditoProveedor
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Nota Credito Proveedor</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdNotaCredito" />
+           
+            <div class="form-group">
+                <label asp-for="RazonSocial" class="control-label">Razon Social</label>
+                <input asp-for="RazonSocial" class="form-control" />
+                <span asp-validation-for="RazonSocial" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NombreComercial" class="control-label">Nombre Comercial</label>
+                <input asp-for="NombreComercial" class="form-control" />
+                <span asp-validation-for="NombreComercial" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Ruc" class="control-label"></label>
+                <input asp-for="Ruc" class="form-control" />
+                <span asp-validation-for="Ruc" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ClaveAcceso" class="control-label">Clave Acceso</label>
+                <input asp-for="ClaveAcceso" class="form-control" />
+                <span asp-validation-for="ClaveAcceso" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Estab" class="control-label">Establecimiento</label>
+                <input asp-for="Estab" class="form-control" />
+                <span asp-validation-for="Estab" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PtoEmi" class="control-label">Pto Emisión</label>
+                <input asp-for="PtoEmi" class="form-control" />
+                <span asp-validation-for="PtoEmi" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="DirMatriz" class="control-label">Dirección Matriz</label>
+                <input asp-for="DirMatriz" class="form-control" />
+                <span asp-validation-for="DirMatriz" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaEmision" class="control-label">Fecha Emisión</label>
+                <input asp-for="FechaEmision" class="form-control" />
+                <span asp-validation-for="FechaEmision" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DirEstablecimiento" class="control-label">Dirección Establecimiento</label>
+                <input asp-for="DirEstablecimiento" class="form-control" />
+                <span asp-validation-for="DirEstablecimiento" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="RazonSocialComprador" class="control-label">Razon Social Comprador</label>
+                <input asp-for="RazonSocialComprador" class="form-control" />
+                <span asp-validation-for="RazonSocialComprador" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdentificacionComprador" class="control-label">Identificación Comprador</label>
+                <input asp-for="IdentificacionComprador" class="form-control" />
+                <span asp-validation-for="IdentificacionComprador" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ContribuyenteEspecial" class="control-label">Contribuyente Especial</label>
+                <input asp-for="ContribuyenteEspecial" class="form-control" />
+                <span asp-validation-for="ContribuyenteEspecial" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="NumDocModificado" class="control-label">Factura</label>
+                <input asp-for="NumDocModificado" class="form-control" />
+                <span asp-validation-for="NumDocModificado" class="text-danger"></span>
+            </div>
+           
+            <div class="form-group">
+                <label asp-for="TotalSinImpuestos" class="control-label"></label>
+                <input asp-for="TotalSinImpuestos" class="form-control" />
+                <span asp-validation-for="TotalSinImpuestos" class="text-danger"></span>
+            </div>
+           
+            <div class="form-group">
+                <label asp-for="Moneda" class="control-label"></label>
+                <input asp-for="Moneda" class="form-control" />
+                <span asp-validation-for="Moneda" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Motivo" class="control-label"></label>
+                <input asp-for="Motivo" class="form-control" />
+                <span asp-validation-for="Motivo" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

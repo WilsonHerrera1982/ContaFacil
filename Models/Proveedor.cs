@@ -35,7 +35,7 @@ public partial class Proveedor
     public string? Email { get; set; }
 
     [DisplayName("Activo/Inactivo")]
-    public bool? Estado { get; set; }
+    public bool Estado { get; set; }
 
     /// <summary>
     /// TRIAL

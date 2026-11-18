@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +7,7 @@ using Quartz;
 using ContaFacil.Models;
 using Microsoft.AspNetCore.Http;
 using NuGet.Protocol.Core.Types;
+using Microsoft.Extensions.Configuration;
 
 namespace ContaFacil.Utilities
 {
@@ -15,11 +16,13 @@ namespace ContaFacil.Utilities
         private readonly IServiceProvider _serviceProvider;
         private readonly ContableContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public TareaRegistroTransacciones(IServiceProvider serviceProvider, ContableContext context, IHttpContextAccessor httpContext)
+        private readonly IConfiguration _configuration;
+        public TareaRegistroTransacciones(IServiceProvider serviceProvider, ContableContext context, IHttpContextAccessor httpContext, IConfiguration configuration)
         {
             _serviceProvider = serviceProvider;
             _context = context;
             _httpContextAccessor = httpContext;
+            _configuration = configuration;
         }
 
         public async Task Execute(IJobExecutionContext context)
@@ -43,14 +46,18 @@ namespace ContaFacil.Utilities
                     {
                         Cuentum c = new Cuentum();
                         c = _context.Cuenta.FirstOrDefault(c => c.Nombre == categoria.Nombre);
-                        listaCuentas.Add(c);
+                        Cuentum sub = new Cuentum();
+                        sub = _context.Cuenta.FirstOrDefault(sub => sub.IdIdCuenta ==c.IdCuenta);
+                        // Eliminar los registros null de la lista antes de usarla
+                        listaCuentas = listaCuentas.Where(c => c != null).ToList();
 
                     }
                     // Agrupar los inventarios por la cuenta asociada
-                    var inventariosPorCuenta = inventariosNoRegistrados.GroupBy(i => listaCuentas.FirstOrDefault(c => c.Nombre == i.IdProductoNavigation.IdCategoriaProductoNavigation.Nombre));
-
-                    // Crear una lista de listas de inventarios, una por cada cuenta
-                    List<List<Inventario>> listasInventarios = new List<List<Inventario>>();
+                    var inventariosPorCuenta = inventariosNoRegistrados.GroupBy(
+                        i => i.IdProductoNavigation.Nombre
+                    );
+                                        // Crear una lista de listas de inventarios, una por cada cuenta
+                  List<List<Inventario>> listasInventarios = new List<List<Inventario>>();
                     foreach (var group in inventariosPorCuenta)
                     {
                         foreach (var i in group)
@@ -63,7 +70,7 @@ namespace ContaFacil.Utilities
                             listasInventarios.Add(group.ToList());
                         }
                     }
-                    foreach (var group in listasInventarios)
+                    foreach (var group in inventariosPorCuenta)
                     {
                         var primerInventario = group.FirstOrDefault();
                         int idCuenta = primerInventario.IdCuentaContable ?? 0;
@@ -82,10 +89,10 @@ namespace ContaFacil.Utilities
                         Empresa empresa = new Empresa();
                         empresa = _context.Empresas.Where(e => e.Identificacion == emisor.Ruc).FirstOrDefault();
                         // Buscar la cuenta de Inventarios
-                        var cuentaInventarios = listaCuentas.FirstOrDefault(c => c.Nombre == "Inventarios");
+                        var cuentaInventarios = listaCuentas.FirstOrDefault(c => c.Nombre == "Inventario");
 
                         // Buscar la cuenta Relacionadas por pagar
-                        var cuentaRelacionadasPorPagar = _context.Cuenta.FirstOrDefault(c => c.Nombre == "Relacionadas por pagar");
+                        var cuentaRelacionadasPorPagar = _context.Cuenta.FirstOrDefault(c => c.Nombre == "Relacionadas por pagar " + primerInventario.IdProductoNavigation.Nombre);
                         // Obtener los datos necesarios de la primera entidad de la agrupación
                         var inv = group.FirstOrDefault();
                         var asientoNumero = await ObtenerSiguienteNumeroAsiento();
@@ -107,32 +114,48 @@ namespace ContaFacil.Utilities
                         };
                         transacciones.Add(transaccionInventarios);
 
-                        // Crear la transacción para la cuenta Relacionadas por pagar
-                        var transaccionRelacionadasPorPagar = new Transaccion
+                        if (cuentaRelacionadasPorPagar != null)
                         {
-                            IdCuenta = cuentaRelacionadasPorPagar.IdCuenta,
-                            Fecha = DateOnly.FromDateTime(inv.FechaCreacion),
-                            IdTipoTransaccion = await ObtenerIdTipoTransaccion("Saldo Inicial"),
-                            Monto = totalSum, // Utilizar la suma total
-                            Descripcion = asientoNumero+ $" Saldo inicial Relacionadas por pagar",
-                            Estado = true,
-                            FechaCreacion = DateTime.Now,
-                            FechaModificacion = DateTime.Now,
-                            UsuarioCreacion = 1,
-                            IdEmpresa = empresa.IdEmpresa,
-                            IdInventario = inv.IdInventario
-                        };
-                        transacciones.Add(transaccionRelacionadasPorPagar);
-                        _context.Transaccions.AddRange(transacciones);
-                        inventario.TransaccionRegistrada = true;
-                        await _context.SaveChangesAsync(); // Guarda después de cada inventario procesado
-                        return;
+                            // Crear la transacción para la cuenta Relacionadas por pagar
+                            var transaccionRelacionadasPorPagar = new Transaccion
+                            {
+                                IdCuenta = cuentaRelacionadasPorPagar.IdCuenta,
+                                Fecha = DateOnly.FromDateTime(inv.FechaCreacion),
+                                IdTipoTransaccion = await ObtenerIdTipoTransaccion("Saldo Inicial"),
+                                Monto = totalSum, // Utilizar la suma total
+                                Descripcion = asientoNumero + $" Saldo inicial Relacionadas por pagar",
+                                Estado = true,
+                                FechaCreacion = DateTime.Now,
+                                FechaModificacion = DateTime.Now,
+                                UsuarioCreacion = 1,
+                                IdEmpresa = empresa.IdEmpresa,
+                                IdInventario = inv.IdInventario
+                            };
+                            transacciones.Add(transaccionRelacionadasPorPagar);
+                        }
+                            _context.Transaccions.AddRange(transacciones);
+                        
+                        // Corrected line to set TransaccionRegistrada for each record in the list
+                        listasInventarios.ForEach(lista => lista.ForEach(inventario => inventario.TransaccionRegistrada = true));
+                       await _context.SaveChangesAsync(); // Guarda después de cada inventario procesado
+                      
                     }
 
-
+                    return;
                 }
+                else
+                {
+                    foreach (var inv in inventariosNoRegistrados)
+                    {
+                        var transacciones = await GenerarTransacciones(inv);
+                        _context.Transaccions.AddRange(transacciones);
+                        inv.TransaccionRegistrada = true;
+                        await _context.SaveChangesAsync(); // Guarda después de cada inventario procesado
+                    }
+                }
+               
             }
-            inventariosNoRegistrados = await _context.Inventarios
+            /*inventariosNoRegistrados = await _context.Inventarios
                 .Where(i => i.TransaccionRegistrada==false)
                 .Include(i => i.IdProductoNavigation)
                 .ToListAsync();
@@ -142,10 +165,11 @@ namespace ContaFacil.Utilities
                 _context.Transaccions.AddRange(transacciones);
                 inventario.TransaccionRegistrada = true;
                 await _context.SaveChangesAsync(); // Guarda después de cada inventario procesado
-            }
+            }*/
+          
         }
 
-        private async Task<List<Transaccion>> GenerarTransacciones(Inventario inventario)
+        public async Task<List<Transaccion>> GenerarTransacciones(Inventario inventario)
         {
             var transacciones = new List<Transaccion>();
             var producto = inventario.IdProductoNavigation;
@@ -169,7 +193,8 @@ namespace ContaFacil.Utilities
                     FechaModificacion = DateTime.Now,
                     UsuarioCreacion = 1, // Asume un usuario por defecto
                     IdEmpresa = empresa.IdEmpresa,
-                    IdInventario=inventario.IdInventario
+                    IdInventario = inventario.IdInventario,
+                    EsDebito =esDebito
                 };
             }
             if (inventario.TipoMovimiento == "E") // Compra
@@ -178,22 +203,59 @@ namespace ContaFacil.Utilities
             }
             if (inventario.TipoMovimiento == "C") // Compra
             {
-                if (inventario.Descuento > 0)
+                if (inventario.Descuento != 0 && inventario.Descuento != null)
                 {
-                    transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.Subtotal15 ?? 0, $"Compra de {producto.Nombre}", "Compra",false));
+                    // Si hay descuento (positivo o negativo), usar el subtotal con descuento aplicado
+                    transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.SubTotal ?? 0, $"Compra de {producto.Nombre}", "Compra",true));
                 }
                 else
                 {
+                    // Si no hay descuento, usar el subtotal normal
                     transacciones.Add(CrearTransaccion(cuentum.Codigo, inventario.SubTotal ?? 0, $"Compra de {producto.Nombre}", "Compra",true));
                 }
                 
-                transacciones.Add(CrearTransaccion("1.1.4.3", inventario.Iva ?? 0, $"IVA en compra de {producto.Nombre}", "Compra", false));
+                transacciones.Add(CrearTransaccion("1.1.4.1", inventario.Iva ?? 0, $"IVA en compra de {producto.Nombre}", "Compra", true));
                
-                transacciones.Add(CrearTransaccion("2.1.1.1", -(inventario.Total ?? 0), $"Pago a proveedor por {producto.Nombre}", "Compra", false));
+                // Procesar retenciones si aplican
+                bool tieneRetenciones = await ProcesarRetencionesParaCompra(inventario, producto, empresa, asientoNumero);
+                
+                // Solo crear transacción de pago a proveedor si NO hay retenciones
+                // (si hay retenciones, el RetencionService ya crea la transacción con el monto ajustado)
+                if (!tieneRetenciones)
+                {
+                    transacciones.Add(CrearTransaccion("2.1.1.1", -(inventario.Total ?? 0), $"Pago a proveedor por {producto.Nombre}", "Compra", false));
+                }
             }
             
 
             return transacciones;
+        }
+
+        private async Task<bool> ProcesarRetencionesParaCompra(Inventario inventario, Producto producto, Empresa empresa, string numeroAsiento)
+        {
+            // Obtener el proveedor asociado al inventario
+            var proveedor = await _context.Proveedors.FirstOrDefaultAsync(p => p.IdProveedor == inventario.IdProveedor);
+            
+            if (proveedor != null && (proveedor.RetencionPorcentaje > 0 || proveedor.RetencionIva > 0))
+            {
+                // Obtener usuario desde el contexto HTTP o usar uno por defecto
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Nombre == "admin");
+                string idUsuario = usuario?.IdUsuario.ToString() ?? "1";
+                
+                // Crear instancia del servicio de retenciones
+                var retencionService = new RetencionService(_context, _configuration, _httpContextAccessor);
+                
+                // Procesar las retenciones
+                var retenciones = await retencionService.ProcesarRetenciones(
+                    inventario, proveedor, empresa, usuario, producto, numeroAsiento, idUsuario);
+                
+                // Las transacciones contables ya se crean dentro del servicio de retenciones
+                // Retornar true indicando que se procesaron retenciones
+                return true;
+            }
+            
+            // No se procesaron retenciones
+            return false;
         }
 
         private async Task<int> ObtenerIdCuenta(string codigoCuenta)

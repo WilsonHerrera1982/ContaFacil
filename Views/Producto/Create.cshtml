@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.ViewModel.ProductoViewModel
+@model ContaFacil.Models.ViewModel.ProductoViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -7,74 +7,189 @@
 <h1>Crear</h1>
 
 <h4>Producto</h4>
-<hr />
 
-<div class="form-container">
-    <div class="row">
-        <div class="col-md-4">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div>
+    <a asp-action="Index" class="btn d-inline-flex align-items-center gap-2" style="background-color: #1e386a; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; transition: opacity 0.2s;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+        </svg>
+        Regresar
+    </a>
+</div>
+
+
+<form asp-action="Create">
+<div class="row">
+    <div class="col-md-6">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Codigo" class="control-label">Código</label>
+                <input asp-for="Codigo" class="form-control" readonly />
+                <span asp-validation-for="Codigo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Nombre" class="control-label"></label>
+                <input asp-for="Nombre" class="form-control" id="NombreProducto" autocomplete="off" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Descripcion" class="control-label">Descripción</label>
+                <input asp-for="Descripcion" class="form-control" />
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
                 <div class="form-group">
-                    <label asp-for="Codigo" class="control-label">Código</label>
-                    <input asp-for="Codigo" class="form-control" />
-                    <span asp-validation-for="Codigo" class="text-danger"></span>
+                <label asp-for="IdCategoriaProducto" class="control-label">Categoría de Producto</label>
+                <div class="input-group">
+                    <select asp-for="IdCategoriaProducto" class="form-control" asp-items="ViewBag.IdCategoriaProducto" id="IdCategoriaProducto"></select>
+                    <button type="button" class="btn btn-outline-primary" id="btnAddCategoria" title="Agregar nueva categoría">
+                        <span style="font-size:1.5em;line-height:1;">&#43;</span>
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label asp-for="Nombre" class="control-label"></label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+
+            <!-- Modal para crear categoría -->
+            <div class="modal fade" id="modalCategoria" tabindex="-1" aria-labelledby="modalCategoriaLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalCategoriaLabel">Crear Categoría</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body" id="modalCategoriaBody">
+                            <!-- Aquí se cargará el formulario -->
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label asp-for="Descripcion" class="control-label">Descripción</label>
-                    <input asp-for="Descripcion" class="form-control" />
-                    <span asp-validation-for="Descripcion" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="PrecioUnitario" class="control-label">Precio Unitario</label>
-                    <input asp-for="PrecioUnitario" class="form-control" />
-                    <span asp-validation-for="PrecioUnitario" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="IdCategoriaProducto" class="control-label">Categoría de Producto</label>
-                    <select asp-for="IdCategoriaProducto" class ="form-control" asp-items="ViewBag.IdCategoriaProducto"></select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="IdUnidadMedida" class="control-label">Unidad de Medida</label>
-                    <select asp-for="IdUnidadMedida" class ="form-control" asp-items="ViewBag.IdUnidadMedida"></select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="IdImpuesto" class="control-label">Impuesto</label>
-                    <select asp-for="IdImpuesto" class="form-control" asp-items="ViewBag.IdImpuesto"></select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="IdProveedor" class="control-label">Proveedor</label>
-                    <select asp-for="IdProveedor" class="form-control" asp-items="ViewBag.IdProveedor"></select>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Descuento" class="control-label"></label>
-                    <input asp-for="Descuento" class="form-control" />
-                    <span asp-validation-for="Descuento" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Stock" class="control-label"></label>
-                    <input asp-for="Stock" class="form-control" />
-                    <span asp-validation-for="Stock" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="CantidadMinima" class="control-label"></label>
-                    <input type="number" asp-for="CantidadMinima" class="form-control" />
-                </div>
-                <div class="form-group">
-                    <center><button class="button" type="submit">Crear</button></center>
-                </div>
-            </form>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="IdUnidadMedida" class="control-label">Unidad de Medida</label>
+                <select asp-for="IdUnidadMedida" class="form-control" asp-items="ViewBag.IdUnidadMedida"></select>
+            </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="IdImpuesto" class="control-label">Impuesto %</label>
+            <select asp-for="IdImpuesto" class="form-control" asp-items="ViewBag.IdImpuesto"></select>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="Descuento" class="control-label">Descuento %</label>
+            <input asp-for="Descuento" class="form-control" />
+            <span asp-validation-for="Descuento" class="text-danger"></span>
+        </div>
+      
+        <div class="form-group">
+            <label asp-for="CantidadMinima" class="control-label"></label>
+            <input type="number" asp-for="CantidadMinima" class="form-control" />
+        </div>
+        <div class="form-group text-center mt-4">
+            <button class="button btn btn-primary" type="submit">Crear</button>
         </div>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">Volver a la Lista</a>
-</div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#NombreProducto').on('input', function () {
+                var nombre = $(this).val();
+                if (nombre.length >= 3) {
+                    $.ajax({
+                        url: '/Producto/GetSiguienteCodigo',
+                        type: 'GET',
+                        data: { nombre: nombre },
+                        success: function (data) {
+                            $("#Codigo").val(data);
+                        }
+                    });
+                } else {
+                    $("#Codigo").val("");
+                }
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(function () {
+            // Abrir modal y cargar formulario de creación de categoría
+            $('#btnAddCategoria').on('click', function () {
+                console.log('abre modal categoria');
+                $('#modalCategoriaBody').html('<div class="text-center">Cargando...</div>');
+                $('#modalCategoria').modal('show');
+                $.get('/CategoriaProducto/Create', function (data) {
+                    var $form = $(data).find('form');
+                    $('#modalCategoriaBody').html($form);
+                    // Asignar handler submit DIRECTO al formulario insertado
+                    $form.on('submit', function (e) {
+                        console.log('submit directo (handler individual)');
+                        if ($(this).closest('#modalCategoriaBody').length === 0) return;
+                        e.preventDefault();
+                        var form = $(this);
+                        console.log('Datos serializados:', form.serialize());
+                        $.ajax({
+                            url: form.attr('action'),
+                            type: form.attr('method'),
+                            data: form.serialize(),
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                            success: function (data) {
+                                console.log('Respuesta AJAX recibida:', data);
+                                if (data.success) {
+                                    // Éxito: recargar el dropdown y cerrar el modal
+                                    $.get('/CategoriaProducto/GetCategoriasSelect', function (options) {
+                                        $('#IdCategoriaProducto').html(options);
+                                        $('#IdCategoriaProducto').val($('#IdCategoriaProducto option:last').val());
+                                        $('#modalCategoria').modal('hide');
+                                    });
+                                } else if (data.html) {
+                                    // Hay errores de validación
+                                    $('#modalCategoriaBody').html(data.html);
+                                }
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                console.error('Error en la petición AJAX:', textStatus, errorThrown);
+                            }
+                        });
+                    });
+                });
+            });
+            
+            // Delegar submit de cualquier formulario dentro del modal de categoría
+            $(document).on('submit', 'form', function (e) {
+                 console.log('ingreso al submit');
+                if ($(this).closest('#modalCategoriaBody').length === 0) return;
+                console.log('Evento submit capturado');
+                e.preventDefault();
+                var form = $(this);
+                console.log('Datos serializados:', form.serialize());
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: form.serialize(),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function (data) {
+                        console.log('Respuesta AJAX recibida:', data);
+                        if (data.success) {
+                            // Éxito: recargar el dropdown y cerrar el modal
+                            $.get('/CategoriaProducto/GetCategoriasSelect', function (options) {
+                                $('#IdCategoriaProducto').html(options);
+                                $('#IdCategoriaProducto').val($('#IdCategoriaProducto option:last').val());
+                                $('#modalCategoria').modal('hide');
+                            });
+                        } else if (data.html) {
+                            // Hay errores de validación
+                            $('#modalCategoriaBody').html(data.html);
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error('Error en la petición AJAX:', textStatus, errorThrown);
+                    }
+                });
+            });
+        });
+    </script>
+</form>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

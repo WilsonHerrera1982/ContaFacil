@@ -1,4 +1,4 @@
-﻿@model ContaFacil.Models.ViewModel.InventarioReporteViewModel
+@model ContaFacil.Models.ViewModel.InventarioReporteViewModel
 
 <div class="text-left mb-4">
     <h2>Reporte de Inventario</h2>
@@ -14,18 +14,27 @@
         <div class="col-md-3">
             <label for="idSucursal">Sucursal:</label>
             <select name="idSucursal" class="form-control" asp-items="@(new SelectList(Model.Sucursales, "IdSucursal", "NombreSucursal", Model.IdSucursalSeleccionada))">
-                <option value="">Todas las sucursales</option>
+                <option value="0">Todas las sucursales</option>
             </select>
-            <div class="form-group">
-                <label asp-for="IdProducto" class="control-label">Producto</label>
-                <select asp-for="IdProducto" id="productoSelect" class="form-control" asp-items="ViewBag.IdProducto"></select>
+            <div class="form-group d-flex align-items-end gap-2">
+                <div style="flex:1">
+                    <label asp-for="IdProducto" class="control-label">Producto</label>
+                    <select asp-for="IdProducto" id="productoSelect" class="form-control" asp-items="@(new SelectList(ViewBag.IdProducto, "Value", "Text", Model.IdProducto))">
+                        <option value="0">Todos</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mb-1" title="Buscar" style="height:38px; width:38px; display:flex; align-items:center; justify-content:center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+</svg>
+                </button>
             </div>
         </div>
        
         <div class="col-md-3">
             <label for="tipoMovimiento">Tipo de Movimiento:</label>
             <select name="tipoMovimiento" class="form-control">
-                <option value="">Todos los movimientos</option>
+                <option value="0">Todos los movimientos</option>
                 <option value="E" selected="@(Model.TipoMovimientoSeleccionado == "E")">Ingreso</option>
                 <option value="C" selected="@(Model.TipoMovimientoSeleccionado == "C")">Compra</option>
                 <option value="V" selected="@(Model.TipoMovimientoSeleccionado == "V")">Venta</option>
@@ -43,7 +52,7 @@
             <input type="date" name="fechaFin" class="form-control" value="@Model.FechaFin?.ToString("yyyy-MM-dd")">
         </div>
     </div>
-    <button type="submit" class="btn btn-primary mt-3">Generar Reporte</button>
+
 </form>
 
 <hr />
@@ -135,21 +144,19 @@
 
 <div class="container mt-4">
     <div class="row row-cols-1 row-cols-md-3 g-4">
-    <div class="col">
-        <a asp-action="Index">Regresar a opciones</a>
-    </div>
+  
     <div>
-        <form asp-action="ExportarExcel" method="get" class="d-inline">
+            <form asp-action="ExportarExcel" method="get" class="d-inline" data-download="true">
             <input type="hidden" name="idSucursal" value="@Model.IdSucursalSeleccionada" />
             <input type="hidden" name="idProducto" value="@Model.IdProducto" />
             <input type="hidden" name="tipoMovimiento" value="@Model.TipoMovimientoSeleccionado" />
-            <input type="hidden" name="fechaInicio" value="@Model.FechaInicio?.ToString("yyyy-MM-dd")" />
-            <input type="hidden" name="fechaFin" value="@Model.FechaFin?.ToString("yyyy-MM-dd")" />
+            <input type="hidden" required  name="fechaInicio" value="@Model.FechaInicio?.ToString("yyyy-MM-dd")" />
+            <input type="hidden" required name="fechaFin" value="@Model.FechaFin?.ToString("yyyy-MM-dd")" />
             <button type="submit" class="btn btn-success mt-3 ml-2">Exportar a Excel</button>
         </form>
     </div>
         <div>
-            <form asp-action="ExportarKardexExcel" method="get" class="d-inline">
+            <form asp-action="ExportarKardexExcel" method="get" class="d-inline" data-download="true">
                 <input type="hidden" name="idSucursal" value="@Model.IdSucursalSeleccionada" />
                 <input type="hidden" name="idProducto" value="@Model.IdProducto" />
                 <input type="hidden" name="tipoMovimiento" value="@Model.TipoMovimientoSeleccionado" />
@@ -175,5 +182,54 @@
                 allowClear: true
             });
         });
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Interceptar todos los envíos de formularios
+            $('form').submit(function () {
+                showLoading();
+            });
+
+            // Interceptar el clic en el botón de "Generar Plan de Cuentas"
+            $('a[asp-action="Index"][asp-controller="Cuentum"]').click(function () {
+                showLoading();
+            });
+
+            // Función para mostrar el indicador de carga
+            function showLoading() {
+                $('#loading-overlay').show();
+            }
+
+            // Función para ocultar el indicador de carga
+            function hideLoading() {
+                $('#loading-overlay').hide();
+            }
+
+            // Ocultar el indicador de carga cuando la página termine de cargar
+            $(window).on('load', function () {
+                hideLoading();
+            });
+
+            // Opcional: Agregar un temporizador para ocultar el loading después de un tiempo máximo
+            var loadingTimer;
+            function showLoadingWithTimeout() {
+                showLoading();
+                clearTimeout(loadingTimer);
+                loadingTimer = setTimeout(hideLoading, 30000); // 30 segundos de tiempo máximo
+            }
+
+            // Interceptar navegación del navegador
+            $(window).on('beforeunload', function () {
+                showLoading();
+            });
+        });
+
+        // Verificar si la descarga se completó (recarga de página)
+        $(document).ready(function () {
+            if ('@TempData["DownloadCompleted"]' === 'True') {
+                $('#loading-overlay').hide();
+            }
+        });
+
     </script>
 }

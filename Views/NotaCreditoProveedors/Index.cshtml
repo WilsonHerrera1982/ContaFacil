@@ -1,0 +1,95 @@
+﻿@model IEnumerable<ContaFacil.Models.NotaCreditoProveedor>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Gestionar Notas de Crédito Proveedor</h1>
+
+<p>
+    <a asp-action="Create">Registrar Nueva</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+           
+            <th>
+                Razon Social
+            </th>
+            <th>
+               Nombre Comercial
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Ruc)
+            </th>
+           <th>
+                Fecha Emision
+            </th>
+           
+            <th>
+                Razon Social Comprador
+            </th>
+            <th>
+                Identificación Comprador)
+            </th>
+           
+            <th>
+                Factura
+            </th>
+                       <th>
+               Total Sin Impuestos
+            </th>
+          
+            <th>
+                @Html.DisplayNameFor(model => model.Motivo)
+            </th>
+           
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            
+            <td>
+                @Html.DisplayFor(modelItem => item.RazonSocial)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NombreComercial)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Ruc)
+            </td>
+          
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaEmision)
+            </td>
+           
+            <td>
+                @Html.DisplayFor(modelItem => item.RazonSocialComprador)
+            </td>
+              
+            <td>
+                @Html.DisplayFor(modelItem => item.IdentificacionComprador)
+            </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NumDocModificado)
+                </td>
+           
+           
+          <td>
+                @Html.DisplayFor(modelItem => item.TotalSinImpuestos)
+            </td>
+           
+            <td>
+                @Html.DisplayFor(modelItem => item.Motivo)
+            </td>
+           
+            <td>                
+                <a asp-action="Details" asp-route-id="@item.IdNotaCredito">Detalles</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdNotaCredito">Eliminar</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

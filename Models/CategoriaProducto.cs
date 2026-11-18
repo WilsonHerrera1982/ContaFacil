@@ -25,7 +25,7 @@ public partial class CategoriaProducto
     public string? Descripcion { get; set; }
 
     [DisplayName("Activo/Inactivo")]
-    public bool? EstadoBoolean { get; set; }
+    public bool EstadoBoolean { get; set; }
 
     [DisplayName("Fecha Creación")]  public DateTime FechaCreacion { get; set; }
 
