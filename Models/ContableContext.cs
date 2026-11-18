@@ -68,6 +68,12 @@ public partial class ContableContext : DbContext
 
     public virtual DbSet<NotaCredito> NotaCreditos { get; set; }
 
+    public virtual DbSet<NotaCreditoDetalle> NotaCreditoDetalles { get; set; }
+
+    public virtual DbSet<NotaCreditoInfoAdicional> NotaCreditoInfoAdicionals { get; set; }
+
+    public virtual DbSet<NotaCreditoProveedor> NotaCreditoProveedors { get; set; }
+
     public virtual DbSet<OpcionCliente> OpcionClientes { get; set; }
 
     public virtual DbSet<OpcionesCliente> OpcionesClientes { get; set; }
@@ -119,9 +125,10 @@ public partial class ContableContext : DbContext
     public virtual DbSet<UsuarioSucursal> UsuarioSucursals { get; set; }
 
     public virtual DbSet<VentaPaquete> VentaPaquetes { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-         => optionsBuilder.UseMySql("Server=localhost;Database=contable;User=root;Password=ROOT;ConvertZeroDateTime=True;", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
+        => optionsBuilder.UseMySql("server=localhost;database=contable;user=root;password=ROOT", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -192,6 +199,11 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(10)
                 .HasComment("TRIAL")
                 .HasColumnName("tipo_pago");
+            entity.Property(e => e.Trial482)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial482");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -907,6 +919,11 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
                 .HasColumnName("numero_despacho");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1324,6 +1341,11 @@ public partial class ContableContext : DbContext
                 .HasPrecision(15, 2)
                 .HasComment("TRIAL")
                 .HasColumnName("subtotal");
+            entity.Property(e => e.Trial485)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial485");
             entity.Property(e => e.UsuarioCreacion)
                 .HasComment("TRIAL")
                 .HasColumnName("usuario_creacion");
@@ -1837,7 +1859,11 @@ public partial class ContableContext : DbContext
                 .HasComment("TRIAL")
                 .HasColumnName("menu_id");
             entity.Property(e => e.Orden).HasColumnName("orden");
-          
+            entity.Property(e => e.Trial489)
+                .HasMaxLength(1)
+                .IsFixedLength()
+                .HasComment("TRIAL")
+                .HasColumnName("trial489");
             entity.Property(e => e.Url)
                 .HasMaxLength(100)
                 .HasComment("TRIAL")
@@ -1989,6 +2015,196 @@ public partial class ContableContext : DbContext
                 .HasForeignKey(d => d.IdFactura)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("nota_credito_id_factura_fkey");
+        });
+
+        modelBuilder.Entity<NotaCreditoDetalle>(entity =>
+        {
+            entity.HasKey(e => e.IdNotaCreditoDetalle).HasName("PRIMARY");
+
+            entity.ToTable("nota_credito_detalle");
+
+            entity.HasIndex(e => e.IdNotaCredito, "id_nota_credito");
+
+            entity.Property(e => e.IdNotaCreditoDetalle).HasColumnName("id_nota_credito_detalle");
+            entity.Property(e => e.BaseImponible)
+                .HasPrecision(10, 2)
+                .HasColumnName("base_imponible");
+            entity.Property(e => e.Cantidad)
+                .HasPrecision(10, 2)
+                .HasColumnName("cantidad");
+            entity.Property(e => e.CodigoImpuesto)
+                .HasMaxLength(2)
+                .HasColumnName("codigo_impuesto");
+            entity.Property(e => e.CodigoInterno)
+                .HasMaxLength(25)
+                .HasColumnName("codigo_interno");
+            entity.Property(e => e.CodigoPorcentaje)
+                .HasMaxLength(2)
+                .HasColumnName("codigo_porcentaje");
+            entity.Property(e => e.Descripcion)
+                .HasMaxLength(300)
+                .HasColumnName("descripcion");
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasColumnName("descuento");
+            entity.Property(e => e.EstadoBoolean)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdNotaCredito).HasColumnName("id_nota_credito");
+            entity.Property(e => e.PrecioTotalSinImpuesto)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_total_sin_impuesto");
+            entity.Property(e => e.PrecioUnitario)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_unitario");
+            entity.Property(e => e.Tarifa)
+                .HasPrecision(5, 2)
+                .HasColumnName("tarifa");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.ValorImpuesto)
+                .HasPrecision(10, 2)
+                .HasColumnName("valor_impuesto");
+
+            entity.HasOne(d => d.IdNotaCreditoNavigation).WithMany(p => p.NotaCreditoDetalles)
+                .HasForeignKey(d => d.IdNotaCredito)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("nota_credito_detalle_ibfk_1");
+        });
+
+        modelBuilder.Entity<NotaCreditoInfoAdicional>(entity =>
+        {
+            entity.HasKey(e => e.IdInfoAdicional).HasName("PRIMARY");
+
+            entity.ToTable("nota_credito_info_adicional");
+
+            entity.HasIndex(e => e.IdNotaCredito, "id_nota_credito");
+
+            entity.Property(e => e.IdInfoAdicional).HasColumnName("id_info_adicional");
+            entity.Property(e => e.EstadoBoolean)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdNotaCredito).HasColumnName("id_nota_credito");
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(50)
+                .HasColumnName("nombre");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.Valor)
+                .HasMaxLength(300)
+                .HasColumnName("valor");
+
+            entity.HasOne(d => d.IdNotaCreditoNavigation).WithMany(p => p.NotaCreditoInfoAdicionals)
+                .HasForeignKey(d => d.IdNotaCredito)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("nota_credito_info_adicional_ibfk_1");
+        });
+
+        modelBuilder.Entity<NotaCreditoProveedor>(entity =>
+        {
+            entity.HasKey(e => e.IdNotaCredito).HasName("PRIMARY");
+
+            entity.ToTable("nota_credito_proveedor");
+
+            entity.Property(e => e.IdNotaCredito).HasColumnName("id_nota_credito");
+            entity.Property(e => e.Ambiente)
+                .HasMaxLength(1)
+                .HasColumnName("ambiente");
+            entity.Property(e => e.ClaveAcceso)
+                .HasMaxLength(49)
+                .HasColumnName("clave_acceso");
+            entity.Property(e => e.CodDoc)
+                .HasMaxLength(2)
+                .HasColumnName("cod_doc");
+            entity.Property(e => e.CodDocModificado)
+                .HasMaxLength(2)
+                .HasColumnName("cod_doc_modificado");
+            entity.Property(e => e.ContribuyenteEspecial)
+                .HasMaxLength(5)
+                .HasColumnName("contribuyente_especial");
+            entity.Property(e => e.DirEstablecimiento)
+                .HasMaxLength(300)
+                .HasColumnName("dir_establecimiento");
+            entity.Property(e => e.DirMatriz)
+                .HasMaxLength(300)
+                .HasColumnName("dir_matriz");
+            entity.Property(e => e.Estab)
+                .HasMaxLength(3)
+                .HasColumnName("estab");
+            entity.Property(e => e.EstadoBoolean)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("estado_boolean");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaEmision).HasColumnName("fecha_emision");
+            entity.Property(e => e.FechaEmisionDocSustento).HasColumnName("fecha_emision_doc_sustento");
+            entity.Property(e => e.FechaModificacion)
+                .HasColumnType("timestamp")
+                .HasColumnName("fecha_modificacion");
+            entity.Property(e => e.IdentificacionComprador)
+                .HasMaxLength(13)
+                .HasColumnName("identificacion_comprador");
+            entity.Property(e => e.Moneda)
+                .HasMaxLength(15)
+                .HasColumnName("moneda");
+            entity.Property(e => e.Motivo)
+                .HasMaxLength(300)
+                .HasColumnName("motivo");
+            entity.Property(e => e.NombreComercial)
+                .HasMaxLength(300)
+                .HasColumnName("nombre_comercial");
+            entity.Property(e => e.NumDocModificado)
+                .HasMaxLength(15)
+                .HasColumnName("num_doc_modificado");
+            entity.Property(e => e.ObligadoContabilidad).HasColumnName("obligado_contabilidad");
+            entity.Property(e => e.PtoEmi)
+                .HasMaxLength(3)
+                .HasColumnName("pto_emi");
+            entity.Property(e => e.RazonSocial)
+                .HasMaxLength(300)
+                .HasColumnName("razon_social");
+            entity.Property(e => e.RazonSocialComprador)
+                .HasMaxLength(300)
+                .HasColumnName("razon_social_comprador");
+            entity.Property(e => e.Ruc)
+                .HasMaxLength(13)
+                .HasColumnName("ruc");
+            entity.Property(e => e.Secuencial)
+                .HasMaxLength(9)
+                .HasColumnName("secuencial");
+            entity.Property(e => e.TipoEmision)
+                .HasMaxLength(1)
+                .HasColumnName("tipo_emision");
+            entity.Property(e => e.TipoIdentificacionComprador)
+                .HasMaxLength(2)
+                .HasColumnName("tipo_identificacion_comprador");
+            entity.Property(e => e.TotalSinImpuestos)
+                .HasPrecision(10, 2)
+                .HasColumnName("total_sin_impuestos");
+            entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
+            entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+            entity.Property(e => e.ValorModificacion)
+                .HasPrecision(10, 2)
+                .HasColumnName("valor_modificacion");
         });
 
         modelBuilder.Entity<OpcionCliente>(entity =>
@@ -3062,7 +3278,10 @@ public partial class ContableContext : DbContext
                 .HasMaxLength(255)
                 .HasComment("TRIAL")
                 .HasColumnName("descripcion");
-           
+            entity.Property(e => e.Esdebito)
+                .HasDefaultValueSql("'0'")
+                .HasComment("TRIAL")
+                .HasColumnName("esdebito");
             entity.Property(e => e.Estado)
                 .IsRequired()
                 .HasDefaultValueSql("'1'")
